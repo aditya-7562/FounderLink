@@ -1,8 +1,10 @@
 package com.founderlink.User_Service.controller;
 
+import com.founderlink.User_Service.dto.UserRequestAuthDto;
 import com.founderlink.User_Service.dto.UserRequestDto;
 import com.founderlink.User_Service.dto.UserResponseDto;
 import com.founderlink.User_Service.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +20,9 @@ public class UserController {
 
 
     // Just for Testing
-    @PostMapping
+    @PostMapping("/internal")
     public ResponseEntity<UserResponseDto> createUser(
-            @RequestBody UserRequestDto dto) {
+            @Valid @RequestBody UserRequestAuthDto dto) {
         return ResponseEntity.ok(service.createUser(dto));
     }
 

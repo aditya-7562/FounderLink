@@ -1,5 +1,6 @@
 package com.founderlink.User_Service.service;
 
+import com.founderlink.User_Service.dto.UserRequestAuthDto;
 import com.founderlink.User_Service.dto.UserRequestDto;
 import com.founderlink.User_Service.dto.UserResponseDto;
 import com.founderlink.User_Service.entity.User;
@@ -25,8 +26,25 @@ public class UserService {
     }
 
     // Just for testing
-    public UserResponseDto createUser(UserRequestDto dto) {
-        User user = modelMapper.map(dto, User.class);
+    public UserResponseDto createUser(UserRequestAuthDto dto) {
+
+        // ✅ TRUE idempotency
+        User existing = repository.findById(dto.getUserId()).orElse(null);
+
+        if (existing != null) {
+            return modelMapper.map(existing, UserResponseDto.class);
+        }
+
+        User user = new User();
+
+        user.setId(dto.getUserId()); // 🔥 critical
+
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setSkills(dto.getSkills());
+        user.setExperience(dto.getExperience());
+        user.setBio(dto.getBio());
+        user.setPortfolioLinks(dto.getPortfolioLinks());
         user.setUpdatedAt(LocalDateTime.now());
 
         return modelMapper.map(repository.save(user), UserResponseDto.class);
