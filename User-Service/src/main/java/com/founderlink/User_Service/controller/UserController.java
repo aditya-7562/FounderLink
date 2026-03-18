@@ -18,8 +18,7 @@ public class UserController {
 
     private final UserService service;
 
-
-    // Just for Testing
+    // Adding Users
     @PostMapping("/internal")
     public ResponseEntity<UserResponseDto> createUser(
             @Valid @RequestBody UserRequestAuthDto dto) {
