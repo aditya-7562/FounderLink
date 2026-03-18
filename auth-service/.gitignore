@@ -1,0 +1,79 @@
+# ======================
+# Maven
+# ======================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.m2/
+
+# ======================
+# IntelliJ IDEA
+# ======================
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# ======================
+# Eclipse (just in case)
+# ======================
+.project
+.classpath
+.settings/
+
+# ======================
+# VS Code
+# ======================
+.vscode/
+
+# ======================
+# OS files
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# Logs
+# ======================
+*.log
+
+# ======================
+# Environment / secrets
+# ======================
+.env
+.env.*
+application-local.yml
+application-dev.yml
+
+# ======================
+# Build outputs
+# ======================
+*.class
+*.jar
+*.war
+*.ear
+
+# ======================
+# Temp files
+# ======================
+*.tmp
+*.swp
+*~
+
+# ======================
+# Test output
+# ======================
+/surefire-reports/
+/failsafe-reports/
+
+# ======================
+# Coverage (if added later)
+# ======================
+/jacoco.exec
+/site/
+
+# ======================
+# Node (if frontend added later)
+# ======================
+node_modules/
+dist/
+build/
