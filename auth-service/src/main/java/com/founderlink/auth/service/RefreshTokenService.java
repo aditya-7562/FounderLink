@@ -34,8 +34,30 @@ public class RefreshTokenService {
     private final RefreshTokenProperties refreshTokenProperties;
     private final Clock clock;
 
+    private static final int MAX_SESSIONS = 5;
+
+    private void enforceMaxSessions(Long userId) {
+
+        long activeCount = refreshTokenRepository.countByUserIdAndRevokedFalse(userId);
+
+        if (activeCount < MAX_SESSIONS) return;
+
+        RefreshToken oldest = refreshTokenRepository.findOldestActiveToken(userId)
+                .orElseThrow(() -> new IllegalStateException("Expected at least one active token"));
+
+        oldest.setRevoked(true);
+        oldest.setRevokedAt(Instant.now(clock));
+
+        refreshTokenRepository.save(oldest);
+
+        log.info("Evicted oldest session for userId={}", userId);
+    }
+
     @Transactional
     public String createToken(Long userId) {
+
+        enforceMaxSessions(userId);
+
         String rawToken = generateSecureToken();
 
         RefreshToken refreshToken = RefreshToken.builder()
@@ -43,9 +65,11 @@ public class RefreshTokenService {
                 .userId(userId)
                 .expiryDate(Instant.now(clock).plus(refreshTokenProperties.getExpiration()))
                 .revoked(false)
+                .createdAt(Instant.now(clock))
                 .build();
 
         refreshTokenRepository.save(refreshToken);
+
         log.info("Issued refresh token for userId={}", userId);
 
         return rawToken;
@@ -76,6 +100,7 @@ public class RefreshTokenService {
 
     @Transactional
     public String rotateToken(String oldToken) {
+
         RefreshToken currentToken = findByRawTokenForUpdate(oldToken);
         assertTokenUsable(currentToken);
 
@@ -83,8 +108,13 @@ public class RefreshTokenService {
         currentToken.setRevokedAt(Instant.now(clock));
         refreshTokenRepository.save(currentToken);
 
-        log.info("Rotating refresh token for userId={}", currentToken.getUserId());
-        return createToken(currentToken.getUserId());
+        Long userId = currentToken.getUserId();
+
+        enforceMaxSessions(userId);
+
+        log.info("Rotating refresh token for userId={}", userId);
+
+        return createToken(userId);
     }
 
     private RefreshToken findByRawToken(String rawToken) {
@@ -111,7 +141,7 @@ public class RefreshTokenService {
             throw new RevokedRefreshTokenException("Refresh token has been revoked");
         }
 
-        if (refreshToken.getExpiryDate().isBefore(Instant.now(clock))) {
+        if (!refreshToken.getExpiryDate().isAfter(Instant.now(clock))) {
             log.warn("Refresh token usage rejected because token is expired userId={}", refreshToken.getUserId());
             throw new ExpiredRefreshTokenException("Refresh token has expired");
         }
