@@ -33,5 +33,5 @@ build/
 .vscode/
 
 ### .properties ###
-application.properties
-bootstrap.properties
+#application.properties
+#bootstrap.properties
