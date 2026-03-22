@@ -1,11 +1,5 @@
 package com.founderlink.team.serviceImpl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.founderlink.team.client.StartupServiceClient;
 import com.founderlink.team.dto.request.JoinTeamRequestDto;
 import com.founderlink.team.dto.response.StartupResponseDto;
@@ -24,63 +18,80 @@ import com.founderlink.team.mapper.TeamMemberMapper;
 import com.founderlink.team.repository.InvitationRepository;
 import com.founderlink.team.repository.TeamMemberRepository;
 import com.founderlink.team.service.TeamMemberService;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TeamMemberServiceImpl implements TeamMemberService {
+public class TeamMemberServiceImpl
+        implements TeamMemberService {
 
-    private final TeamMemberRepository teamMemberRepository;
-    private final InvitationRepository invitationRepository;
+    private final TeamMemberRepository
+            teamMemberRepository;
+    private final InvitationRepository
+            invitationRepository;
     private final TeamMemberMapper teamMemberMapper;
-    private final StartupServiceClient startupServiceClient;
+    private final StartupServiceClient
+            startupServiceClient;
 
     // JOIN TEAM
     
     @Override
     @Transactional
-    public TeamMemberResponseDto joinTeam(Long userId,
-                                           JoinTeamRequestDto requestDto) {
+    public TeamMemberResponseDto joinTeam(Long userId,JoinTeamRequestDto requestDto) {
 
         // Find invitation directly by ID
         Invitation invitation = invitationRepository
                 .findById(requestDto.getInvitationId())
-                .orElseThrow(() -> new InvitationNotFoundException(
-                        "Invitation not found with id: "
-                        + requestDto.getInvitationId()));
+                .orElseThrow(() ->
+                        new InvitationNotFoundException(
+                                "Invitation not found with id: "
+                                + requestDto.getInvitationId()));
 
-        // Verify this invitation belongs to this user
-        if (!invitation.getInvitedUserId().equals(userId)) {
+        // Verify invitation belongs to this user
+        if (!invitation.getInvitedUserId()
+                .equals(userId)) {
             throw new UnauthorizedAccessException(
                     "This invitation does not belong to you");
         }
 
         // Verify invitation is PENDING
-        if (!invitation.getStatus().equals(InvitationStatus.PENDING)) {
+        if (!invitation.getStatus()
+                .equals(InvitationStatus.PENDING)) {
             throw new InvalidInvitationStatusException(
                     "Only PENDING invitations can be accepted");
         }
 
-        // Edge case — check already a member
-        if (teamMemberRepository.existsByStartupIdAndUserId(
-                invitation.getStartupId(), userId)) {
+        // Edge case — check ACTIVE membership only
+        // Updated → isActiveTrue                ← UPDATED
+        if (teamMemberRepository
+                .existsByStartupIdAndUserIdAndIsActiveTrue(
+                        invitation.getStartupId(), userId)) {
             throw new AlreadyTeamMemberException(
                     "You are already a member of this startup");
         }
 
-        // Edge case — check role already taken
-        if (teamMemberRepository.existsByStartupIdAndRole(
-                invitation.getStartupId(), invitation.getRole())) {
+        // Edge case — check ACTIVE role only
+        // Updated → isActiveTrue                ← UPDATED
+        if (teamMemberRepository
+                .existsByStartupIdAndRoleAndIsActiveTrue(
+                        invitation.getStartupId(),
+                        invitation.getRole())) {
             throw new AlreadyTeamMemberException(
                     "This role is already filled in the team");
         }
 
         // Create team member
         TeamMember teamMember = new TeamMember();
-        teamMember.setStartupId(invitation.getStartupId());
+        teamMember.setStartupId(
+                invitation.getStartupId());
         teamMember.setUserId(userId);
         teamMember.setRole(invitation.getRole());
 
@@ -101,52 +112,123 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     }
 
     // GET TEAM BY STARTUP ID
-    
-    @Override
-    public List<TeamMemberResponseDto> getTeamByStartupId(Long startupId,Long userId,String userRole) {
-    	
-    	   if (userRole.equals("ROLE_FOUNDER")) {
-               verifyFounderOwnsStartup(startupId, userId);
-           }
+    // Returns ACTIVE members only             ← UPDATED
 
+    @Override
+    public List<TeamMemberResponseDto> getTeamByStartupId(Long startupId,Long founderId,String userRole) {
+
+        // Verify founder owns startup
+        if (userRole.equals("ROLE_FOUNDER")) {
+            verifyFounderOwnsStartup(
+                    startupId, founderId);
+        }
+
+        // Return ACTIVE members only           ← UPDATED
         return teamMemberRepository
-                .findByStartupId(startupId)
+                .findByStartupIdAndIsActiveTrue(startupId)
                 .stream()
                 .map(teamMemberMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
+
+
+    // GET MEMBER WORK HISTORY                 ← NEW
+    // Returns ALL records active + inactive
     
+    @Override
+    public List<TeamMemberResponseDto> getMemberHistory(Long userId) {
+
+        return teamMemberRepository
+                .findByUserId(userId)
+                .stream()
+                .map(teamMemberMapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    // GET ACTIVE MEMBER ROLES                 ← NEW
+    // Returns only ACTIVE roles
+    
+    @Override
+    public List<TeamMemberResponseDto> getActiveMemberRoles(Long userId) {
+
+        return teamMemberRepository
+                .findByUserIdAndIsActiveTrue(userId)
+                .stream()
+                .map(teamMemberMapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
     // REMOVE TEAM MEMBER
+    // Soft Delete
     
     @Override
     @Transactional
-    public void removeTeamMember(Long teamMemberId, Long founderId) {
+    public void removeTeamMember(Long teamMemberId,Long founderId) {
 
         // Find team member
         TeamMember teamMember = teamMemberRepository
                 .findById(teamMemberId)
-                .orElseThrow(() -> new TeamMemberNotFoundException(
-                        "Team member not found with id: " + teamMemberId));
-        
-        verifyFounderOwnsStartup(teamMember.getStartupId(),founderId);
+                .orElseThrow(() ->
+                        new TeamMemberNotFoundException(
+                                "Team member not found with id: "
+                                + teamMemberId));
 
-        // Edge case — founder cannot remove themselves
+        // Verify founder owns startup
+        verifyFounderOwnsStartup(
+                teamMember.getStartupId(),
+                founderId);
+
+        // Edge case — founder removing themselves
         if (teamMember.getUserId().equals(founderId)) {
             throw new UnauthorizedAccessException(
-                    "Founder cannot remove themselves from the team");
+                    "Founder cannot remove themselves " +
+                    "from the team");
         }
 
-        // Remove team member
-        teamMemberRepository.delete(teamMember);
+        // Soft delete                          ← UPDATED
+        teamMember.setIsActive(false);
+        teamMember.setLeftAt(LocalDateTime.now());
+        teamMemberRepository.save(teamMember);
 
-        log.info("TeamMember removed with id: {} by founderId: {}",
+        log.info("TeamMember soft deleted with id: {} " +
+                "by founderId: {}",
                 teamMemberId, founderId);
     }
-    
+
+
+    // IS TEAM MEMBER
+    // Check ACTIVE membership only            ← UPDATED
+
     @Override
-    public boolean isTeamMember(Long startupId, Long userId) {
+    public boolean isTeamMember(
+            Long startupId,
+            Long userId) {
+
+        // Check ACTIVE membership only         ← UPDATED
         return teamMemberRepository
-                .existsByStartupIdAndUserId(startupId, userId);
+                .existsByStartupIdAndUserIdAndIsActiveTrue(
+                        startupId, userId);
+    }
+
+    // PRIVATE HELPER
+    // Verify Founder Owns Startup
+    
+    private void verifyFounderOwnsStartup(Long startupId,Long founderId) {
+
+        var startup = startupServiceClient
+                .getStartupById(startupId);
+
+        if (startup == null) {
+            throw new StartupNotFoundException(
+                    "Startup not found with id: "
+                    + startupId);
+        }
+
+        if (!startup.getFounderId().equals(founderId)) {
+            throw new ForbiddenAccessException(
+                    "You are not authorized to " +
+                    "perform this action on this startup");
+        }
     }
     
     public void verifyFounderOwnsStartup(

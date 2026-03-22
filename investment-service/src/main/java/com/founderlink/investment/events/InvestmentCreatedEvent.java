@@ -13,5 +13,6 @@ public class InvestmentCreatedEvent {
 
     private Long startupId;
     private Long investorId;
+    private Long founderId;
     private BigDecimal amount;
 }

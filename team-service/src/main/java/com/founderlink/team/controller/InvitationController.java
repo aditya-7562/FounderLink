@@ -21,7 +21,9 @@ import com.founderlink.team.service.InvitationService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/teams")
 @RequiredArgsConstructor
@@ -39,8 +41,10 @@ public class InvitationController {
             @RequestHeader("X-User-Role") String userRole,
             @Valid @RequestBody InvitationRequestDto requestDto) {
 
+        log.info("POST /teams/invite - sendInvitation by founderId: {}", founderId);
         // Throw exception instead of returning response
         if (!userRole.equals("ROLE_FOUNDER")) {
+            log.warn("Access denied for sendInvitation - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only FOUNDERS can send invitations");
         }
@@ -65,7 +69,9 @@ public class InvitationController {
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long id) {
 
+        log.info("PUT /teams/invitations/{}/cancel - founderId: {}", id, founderId);
         if (!userRole.equals("ROLE_FOUNDER")) {
+            log.warn("Access denied for cancelInvitation - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only FOUNDERS can cancel invitations");
         }
@@ -89,7 +95,9 @@ public class InvitationController {
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long id) {
 
+        log.info("PUT /teams/invitations/{}/reject - userId: {}", id, userId);
         if (!userRole.equals("ROLE_COFOUNDER")) {
+            log.warn("Access denied for rejectInvitation - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only CO-FOUNDERS can reject invitations");
         }
@@ -113,7 +121,9 @@ public class InvitationController {
             @RequestHeader("X-User-Id") Long userId,
             @RequestHeader("X-User-Role") String userRole) {
 
+        log.info("GET /teams/invitations/user - userId: {}", userId);
         if (!userRole.equals("ROLE_COFOUNDER")) {
+            log.warn("Access denied for getInvitationsByUserId - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only CO-FOUNDERS can view their invitations");
         }
@@ -137,7 +147,9 @@ public class InvitationController {
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long startupId) {
 
+        log.info("GET /teams/invitations/startup/{} - founderId: {}", startupId, founderId);
         if (!userRole.equals("ROLE_FOUNDER")) {
+            log.warn("Access denied for getInvitationsByStartupId - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only FOUNDERS can view startup invitations");
         }

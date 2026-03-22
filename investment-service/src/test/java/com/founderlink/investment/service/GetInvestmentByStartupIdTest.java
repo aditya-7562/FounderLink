@@ -73,9 +73,8 @@ class GetInvestmentByStartupIdTest {
         startupResponseDto.setFounderId(5L);
     }
 
-    // ─────────────────────────────────────────
     // SUCCESS
-    // ─────────────────────────────────────────
+    
     @Test
     void getInvestmentsByStartupId_Success() {
 
@@ -98,9 +97,9 @@ class GetInvestmentByStartupIdTest {
                 .isEqualTo(101L);
     }
 
-    // ─────────────────────────────────────────
+
     // STARTUP NOT FOUND
-    // ─────────────────────────────────────────
+
     @Test
     void getInvestmentsByStartupId_StartupNotFound_ThrowsException() {
 
@@ -117,9 +116,8 @@ class GetInvestmentByStartupIdTest {
                         "Startup not found with id: 101");
     }
 
-    // ─────────────────────────────────────────
     // FOUNDER DOES NOT OWN STARTUP
-    // ─────────────────────────────────────────
+    
     @Test
     void getInvestmentsByStartupId_NotOwner_ThrowsException() {
 
@@ -139,9 +137,8 @@ class GetInvestmentByStartupIdTest {
                         "perform this action on this startup");
     }
 
-    // ─────────────────────────────────────────
     // EMPTY LIST
-    // ─────────────────────────────────────────
+
     @Test
     void getInvestmentsByStartupId_NoInvestments_ReturnsEmptyList() {
 

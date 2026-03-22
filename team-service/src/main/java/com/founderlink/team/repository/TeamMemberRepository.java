@@ -13,30 +13,64 @@ import com.founderlink.team.entity.TeamRole;
 public interface TeamMemberRepository
         extends JpaRepository<TeamMember, Long> {
 
-    // Get all members of a startup
-    // GET /teams/startup/{startupId}
+    // ─────────────────────────────────────────
+    // MANDATORY
+    // Get ACTIVE members of a startup
+    // Updated → isActiveTrue
+    // ─────────────────────────────────────────
+    List<TeamMember> findByStartupIdAndIsActiveTrue(
+            Long startupId);
 
-    List<TeamMember> findByStartupId(Long startupId);
-
-    // Edge case → prevent duplicate membership
-
-    boolean existsByStartupIdAndUserId(
+    // ─────────────────────────────────────────
+    // MANDATORY
+    // Check if user is ACTIVE member
+    // Updated → isActiveTrue
+    // Prevents duplicate membership
+    // ─────────────────────────────────────────
+    boolean existsByStartupIdAndUserIdAndIsActiveTrue(
             Long startupId,
             Long userId);
 
-
-    // Edge case → prevent duplicate roles in team
-    // CTO already exists → block another CTO
-    
-    boolean existsByStartupIdAndRole(
+    // ─────────────────────────────────────────
+    // GOOD TO HAVE
+    // Check if ACTIVE role exists
+    // Updated → isActiveTrue
+    // Prevents duplicate roles
+    // ─────────────────────────────────────────
+    boolean existsByStartupIdAndRoleAndIsActiveTrue(
             Long startupId,
             TeamRole role);
 
-    
-    // Find specific member in startup
+    // ─────────────────────────────────────────
+    // GOOD TO HAVE
+    // Find specific ACTIVE member
+    // Updated → isActiveTrue
     // Used in DELETE operation
-    
-    Optional<TeamMember> findByStartupIdAndUserId(
+    // ─────────────────────────────────────────
+    Optional<TeamMember> findByStartupIdAndUserIdAndIsActiveTrue(
             Long startupId,
             Long userId);
+
+    // ─────────────────────────────────────────
+    // NEW
+    // Get full work history of user
+    // ALL records active + inactive
+    // ─────────────────────────────────────────
+    List<TeamMember> findByUserId(Long userId);
+
+    // ─────────────────────────────────────────
+    // NEW
+    // Get current active roles of user
+    // Only active records
+    // ─────────────────────────────────────────
+    List<TeamMember> findByUserIdAndIsActiveTrue(
+            Long userId);
+
+    // ─────────────────────────────────────────
+    // NEW
+    // Get ALL members of startup
+    // active + inactive
+    // Used for history
+    // ─────────────────────────────────────────
+    List<TeamMember> findByStartupId(Long startupId);
 }

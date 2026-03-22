@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import com.founderlink.investment.dto.response.StartupResponseDto;
 
 @FeignClient(
-    name = "STARTUP-SERVICE",
+    name = "startup-service",
     fallback = StartupServiceClientFallback.class
 )
 public interface StartupServiceClient {
 
-    @GetMapping("/startups/{id}")
+    @GetMapping("/startup/{id}")
     StartupResponseDto getStartupById(@PathVariable Long id);
 }

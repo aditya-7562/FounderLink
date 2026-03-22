@@ -1,5 +1,8 @@
 package com.founderlink.investment.dto.response;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,8 +16,10 @@ public class StartupResponseDto {
     private String name;
     private String description;
     private String industry;
+    private String problemStatement;
     private String solution;
-    private Double fundingGoal;
+    private BigDecimal fundingGoal;
     private String stage;
     private Long founderId;
+    private LocalDateTime createdAt;
 }

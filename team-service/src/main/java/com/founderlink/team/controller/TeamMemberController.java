@@ -21,7 +21,9 @@ import com.founderlink.team.service.TeamMemberService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/teams")
 @RequiredArgsConstructor
@@ -39,7 +41,9 @@ public class TeamMemberController {
             @RequestHeader("X-User-Role") String userRole,
             @Valid @RequestBody JoinTeamRequestDto requestDto) {
 
+        log.info("POST /teams/join - userId: {}, role: {}", userId, userRole);
         if (!userRole.equals("ROLE_COFOUNDER")) {
+            log.warn("Access denied for joinTeam - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only CO-FOUNDERS can join a team");
         }
@@ -64,6 +68,7 @@ public class TeamMemberController {
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long startupId) {
 
+        log.info("GET /teams/startup/{} - userId: {}, role: {}", startupId, userId, userRole);
         // CoFounder membership check
         if (userRole.equals("ROLE_COFUNDER")) {
             boolean isMember = teamMemberService
@@ -102,7 +107,9 @@ public class TeamMemberController {
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long teamMemberId) {
 
+        log.info("DELETE /teams/{} - removeTeamMember by founderId: {}", teamMemberId, founderId);
         if (!userRole.equals("ROLE_FOUNDER")) {
+            log.warn("Access denied for removeTeamMember - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only FOUNDERS can remove team members");
         }
@@ -116,5 +123,61 @@ public class TeamMemberController {
                 .ok(new ApiResponse<>(
                         "Team member removed successfully",
                         null));
+    }
+    
+ // ─────────────────────────────────────────
+    // GET MEMBER WORK HISTORY                 ← NEW
+    // GET /teams/member/history
+    // Called by → CO-FOUNDER
+    // ─────────────────────────────────────────
+    @GetMapping("/member/history")
+    public ResponseEntity<ApiResponse<?>> getMemberHistory(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String userRole) {
+
+        log.info("GET /teams/member/history - userId: {}", userId);
+        if (!userRole.equals("ROLE_COFUNDER") &&
+            !userRole.equals("ROLE_ADMIN")) {
+            log.warn("Access denied for getMemberHistory - role: {}", userRole);
+            throw new ForbiddenAccessException(
+                    "Access denied");
+        }
+
+        List<TeamMemberResponseDto> response =
+                teamMemberService
+                        .getMemberHistory(userId);
+
+        return ResponseEntity
+                .ok(new ApiResponse<>(
+                        "Member history fetched successfully",
+                        response));
+    }
+
+    // ─────────────────────────────────────────
+    // GET ACTIVE MEMBER ROLES                 ← NEW
+    // GET /teams/member/active
+    // Called by → CO-FOUNDER
+    // ─────────────────────────────────────────
+    @GetMapping("/member/active")
+    public ResponseEntity<ApiResponse<?>> getActiveMemberRoles(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String userRole) {
+
+        log.info("GET /teams/member/active - userId: {}", userId);
+        if (!userRole.equals("ROLE_COFUNDER") &&
+            !userRole.equals("ROLE_ADMIN")) {
+            log.warn("Access denied for getActiveMemberRoles - role: {}", userRole);
+            throw new ForbiddenAccessException(
+                    "Access denied");
+        }
+
+        List<TeamMemberResponseDto> response =
+                teamMemberService
+                        .getActiveMemberRoles(userId);
+
+        return ResponseEntity
+                .ok(new ApiResponse<>(
+                        "Active roles fetched successfully",
+                        response));
     }
 }

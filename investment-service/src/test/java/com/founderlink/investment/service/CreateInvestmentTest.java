@@ -45,7 +45,7 @@ class CreateInvestmentTest {
     private InvestmentEventPublisher eventPublisher;
 
     @Mock
-    private StartupServiceClient startupServiceClient; 
+    private StartupServiceClient startupServiceClient;
 
     @InjectMocks
     private InvestmentServiceImpl investmentService;
@@ -61,45 +61,53 @@ class CreateInvestmentTest {
         investment.setId(1L);
         investment.setStartupId(101L);
         investment.setInvestorId(202L);
-        investment.setAmount(new BigDecimal("1000000.00"));
+        investment.setAmount(
+                new BigDecimal("1000000.00"));
         investment.setStatus(InvestmentStatus.PENDING);
         investment.setCreatedAt(LocalDateTime.now());
 
         requestDto = new InvestmentRequestDto();
         requestDto.setStartupId(101L);
-        requestDto.setAmount(new BigDecimal("1000000.00"));
+        requestDto.setAmount(
+                new BigDecimal("1000000.00"));
 
         responseDto = new InvestmentResponseDto();
         responseDto.setId(1L);
         responseDto.setStartupId(101L);
         responseDto.setInvestorId(202L);
-        responseDto.setAmount(new BigDecimal("1000000.00"));
+        responseDto.setAmount(
+                new BigDecimal("1000000.00"));
         responseDto.setStatus(InvestmentStatus.PENDING);
         responseDto.setCreatedAt(LocalDateTime.now());
 
-        // Startup exists
         startupResponseDto = new StartupResponseDto();
         startupResponseDto.setId(101L);
         startupResponseDto.setFounderId(5L);
     }
-    
+
+
     // SUCCESS
-    
+
     @Test
     void createInvestment_Success() {
 
         // Arrange
-        when(startupServiceClient.getStartupById(101L))
+        when(startupServiceClient
+                .getStartupById(101L))
                 .thenReturn(startupResponseDto);
         when(investmentRepository
                 .existsByStartupIdAndInvestorIdAndStatus(
-                        101L, 202L, InvestmentStatus.PENDING))
+                        101L, 202L,
+                        InvestmentStatus.PENDING))
                 .thenReturn(false);
-        when(investmentMapper.toEntity(requestDto, 202L))
+        when(investmentMapper
+                .toEntity(requestDto, 202L))
                 .thenReturn(investment);
-        when(investmentRepository.save(any(Investment.class)))
+        when(investmentRepository
+                .save(any(Investment.class)))
                 .thenReturn(investment);
-        when(investmentMapper.toResponseDto(investment))
+        when(investmentMapper
+                .toResponseDto(investment))
                 .thenReturn(responseDto);
 
         // Act
@@ -108,13 +116,18 @@ class CreateInvestmentTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getStartupId()).isEqualTo(101L);
-        assertThat(result.getInvestorId()).isEqualTo(202L);
+        assertThat(result.getStartupId())
+                .isEqualTo(101L);
+        assertThat(result.getInvestorId())
+                .isEqualTo(202L);
         assertThat(result.getAmount())
                 .isEqualByComparingTo("1000000.00");
         assertThat(result.getStatus())
                 .isEqualTo(InvestmentStatus.PENDING);
 
+        // Verify
+        verify(startupServiceClient, times(1))
+                .getStartupById(101L);
         verify(investmentRepository, times(1))
                 .save(any(Investment.class));
         verify(eventPublisher, times(1))
@@ -122,20 +135,23 @@ class CreateInvestmentTest {
                         any(InvestmentCreatedEvent.class));
     }
 
-    // ─────────────────────────────────────────
     // STARTUP NOT FOUND
-    // ─────────────────────────────────────────
+
     @Test
     void createInvestment_StartupNotFound_ThrowsException() {
 
         // Arrange
-        when(startupServiceClient.getStartupById(101L))
-                .thenReturn(null);                        // ← NEW
+        when(startupServiceClient
+                .getStartupById(101L))
+                .thenReturn(null);
 
         // Act & Assert
         assertThatThrownBy(() ->
-                investmentService.createInvestment(202L, requestDto))
-                .isInstanceOf(StartupNotFoundException.class)
+                investmentService
+                        .createInvestment(
+                                202L, requestDto))
+                .isInstanceOf(
+                        StartupNotFoundException.class)
                 .hasMessage(
                         "Startup not found with id: 101");
 
@@ -145,26 +161,32 @@ class CreateInvestmentTest {
                 .publishInvestmentCreatedEvent(any());
     }
 
-    // ─────────────────────────────────────────
+
     // DUPLICATE INVESTMENT
-    // ─────────────────────────────────────────
+
     @Test
     void createInvestment_DuplicateInvestment_ThrowsException() {
 
         // Arrange
-        when(startupServiceClient.getStartupById(101L))
+        when(startupServiceClient
+                .getStartupById(101L))
                 .thenReturn(startupResponseDto);
         when(investmentRepository
                 .existsByStartupIdAndInvestorIdAndStatus(
-                        101L, 202L, InvestmentStatus.PENDING))
+                        101L, 202L,
+                        InvestmentStatus.PENDING))
                 .thenReturn(true);
 
         // Act & Assert
         assertThatThrownBy(() ->
-                investmentService.createInvestment(202L, requestDto))
-                .isInstanceOf(DuplicateInvestmentException.class)
+                investmentService
+                        .createInvestment(
+                                202L, requestDto))
+                .isInstanceOf(
+                        DuplicateInvestmentException.class)
                 .hasMessage(
-                        "You have already invested in this startup");
+                        "You have already invested " +
+                        "in this startup");
 
         verify(investmentRepository, never())
                 .save(any(Investment.class));
@@ -172,29 +194,35 @@ class CreateInvestmentTest {
                 .publishInvestmentCreatedEvent(any());
     }
 
-    // ─────────────────────────────────────────
-    // REJECTED INVESTMENT ALLOWS NEW
-    // ─────────────────────────────────────────
+    // REJECTED ALLOWS NEW INVESTMENT
+
     @Test
-    void createInvestment_RejectedInvestment_AllowsNewInvestment() {
+    void createInvestment_AfterRejection_AllowsNew() {
 
         // Arrange
-        when(startupServiceClient.getStartupById(101L))
+        when(startupServiceClient
+                .getStartupById(101L))
                 .thenReturn(startupResponseDto);
         when(investmentRepository
                 .existsByStartupIdAndInvestorIdAndStatus(
-                        101L, 202L, InvestmentStatus.PENDING))
+                        101L, 202L,
+                        InvestmentStatus.PENDING))
                 .thenReturn(false);
-        when(investmentMapper.toEntity(requestDto, 202L))
+        when(investmentMapper
+                .toEntity(requestDto, 202L))
                 .thenReturn(investment);
-        when(investmentRepository.save(any(Investment.class)))
+        when(investmentRepository
+                .save(any(Investment.class)))
                 .thenReturn(investment);
-        when(investmentMapper.toResponseDto(investment))
+        when(investmentMapper
+                .toResponseDto(investment))
                 .thenReturn(responseDto);
 
         // Act
-        InvestmentResponseDto result = investmentService
-                .createInvestment(202L, requestDto);
+        InvestmentResponseDto result =
+                investmentService
+                        .createInvestment(
+                                202L, requestDto);
 
         // Assert
         assertThat(result).isNotNull();

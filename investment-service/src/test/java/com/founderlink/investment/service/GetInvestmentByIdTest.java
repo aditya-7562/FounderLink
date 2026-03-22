@@ -64,10 +64,8 @@ class GetInvestmentByIdTest {
         responseDto.setStatus(InvestmentStatus.PENDING);
         responseDto.setCreatedAt(LocalDateTime.now());
     }
-
-    // ─────────────────────────────────────────
+    
     // SUCCESS
-    // ─────────────────────────────────────────
     @Test
     void getInvestmentById_Success() {
 
@@ -92,9 +90,8 @@ class GetInvestmentByIdTest {
                 .isEqualTo(InvestmentStatus.PENDING);
     }
 
-    // ─────────────────────────────────────────
     // NOT FOUND
-    // ─────────────────────────────────────────
+
     @Test
     void getInvestmentById_NotFound_ThrowsException() {
 

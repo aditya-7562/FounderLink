@@ -25,7 +25,9 @@ import com.founderlink.investment.service.InvestmentService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -39,6 +41,15 @@ public class InvestmentServiceImpl implements InvestmentService {
     @Override
     public InvestmentResponseDto createInvestment(Long investorId,
                                                    InvestmentRequestDto requestDto) {
+
+        log.info("Creating investment - investorId: {}, startupId: {}", investorId, requestDto.getStartupId());
+        StartupResponseDto startup = startupServiceClient
+                .getStartupById(requestDto.getStartupId());
+
+        if (startup == null) {
+            throw new StartupNotFoundException(
+                    "Startup not found with id: " + requestDto.getStartupId());
+        }
     	
     	verifyStartupExists(requestDto.getStartupId());
 
@@ -61,6 +72,7 @@ public class InvestmentServiceImpl implements InvestmentService {
         InvestmentCreatedEvent event = new InvestmentCreatedEvent(
                 savedInvestment.getStartupId(),
                 savedInvestment.getInvestorId(),
+                startup.getFounderId(),
                 savedInvestment.getAmount()
         );
         eventPublisher.publishInvestmentCreatedEvent(event);
@@ -72,6 +84,7 @@ public class InvestmentServiceImpl implements InvestmentService {
     @Override
     public List<InvestmentResponseDto> getInvestmentsByStartupId(Long startupId,Long founderId) {
     	
+    	log.info("Fetching investments for startupId: {}, founderId: {}", startupId, founderId);
     	verifyFounderOwnsStartup(
                 startupId, founderId); 
 
@@ -86,6 +99,7 @@ public class InvestmentServiceImpl implements InvestmentService {
     @Override
     public List<InvestmentResponseDto> getInvestmentsByInvestorId(Long investorId) {
 
+        log.info("Fetching investments for investorId: {}", investorId);
         List<Investment> investments = investmentRepository
                 .findByInvestorId(investorId);
 
@@ -96,28 +110,47 @@ public class InvestmentServiceImpl implements InvestmentService {
 
 
     @Override
-    public InvestmentResponseDto updateInvestmentStatus(Long investmentId,Long founderId,
-                                                         InvestmentStatusUpdateDto statusUpdateDto) {
+    public InvestmentResponseDto updateInvestmentStatus(
+            Long investmentId,
+            Long founderId,
+            InvestmentStatusUpdateDto statusUpdateDto) {
 
-        Investment investment = investmentRepository.findById(investmentId)
-                .orElseThrow(() -> new InvestmentNotFoundException(
-                        "Investment not found with id: " + investmentId));
-        
-        verifyFounderOwnsStartup(investment.getStartupId(),founderId);
+        log.info("Updating investment status - investmentId: {}, founderId: {}, newStatus: {}", investmentId, founderId, statusUpdateDto.getStatus());
+        Investment investment = investmentRepository
+                .findById(investmentId)
+                .orElseThrow(() ->
+                        new InvestmentNotFoundException(
+                                "Investment not found with id: "
+                                + investmentId));
 
-        validateStatusTransition(investment.getStatus(),
-                statusUpdateDto.getStatus());
+        // Verify founder owns startup
+        verifyFounderOwnsStartup(
+                investment.getStartupId(),
+                founderId);
 
-        investment.setStatus(statusUpdateDto.getStatus());
+        // Convert ManualInvestmentStatus
+        // to InvestmentStatus
+        InvestmentStatus newStatus =
+                InvestmentStatus.valueOf(
+                        statusUpdateDto.getStatus().name());
 
-        Investment updatedInvestment = investmentRepository.save(investment);
+        validateStatusTransition(
+                investment.getStatus(),
+                newStatus);
 
-        return investmentMapper.toResponseDto(updatedInvestment);
+        investment.setStatus(newStatus);
+
+        Investment updatedInvestment =
+                investmentRepository.save(investment);
+
+        return investmentMapper
+                .toResponseDto(updatedInvestment);
     }
 
     @Override
     public InvestmentResponseDto getInvestmentById(Long investmentId) {
 
+        log.info("Fetching investment by id: {}", investmentId);
         Investment investment = investmentRepository.findById(investmentId)
                 .orElseThrow(() -> new InvestmentNotFoundException(
                         "Investment not found with id: " + investmentId));
@@ -125,25 +158,71 @@ public class InvestmentServiceImpl implements InvestmentService {
         return investmentMapper.toResponseDto(investment);
     }
     
-    private void validateStatusTransition(InvestmentStatus currentStatus,
+    private void validateStatusTransition(
+            InvestmentStatus currentStatus,
             InvestmentStatus newStatus) {
 
-		if (currentStatus == InvestmentStatus.COMPLETED) {
-			throw new InvalidStatusTransitionException(
-			"Cannot update a COMPLETED investment");
-		}
-		
-		if (currentStatus == InvestmentStatus.REJECTED) {
-			throw new InvalidStatusTransitionException(
-			"Cannot update a REJECTED investment");
-		}
-		
-		if (newStatus == InvestmentStatus.COMPLETED
-		&& currentStatus != InvestmentStatus.APPROVED) {
-			throw new InvalidStatusTransitionException(
-			"Investment must be APPROVED before marking COMPLETED");
-		}
-		
+        // Cannot update COMPLETED
+        if (currentStatus == InvestmentStatus.COMPLETED) {
+            throw new InvalidStatusTransitionException(
+                    "Cannot update a COMPLETED investment");
+        }
+
+        // Cannot update REJECTED
+        if (currentStatus == InvestmentStatus.REJECTED) {
+            throw new InvalidStatusTransitionException(
+                    "Cannot update a REJECTED investment");
+        }
+
+        // Cannot update STARTUP_CLOSED          ← ADD
+        if (currentStatus ==
+                InvestmentStatus.STARTUP_CLOSED) {
+            throw new InvalidStatusTransitionException(
+                    "Cannot update investment of " +
+                    "a closed startup");
+        }
+
+        // COMPLETED only after APPROVED
+        if (newStatus == InvestmentStatus.COMPLETED
+                && currentStatus !=
+                InvestmentStatus.APPROVED) {
+            throw new InvalidStatusTransitionException(
+                    "Investment must be APPROVED " +
+                    "before marking COMPLETED");
+        }
+    }
+    
+    public void verifyFounderOwnsStartup(
+            Long startupId,
+            Long founderId) {
+
+        // Call Startup Service
+        StartupResponseDto startup = startupServiceClient
+                .getStartupById(startupId);
+
+        // Startup not found
+        if (startup == null) {
+            throw new StartupNotFoundException(
+                    "Startup not found with id: " + startupId);
+        }
+
+        // Founder does not own startup
+        if (!startup.getFounderId().equals(founderId)) {
+            throw new ForbiddenAccessException(
+                    "You are not authorized to " +
+                    "perform this action on this startup");
+        }
+    }
+    
+    public void verifyStartupExists(Long startupId) {
+
+        StartupResponseDto startup = startupServiceClient
+                .getStartupById(startupId);
+
+        if (startup == null) {
+            throw new StartupNotFoundException(
+                    "Startup not found with id: " + startupId);
+        }
     }
     
     public void verifyFounderOwnsStartup(

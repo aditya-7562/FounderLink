@@ -17,5 +17,8 @@ public class TeamMemberResponseDto {
     private Long startupId;
     private Long userId;
     private TeamRole role;
+    private Boolean isActive;
     private LocalDateTime joinedAt;
+    private LocalDateTime leftAt;
+    
 }

@@ -22,6 +22,7 @@ import com.founderlink.investment.dto.response.InvestmentResponseDto;
 import com.founderlink.investment.dto.response.StartupResponseDto;
 import com.founderlink.investment.entity.Investment;
 import com.founderlink.investment.entity.InvestmentStatus;
+import com.founderlink.investment.entity.ManualInvestmentStatus;
 import com.founderlink.investment.events.InvestmentEventPublisher;
 import com.founderlink.investment.exception.ForbiddenAccessException;
 import com.founderlink.investment.exception.InvalidStatusTransitionException;
@@ -58,17 +59,17 @@ class UpdateInvestmentStatusTest {
         investment.setId(1L);
         investment.setStartupId(101L);
         investment.setInvestorId(202L);
-        investment.setAmount(new BigDecimal("1000000.00"));
+        investment.setAmount(
+                new BigDecimal("1000000.00"));
         investment.setStatus(InvestmentStatus.PENDING);
         investment.setCreatedAt(LocalDateTime.now());
 
-        // Founder owns startup
         startupResponseDto = new StartupResponseDto();
         startupResponseDto.setId(101L);
         startupResponseDto.setFounderId(5L);
     }
 
-    // PENDING TO APPROVED SUCCESS
+    // PENDING TO APPROVED
 
     @Test
     void updateStatus_PendingToApproved_Success() {
@@ -76,38 +77,46 @@ class UpdateInvestmentStatusTest {
         // Arrange
         InvestmentStatusUpdateDto statusUpdateDto =
                 new InvestmentStatusUpdateDto(
-                        InvestmentStatus.APPROVED);
+                        ManualInvestmentStatus.APPROVED);
 
-        Investment approvedInvestment = new Investment();
+        Investment approvedInvestment =
+                new Investment();
         approvedInvestment.setId(1L);
         approvedInvestment.setStartupId(101L);
-        approvedInvestment.setStatus(InvestmentStatus.APPROVED);
+        approvedInvestment.setStatus(
+                InvestmentStatus.APPROVED);
 
         InvestmentResponseDto approvedResponse =
                 new InvestmentResponseDto();
         approvedResponse.setId(1L);
-        approvedResponse.setStatus(InvestmentStatus.APPROVED);
+        approvedResponse.setStatus(
+                InvestmentStatus.APPROVED);
 
         when(investmentRepository.findById(1L))
                 .thenReturn(Optional.of(investment));
-        when(startupServiceClient.getStartupById(101L))
+        when(startupServiceClient
+                .getStartupById(101L))
                 .thenReturn(startupResponseDto);
-        when(investmentRepository.save(any(Investment.class)))
+        when(investmentRepository
+                .save(any(Investment.class)))
                 .thenReturn(approvedInvestment);
-        when(investmentMapper.toResponseDto(approvedInvestment))
+        when(investmentMapper
+                .toResponseDto(approvedInvestment))
                 .thenReturn(approvedResponse);
 
         // Act
-        InvestmentResponseDto result = investmentService
-                .updateInvestmentStatus(1L, 5L, statusUpdateDto);
+        InvestmentResponseDto result =
+                investmentService
+                        .updateInvestmentStatus(
+                                1L, 5L,
+                                statusUpdateDto);
 
         // Assert
         assertThat(result.getStatus())
                 .isEqualTo(InvestmentStatus.APPROVED);
     }
 
-
-    // FOUNDER DOES NOT OWN STARTUP
+    // PENDING TO REJECTED
 
     @Test
     void updateStatus_NotOwner_ThrowsException() {
@@ -115,26 +124,46 @@ class UpdateInvestmentStatusTest {
         // Arrange
         InvestmentStatusUpdateDto statusUpdateDto =
                 new InvestmentStatusUpdateDto(
-                        InvestmentStatus.APPROVED);
+                        ManualInvestmentStatus.REJECTED);
+
+        Investment rejectedInvestment =
+                new Investment();
+        rejectedInvestment.setId(1L);
+        rejectedInvestment.setStatus(
+                InvestmentStatus.REJECTED);
+
+        InvestmentResponseDto rejectedResponse =
+                new InvestmentResponseDto();
+        rejectedResponse.setId(1L);
+        rejectedResponse.setStatus(
+                InvestmentStatus.REJECTED);
 
         when(investmentRepository.findById(1L))
                 .thenReturn(Optional.of(investment));
-        when(startupServiceClient.getStartupById(101L))
+        when(startupServiceClient
+                .getStartupById(101L))
                 .thenReturn(startupResponseDto);
-        // founderId 99 does not match startup founderId 5
+        when(investmentRepository
+                .save(any(Investment.class)))
+                .thenReturn(rejectedInvestment);
+        when(investmentMapper
+                .toResponseDto(rejectedInvestment))
+                .thenReturn(rejectedResponse);
 
-        // Act & Assert
-        assertThatThrownBy(() ->
+        // Act
+        InvestmentResponseDto result =
                 investmentService
                         .updateInvestmentStatus(
-                                1L, 99L, statusUpdateDto))
-                .isInstanceOf(ForbiddenAccessException.class)
-                .hasMessage(
-                        "You are not authorized to " +
-                        "perform this action on this startup");
+                                1L, 5L,
+                                statusUpdateDto);
+
+        // Assert
+        assertThat(result.getStatus())
+                .isEqualTo(InvestmentStatus.REJECTED);
     }
 
-    // STARTUP NOT FOUND
+
+    // APPROVED TO COMPLETED
 
     @Test
     void updateStatus_StartupNotFound_ThrowsException() {
@@ -142,12 +171,38 @@ class UpdateInvestmentStatusTest {
         // Arrange
         InvestmentStatusUpdateDto statusUpdateDto =
                 new InvestmentStatusUpdateDto(
-                        InvestmentStatus.APPROVED);
+                        ManualInvestmentStatus.COMPLETED);
+
+        Investment completedInvestment =
+                new Investment();
+        completedInvestment.setId(1L);
+        completedInvestment.setStatus(
+                InvestmentStatus.COMPLETED);
+
+        InvestmentResponseDto completedResponse =
+                new InvestmentResponseDto();
+        completedResponse.setId(1L);
+        completedResponse.setStatus(
+                InvestmentStatus.COMPLETED);
 
         when(investmentRepository.findById(1L))
                 .thenReturn(Optional.of(investment));
-        when(startupServiceClient.getStartupById(101L))
-                .thenReturn(null);
+        when(startupServiceClient
+                .getStartupById(101L))
+                .thenReturn(startupResponseDto);
+        when(investmentRepository
+                .save(any(Investment.class)))
+                .thenReturn(completedInvestment);
+        when(investmentMapper
+                .toResponseDto(completedInvestment))
+                .thenReturn(completedResponse);
+
+        // Act
+        InvestmentResponseDto result =
+                investmentService
+                        .updateInvestmentStatus(
+                                1L, 5L,
+                                statusUpdateDto);
 
         // Act & Assert
         assertThatThrownBy(() ->
@@ -159,16 +214,76 @@ class UpdateInvestmentStatusTest {
                         "Startup not found with id: 101");
     }
 
+    // NOT OWNER
+
+    @Test
+    void updateStatus_NotOwner_ThrowsException() {
+
+        // Arrange
+        InvestmentStatusUpdateDto statusUpdateDto =
+                new InvestmentStatusUpdateDto(
+                        ManualInvestmentStatus.APPROVED);
+
+        when(investmentRepository.findById(1L))
+                .thenReturn(Optional.of(investment));
+        when(startupServiceClient
+                .getStartupById(101L))
+                .thenReturn(startupResponseDto);
+        // founderId 99 does not match
+        // startup founderId 5
+
+        // Act & Assert
+        assertThatThrownBy(() ->
+                investmentService
+                        .updateInvestmentStatus(
+                                1L, 99L,
+                                statusUpdateDto))
+                .isInstanceOf(
+                        ForbiddenAccessException.class)
+                .hasMessage(
+                        "You are not authorized to " +
+                        "perform this action on this startup");
+    }
+
+
+    // STARTUP NOT FOUND
+
+    @Test
+    void updateStatus_StartupNotFound_ThrowsException() {
+
+        // Arrange
+        InvestmentStatusUpdateDto statusUpdateDto =
+                new InvestmentStatusUpdateDto(
+                        ManualInvestmentStatus.APPROVED);
+
+        when(investmentRepository.findById(1L))
+                .thenReturn(Optional.of(investment));
+        when(startupServiceClient
+                .getStartupById(101L))
+                .thenReturn(null);
+
+        // Act & Assert
+        assertThatThrownBy(() ->
+                investmentService
+                        .updateInvestmentStatus(
+                                1L, 5L,
+                                statusUpdateDto))
+                .isInstanceOf(
+                        StartupNotFoundException.class)
+                .hasMessage(
+                        "Startup not found with id: 101");
+    }
+
 
     // INVESTMENT NOT FOUND
-    
+
     @Test
     void updateStatus_InvestmentNotFound_ThrowsException() {
 
         // Arrange
         InvestmentStatusUpdateDto statusUpdateDto =
                 new InvestmentStatusUpdateDto(
-                        InvestmentStatus.APPROVED);
+                        ManualInvestmentStatus.APPROVED);
 
         when(investmentRepository.findById(999L))
                 .thenReturn(Optional.empty());
@@ -177,15 +292,45 @@ class UpdateInvestmentStatusTest {
         assertThatThrownBy(() ->
                 investmentService
                         .updateInvestmentStatus(
-                                999L, 5L, statusUpdateDto))
-                .isInstanceOf(InvestmentNotFoundException.class)
+                                999L, 5L,
+                                statusUpdateDto))
+                .isInstanceOf(
+                        InvestmentNotFoundException.class)
                 .hasMessage(
                         "Investment not found with id: 999");
     }
-
-
+    
     // COMPLETED INVESTMENT
 
+    @Test
+    void updateStatus_InvestmentNotFound_ThrowsException() {
+
+        // Arrange
+        InvestmentStatusUpdateDto statusUpdateDto =
+                new InvestmentStatusUpdateDto(
+                        ManualInvestmentStatus.APPROVED);
+
+        when(investmentRepository.findById(1L))
+                .thenReturn(Optional.of(investment));
+        when(startupServiceClient
+                .getStartupById(101L))
+                .thenReturn(startupResponseDto);
+
+        // Act & Assert
+        assertThatThrownBy(() ->
+                investmentService
+                        .updateInvestmentStatus(
+                                1L, 5L,
+                                statusUpdateDto))
+                .isInstanceOf(
+                        InvalidStatusTransitionException.class)
+                .hasMessage(
+                        "Cannot update a COMPLETED investment");
+    }
+
+
+    // REJECTED INVESTMENT
+    
     @Test
     void updateStatus_CompletedInvestment_ThrowsException() {
 
@@ -193,51 +338,60 @@ class UpdateInvestmentStatusTest {
         investment.setStatus(InvestmentStatus.COMPLETED);
         InvestmentStatusUpdateDto statusUpdateDto =
                 new InvestmentStatusUpdateDto(
-                        InvestmentStatus.APPROVED);
+                        ManualInvestmentStatus.APPROVED);
 
         when(investmentRepository.findById(1L))
                 .thenReturn(Optional.of(investment));
-        when(startupServiceClient.getStartupById(101L))
+        when(startupServiceClient
+                .getStartupById(101L))
                 .thenReturn(startupResponseDto);
 
         // Act & Assert
         assertThatThrownBy(() ->
                 investmentService
                         .updateInvestmentStatus(
-                                1L, 5L, statusUpdateDto))
-                .isInstanceOf(InvalidStatusTransitionException.class)
-                .hasMessage(
-                        "Cannot update a COMPLETED investment");
-    }
-
-
-    // REJECTED INVESTMENT
-
-    @Test
-    void updateStatus_RejectedInvestment_ThrowsException() {
-
-        // Arrange
-        investment.setStatus(InvestmentStatus.REJECTED);
-        InvestmentStatusUpdateDto statusUpdateDto =
-                new InvestmentStatusUpdateDto(
-                        InvestmentStatus.APPROVED);
-
-        when(investmentRepository.findById(1L))
-                .thenReturn(Optional.of(investment));
-        when(startupServiceClient.getStartupById(101L))
-                .thenReturn(startupResponseDto);
-
-        // Act & Assert
-        assertThatThrownBy(() ->
-                investmentService
-                        .updateInvestmentStatus(
-                                1L, 5L, statusUpdateDto))
-                .isInstanceOf(InvalidStatusTransitionException.class)
+                                1L, 5L,
+                                statusUpdateDto))
+                .isInstanceOf(
+                        InvalidStatusTransitionException.class)
                 .hasMessage(
                         "Cannot update a REJECTED investment");
     }
 
-    // PENDING TO COMPLETED
+ 
+    // STARTUP CLOSED INVESTMENT
+
+    @Test
+    void updateStatus_StartupClosedInvestment_ThrowsException() {
+
+        // Arrange
+        investment.setStatus(
+                InvestmentStatus.STARTUP_CLOSED);
+        InvestmentStatusUpdateDto statusUpdateDto =
+                new InvestmentStatusUpdateDto(
+                        ManualInvestmentStatus.APPROVED);
+
+        when(investmentRepository.findById(1L))
+                .thenReturn(Optional.of(investment));
+        when(startupServiceClient
+                .getStartupById(101L))
+                .thenReturn(startupResponseDto);
+
+        // Act & Assert
+        assertThatThrownBy(() ->
+                investmentService
+                        .updateInvestmentStatus(
+                                1L, 5L,
+                                statusUpdateDto))
+                .isInstanceOf(
+                        InvalidStatusTransitionException.class)
+                .hasMessage(
+                        "Cannot update investment of " +
+                        "a closed startup");
+    }
+
+
+    // PENDING TO COMPLETED DIRECTLY
 
     @Test
     void updateStatus_PendingToCompleted_ThrowsException() {
@@ -246,19 +400,22 @@ class UpdateInvestmentStatusTest {
         investment.setStatus(InvestmentStatus.PENDING);
         InvestmentStatusUpdateDto statusUpdateDto =
                 new InvestmentStatusUpdateDto(
-                        InvestmentStatus.COMPLETED);
+                        ManualInvestmentStatus.COMPLETED);
 
         when(investmentRepository.findById(1L))
                 .thenReturn(Optional.of(investment));
-        when(startupServiceClient.getStartupById(101L))
+        when(startupServiceClient
+                .getStartupById(101L))
                 .thenReturn(startupResponseDto);
 
         // Act & Assert
         assertThatThrownBy(() ->
                 investmentService
                         .updateInvestmentStatus(
-                                1L, 5L, statusUpdateDto))
-                .isInstanceOf(InvalidStatusTransitionException.class)
+                                1L, 5L,
+                                statusUpdateDto))
+                .isInstanceOf(
+                        InvalidStatusTransitionException.class)
                 .hasMessage(
                         "Investment must be APPROVED " +
                         "before marking COMPLETED");

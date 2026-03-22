@@ -111,22 +111,25 @@ public class GlobalExceptionHandler {
 	 // Invalid Enum Value → 400
 	 // handles invalid InvestmentStatus value
 	 // ─────────────────────────────────────────
-	 @ExceptionHandler(HttpMessageNotReadableException.class)
-	 public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
-	         HttpMessageNotReadableException ex) {
-	
-	     log.error("Invalid request body: {}", ex.getMessage());
-	
-	     ErrorResponse error = new ErrorResponse(
-	             HttpStatus.BAD_REQUEST.value(),
-	             "Invalid value provided. Accepted status values are: PENDING, APPROVED, REJECTED, COMPLETED",
-	             LocalDateTime.now()
-	     );
-	
-	     return ResponseEntity
-	             .status(HttpStatus.BAD_REQUEST)
-	             .body(error);
-	 }
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException ex) {
+
+        log.error("Invalid request body: {}",
+                ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid value provided. " +
+                "Accepted status values are: " +
+                "APPROVED, REJECTED, COMPLETED",
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(error);
+    }
 
     // Any Other Exception → 500
     

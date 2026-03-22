@@ -1,5 +1,6 @@
 package com.founderlink.team.service.team;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -43,7 +44,7 @@ class RemoveTeamMemberTest {
     private TeamMemberMapper teamMemberMapper;
 
     @Mock
-    private StartupServiceClient startupServiceClient; 
+    private StartupServiceClient startupServiceClient;
 
     @InjectMocks
     private TeamMemberServiceImpl teamMemberService;
@@ -58,16 +59,18 @@ class RemoveTeamMemberTest {
         teamMember.setStartupId(101L);
         teamMember.setUserId(202L);
         teamMember.setRole(TeamRole.CTO);
+        teamMember.setIsActive(true);
+        teamMember.setLeftAt(null);
         teamMember.setJoinedAt(LocalDateTime.now());
 
-        // Founder owns startup
         startupResponseDto = new StartupResponseDto();
         startupResponseDto.setId(101L);
         startupResponseDto.setFounderId(5L);
     }
 
-    // SUCCESS
-
+    // ─────────────────────────────────────────
+    // SUCCESS — SOFT DELETE
+    // ─────────────────────────────────────────
     @Test
     void removeTeamMember_Success() {
 
@@ -80,9 +83,17 @@ class RemoveTeamMemberTest {
         // Act
         teamMemberService.removeTeamMember(1L, 5L);
 
-        // Verify delete called
+        // Assert soft delete
+        assertThat(teamMember.getIsActive())
+                .isFalse();
+        assertThat(teamMember.getLeftAt())
+                .isNotNull();
+
+        // Verify save not delete
         verify(teamMemberRepository, times(1))
-                .delete(teamMember);
+                .save(teamMember);
+        verify(teamMemberRepository, never())
+                .delete(any(TeamMember.class));
     }
 
     // MEMBER NOT FOUND
@@ -96,17 +107,20 @@ class RemoveTeamMemberTest {
 
         // Act & Assert
         assertThatThrownBy(() ->
-                teamMemberService.removeTeamMember(999L, 5L))
-                .isInstanceOf(TeamMemberNotFoundException.class)
+                teamMemberService
+                        .removeTeamMember(999L, 5L))
+                .isInstanceOf(
+                        TeamMemberNotFoundException.class)
                 .hasMessage(
                         "Team member not found with id: 999");
 
         verify(teamMemberRepository, never())
-                .delete(any(TeamMember.class));
+                .save(any(TeamMember.class));
     }
 
+    // ─────────────────────────────────────────
     // STARTUP NOT FOUND
-
+    // ─────────────────────────────────────────
     @Test
     void removeTeamMember_StartupNotFound_ThrowsException() {
 
@@ -118,18 +132,20 @@ class RemoveTeamMemberTest {
 
         // Act & Assert
         assertThatThrownBy(() ->
-                teamMemberService.removeTeamMember(1L, 5L))
-                .isInstanceOf(StartupNotFoundException.class)
+                teamMemberService
+                        .removeTeamMember(1L, 5L))
+                .isInstanceOf(
+                        StartupNotFoundException.class)
                 .hasMessage(
                         "Startup not found with id: 101");
 
         verify(teamMemberRepository, never())
-                .delete(any(TeamMember.class));
+                .save(any(TeamMember.class));
     }
 
-
-    // FOUNDER DOES NOT OWN STARTUP
-
+    // ─────────────────────────────────────────
+    // NOT OWNER
+    // ─────────────────────────────────────────
     @Test
     void removeTeamMember_NotOwner_ThrowsException() {
 
@@ -138,22 +154,24 @@ class RemoveTeamMemberTest {
                 .thenReturn(Optional.of(teamMember));
         when(startupServiceClient.getStartupById(101L))
                 .thenReturn(startupResponseDto);
-        // founderId 99 does not match startup founderId 5
 
         // Act & Assert
         assertThatThrownBy(() ->
-                teamMemberService.removeTeamMember(1L, 99L))
-                .isInstanceOf(ForbiddenAccessException.class)
+                teamMemberService
+                        .removeTeamMember(1L, 99L))
+                .isInstanceOf(
+                        ForbiddenAccessException.class)
                 .hasMessage(
                         "You are not authorized to " +
                         "perform this action on this startup");
 
         verify(teamMemberRepository, never())
-                .delete(any(TeamMember.class));
+                .save(any(TeamMember.class));
     }
 
+    // ─────────────────────────────────────────
     // FOUNDER REMOVING THEMSELVES
-
+    // ─────────────────────────────────────────
     @Test
     void removeTeamMember_FounderRemovingThemselves_ThrowsException() {
 
@@ -166,13 +184,15 @@ class RemoveTeamMemberTest {
 
         // Act & Assert
         assertThatThrownBy(() ->
-                teamMemberService.removeTeamMember(1L, 5L))
-                .isInstanceOf(UnauthorizedAccessException.class)
+                teamMemberService
+                        .removeTeamMember(1L, 5L))
+                .isInstanceOf(
+                        UnauthorizedAccessException.class)
                 .hasMessage(
                         "Founder cannot remove themselves " +
                         "from the team");
 
         verify(teamMemberRepository, never())
-                .delete(any(TeamMember.class));
+                .save(any(TeamMember.class));
     }
 }

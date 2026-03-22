@@ -1,25 +1,49 @@
 package com.founderlink.team.service;
 
-import java.util.List;
-
 import com.founderlink.team.dto.request.JoinTeamRequestDto;
 import com.founderlink.team.dto.response.TeamMemberResponseDto;
 
+import java.util.List;
+
 public interface TeamMemberService {
 
-    // Co-founder joins team
+    // JOIN TEAM
+   
     TeamMemberResponseDto joinTeam(
             Long userId,
             JoinTeamRequestDto requestDto);
-
-    // Get all members of a startup
+    
+    // GET TEAM BY STARTUP ID
+    
     List<TeamMemberResponseDto> getTeamByStartupId(
-            Long startupId,Long userId,String userRole);
+            Long startupId,
+            Long founderId,
+            String userRole);
 
-    // Founder removes a team member
+    // REMOVE TEAM MEMBER
+    // No change
+
     void removeTeamMember(
             Long teamMemberId,
             Long founderId);
+
+    // IS TEAM MEMBER
+    // No change
+
+    boolean isTeamMember(
+            Long startupId,
+            Long userId);
+
+
+    // GET MEMBER WORK HISTORY                 ← NEW
+    // All records active + inactive
     
-    boolean isTeamMember(Long startupId, Long userId);
+    List<TeamMemberResponseDto> getMemberHistory(
+            Long userId);
+
+    // GET ACTIVE MEMBER ROLES                 ← NEW
+    // Only active roles
+    
+    List<TeamMemberResponseDto> getActiveMemberRoles(
+            Long userId);
 }

@@ -1,6 +1,7 @@
 package com.founderlink.team.client;
 
 import com.founderlink.team.dto.response.StartupResponseDto;
+import com.founderlink.team.exception.StartupNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ public class StartupServiceClientFallback
     public StartupResponseDto getStartupById(Long id) {
         log.error("Startup Service is down. " +
                 "Cannot fetch startup with id: {}", id);
-        return null;
+        throw new StartupNotFoundException(
+                "Startup service is unavailable. Cannot fetch startup with id: " + id);
     }
 }

@@ -36,13 +36,10 @@ public class InvitationServiceImpl implements InvitationService {
     private final TeamEventPublisher eventPublisher;
     private final StartupServiceClient startupServiceClient;
 
-    // ─────────────────────────────────────────
     // SEND INVITATION
-    // ─────────────────────────────────────────
+
     @Override
-    public InvitationResponseDto sendInvitation(Long founderId,
-                                                 InvitationRequestDto requestDto) {
-    	
+    public InvitationResponseDto sendInvitation(Long founderId,InvitationRequestDto requestDto) {
     	
     	verifyFounderOwnsStartup(requestDto.getStartupId(),founderId);
 
@@ -95,12 +92,10 @@ public class InvitationServiceImpl implements InvitationService {
         return invitationMapper.toResponseDto(savedInvitation);
     }
 
-    // ─────────────────────────────────────────
     // CANCEL INVITATION
-    // ─────────────────────────────────────────
+    
     @Override
-    public InvitationResponseDto cancelInvitation(Long invitationId,
-                                                   Long founderId) {
+    public InvitationResponseDto cancelInvitation(Long invitationId,Long founderId) {
 
         // Find invitation
         Invitation invitation = invitationRepository
@@ -131,9 +126,8 @@ public class InvitationServiceImpl implements InvitationService {
         return invitationMapper.toResponseDto(updatedInvitation);
     }
 
-    // ─────────────────────────────────────────
     // REJECT INVITATION
-    // ─────────────────────────────────────────
+
     @Override
     public InvitationResponseDto rejectInvitation(Long invitationId,
                                                    Long userId) {
@@ -167,9 +161,8 @@ public class InvitationServiceImpl implements InvitationService {
         return invitationMapper.toResponseDto(updatedInvitation);
     }
 
-    // ─────────────────────────────────────────
     // GET INVITATIONS BY USER ID
-    // ─────────────────────────────────────────
+
     @Override
     public List<InvitationResponseDto> getInvitationsByUserId(Long userId) {
 
@@ -180,9 +173,8 @@ public class InvitationServiceImpl implements InvitationService {
                 .collect(Collectors.toList());
     }
 
-    // ─────────────────────────────────────────
     // GET INVITATIONS BY STARTUP ID
-    // ─────────────────────────────────────────
+    
     @Override
     public List<InvitationResponseDto> getInvitationsByStartupId(
             Long startupId,Long founderId) {

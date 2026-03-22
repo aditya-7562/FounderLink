@@ -4,5 +4,6 @@ public enum InvestmentStatus {
     PENDING,
     APPROVED,
     REJECTED,
-    COMPLETED
+    COMPLETED,
+    STARTUP_CLOSED
 }

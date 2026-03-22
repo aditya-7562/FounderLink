@@ -16,7 +16,9 @@ public class TeamMemberMapper {
         responseDto.setStartupId(teamMember.getStartupId());
         responseDto.setUserId(teamMember.getUserId());
         responseDto.setRole(teamMember.getRole());
+        responseDto.setIsActive(teamMember.getIsActive());  
         responseDto.setJoinedAt(teamMember.getJoinedAt());
+        responseDto.setLeftAt(teamMember.getLeftAt()); 
         return responseDto;
     }
 }

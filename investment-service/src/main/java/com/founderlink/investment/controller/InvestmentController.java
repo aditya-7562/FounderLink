@@ -22,7 +22,9 @@ import com.founderlink.investment.service.InvestmentService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/investments")
 @RequiredArgsConstructor
@@ -40,7 +42,9 @@ public class InvestmentController {
             @RequestHeader("X-User-Role") String userRole,
             @Valid @RequestBody InvestmentRequestDto requestDto) {
 
+        log.info("POST /investments - createInvestment by investorId: {}, role: {}", investorId, userRole);
         if (!userRole.equals("ROLE_INVESTOR")) {
+            log.warn("Access denied for createInvestment - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only INVESTORS can create investments");
         }
@@ -65,8 +69,10 @@ public class InvestmentController {
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long startupId) {
 
+        log.info("GET /investments/startup/{} - founderId: {}", startupId, founderId);
         if (!userRole.equals("ROLE_FOUNDER") &&
             !userRole.equals("ROLE_ADMIN")) {
+            log.warn("Access denied for getInvestmentsByStartupId - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only FOUNDERS can view startup investments");
         }
@@ -91,8 +97,10 @@ public class InvestmentController {
             @RequestHeader("X-User-Id") Long investorId,
             @RequestHeader("X-User-Role") String userRole) {
 
+        log.info("GET /investments/investor - investorId: {}", investorId);
         if (!userRole.equals("ROLE_INVESTOR") &&
             !userRole.equals("ROLE_ADMIN")) {
+            log.warn("Access denied for getInvestmentsByInvestorId - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only INVESTORS can view their portfolio");
         }
@@ -117,8 +125,10 @@ public class InvestmentController {
             @PathVariable Long id,
             @Valid @RequestBody InvestmentStatusUpdateDto statusUpdateDto) {
 
+        log.info("PUT /investments/{}/status - founderId: {}, newStatus: {}", id, founderId, statusUpdateDto.getStatus());
         if (!userRole.equals("ROLE_FOUNDER") &&
             !userRole.equals("ROLE_ADMIN")) {
+            log.warn("Access denied for updateInvestmentStatus - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied. Only FOUNDERS can update investment status");
         }
@@ -143,9 +153,11 @@ public class InvestmentController {
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long id) {
 
+        log.info("GET /investments/{} - getInvestmentById", id);
         if (!userRole.equals("ROLE_FOUNDER") &&
             !userRole.equals("ROLE_INVESTOR") &&
             !userRole.equals("ROLE_ADMIN")) {
+            log.warn("Access denied for getInvestmentById - role: {}", userRole);
             throw new ForbiddenAccessException(
                     "Access denied");
         }

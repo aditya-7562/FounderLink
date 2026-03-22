@@ -35,6 +35,11 @@ public class TeamMember {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TeamRole role;
+    
+    @Column(nullable = false)
+    private Boolean isActive = true;
+
+    private LocalDateTime leftAt;
 
     @Column(updatable = false)
     private LocalDateTime joinedAt;
@@ -42,5 +47,7 @@ public class TeamMember {
     @PrePersist
     protected void onCreate() {
         this.joinedAt = LocalDateTime.now();
+        this.isActive = true;              // ← NEW
+        this.leftAt = null;               
     }
 }

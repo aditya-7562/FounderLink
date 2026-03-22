@@ -1,0 +1,68 @@
+package com.founderlink.startup.entity;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "startups")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Startup {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = false)
+    private String industry;
+
+    @Column(nullable = false)
+    private String problemStatement;
+
+    @Column(nullable = false)
+    private String solution;
+
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal fundingGoal;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StartupStage stage;
+
+    // ← Critical for FeignClient
+    @Column(nullable = false)
+    private Long founderId;
+
+    // ← Soft delete flag
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
+
+    @Column(name = "created_at", updatable = false, columnDefinition = "datetime")
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.isDeleted = false;
+    }
+}
