@@ -2,6 +2,7 @@ package com.founderlink.auth.config;
 
 import feign.Logger;
 import feign.Request;
+import feign.RequestInterceptor;
 import feign.Retryer;
 import feign.codec.ErrorDecoder;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +38,18 @@ public class FeignConfig {
                 TimeUnit.MILLISECONDS,
                 readTimeoutMs,
                 TimeUnit.MILLISECONDS,
-                true
-        );
+                true);
+    }
+
+    @Bean
+    public RequestInterceptor feignRequestInterceptor(
+            @Value("${user-service.client.internal-secret:my-founderlink-internal-secret-2024}") String internalSecret) {
+        return requestTemplate -> {
+            requestTemplate.headers().remove("X-Auth-Source");
+            requestTemplate.headers().remove("X-Internal-Secret");
+
+            requestTemplate.header("X-Auth-Source", "gateway");
+            requestTemplate.header("X-Internal-Secret", internalSecret);
+        };
     }
 }

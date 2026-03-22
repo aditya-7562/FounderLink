@@ -2,6 +2,7 @@ package com.founderlink.team.serviceImpl;
 
 import com.founderlink.team.client.StartupServiceClient;
 import com.founderlink.team.dto.request.JoinTeamRequestDto;
+import com.founderlink.team.dto.response.StartupResponseDto;
 import com.founderlink.team.dto.response.TeamMemberResponseDto;
 import com.founderlink.team.entity.Invitation;
 import com.founderlink.team.entity.InvitationStatus;
@@ -223,6 +224,28 @@ public class TeamMemberServiceImpl
                     + startupId);
         }
 
+        if (!startup.getFounderId().equals(founderId)) {
+            throw new ForbiddenAccessException(
+                    "You are not authorized to " +
+                    "perform this action on this startup");
+        }
+    }
+    
+    public void verifyFounderOwnsStartup(
+            Long startupId,
+            Long founderId) {
+
+        // Call Startup Service
+        StartupResponseDto startup = startupServiceClient
+                .getStartupById(startupId);
+
+        // Startup not found
+        if (startup == null) {
+            throw new StartupNotFoundException(
+                    "Startup not found with id: " + startupId);
+        }
+
+        // Founder does not own startup
         if (!startup.getFounderId().equals(founderId)) {
             throw new ForbiddenAccessException(
                     "You are not authorized to " +

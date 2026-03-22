@@ -17,11 +17,16 @@ public class User {
     private Long id;
 
     private String name;
+
+    @Column(nullable = false, unique = true)
     private String email;
     private String skills;
     private String experience;
     private String bio;
     private String portfolioLinks;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     private LocalDateTime updatedAt;
 }

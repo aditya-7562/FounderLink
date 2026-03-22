@@ -111,10 +111,8 @@ class CreateInvestmentTest {
                 .thenReturn(responseDto);
 
         // Act
-        InvestmentResponseDto result =
-                investmentService
-                        .createInvestment(
-                                202L, requestDto);
+        InvestmentResponseDto result = investmentService
+                .createInvestment(202L, requestDto);
 
         // Assert
         assertThat(result).isNotNull();

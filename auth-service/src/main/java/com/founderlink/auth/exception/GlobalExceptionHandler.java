@@ -32,8 +32,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiError> handleAccessDenied(HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.FORBIDDEN, "Access denied", request.getRequestURI());
+    public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN,
+                ex.getMessage() != null ? ex.getMessage() : "Access denied",
+                request.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -60,6 +62,30 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RevokedRefreshTokenException.class)
     public ResponseEntity<ApiError> handleRevokedRefreshToken(HttpServletRequest request) {
         return buildErrorResponse(HttpStatus.FORBIDDEN, "Refresh token has been revoked", request.getRequestURI());
+    }
+
+    @ExceptionHandler(UserServiceBadRequestException.class)
+    public ResponseEntity<ApiError> handleUserServiceBadRequest(UserServiceBadRequestException ex, HttpServletRequest request) {
+        log.warn("User-service bad request. path={} reason={}", request.getRequestURI(), ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(UserServiceNotFoundException.class)
+    public ResponseEntity<ApiError> handleUserServiceNotFound(UserServiceNotFoundException ex, HttpServletRequest request) {
+        log.warn("User-service not found. path={} reason={}", request.getRequestURI(), ex.getMessage());
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(UserServiceConflictException.class)
+    public ResponseEntity<ApiError> handleUserServiceConflict(UserServiceConflictException ex, HttpServletRequest request) {
+        log.warn("User-service conflict. path={} reason={}", request.getRequestURI(), ex.getMessage());
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(UserServiceUnavailableException.class)
+    public ResponseEntity<ApiError> handleUserServiceUnavailable(UserServiceUnavailableException ex, HttpServletRequest request) {
+        log.error("User-service unavailable. path={} reason={}", request.getRequestURI(), ex.getMessage());
+        return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(UserServiceClientException.class)

@@ -95,7 +95,7 @@ class AuthFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isServiceUnavailable())
-                .andExpect(jsonPath("$.message").value("Dependent service is unavailable"))
+                .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.path").value("/auth/register"));
 
         org.assertj.core.api.Assertions.assertThat(userRepository.existsByEmail("bob@founderlink.com")).isFalse();

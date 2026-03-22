@@ -2,6 +2,7 @@ package com.founderlink.auth.config;
 
 import com.founderlink.auth.exception.UserServiceBadRequestException;
 import com.founderlink.auth.exception.UserServiceClientException;
+import com.founderlink.auth.exception.UserServiceConflictException;
 import com.founderlink.auth.exception.UserServiceNotFoundException;
 import com.founderlink.auth.exception.UserServiceUnavailableException;
 import com.founderlink.auth.exception.UserServiceServerException;
@@ -28,6 +29,7 @@ public class FeignErrorDecoder implements ErrorDecoder {
         return switch (status) {
             case 400 -> new UserServiceBadRequestException(methodKey, reason);
             case 404 -> new UserServiceNotFoundException(methodKey, reason);
+            case 409 -> new UserServiceConflictException(methodKey, reason);
             case 503 -> new UserServiceUnavailableException(methodKey, reason);
             default -> status >= 500
                     ? new UserServiceServerException(methodKey, status, reason)

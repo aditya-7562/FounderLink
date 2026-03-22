@@ -119,7 +119,7 @@ class UpdateInvestmentStatusTest {
     // PENDING TO REJECTED
 
     @Test
-    void updateStatus_PendingToRejected_Success() {
+    void updateStatus_NotOwner_ThrowsException() {
 
         // Arrange
         InvestmentStatusUpdateDto statusUpdateDto =
@@ -166,11 +166,9 @@ class UpdateInvestmentStatusTest {
     // APPROVED TO COMPLETED
 
     @Test
-    void updateStatus_ApprovedToCompleted_Success() {
+    void updateStatus_StartupNotFound_ThrowsException() {
 
         // Arrange
-        investment.setStatus(InvestmentStatus.APPROVED);
-
         InvestmentStatusUpdateDto statusUpdateDto =
                 new InvestmentStatusUpdateDto(
                         ManualInvestmentStatus.COMPLETED);
@@ -206,9 +204,14 @@ class UpdateInvestmentStatusTest {
                                 1L, 5L,
                                 statusUpdateDto);
 
-        // Assert
-        assertThat(result.getStatus())
-                .isEqualTo(InvestmentStatus.COMPLETED);
+        // Act & Assert
+        assertThatThrownBy(() ->
+                investmentService
+                        .updateInvestmentStatus(
+                                1L, 5L, statusUpdateDto))
+                .isInstanceOf(StartupNotFoundException.class)
+                .hasMessage(
+                        "Startup not found with id: 101");
     }
 
     // NOT OWNER
@@ -300,10 +303,9 @@ class UpdateInvestmentStatusTest {
     // COMPLETED INVESTMENT
 
     @Test
-    void updateStatus_CompletedInvestment_ThrowsException() {
+    void updateStatus_InvestmentNotFound_ThrowsException() {
 
         // Arrange
-        investment.setStatus(InvestmentStatus.COMPLETED);
         InvestmentStatusUpdateDto statusUpdateDto =
                 new InvestmentStatusUpdateDto(
                         ManualInvestmentStatus.APPROVED);
@@ -330,10 +332,10 @@ class UpdateInvestmentStatusTest {
     // REJECTED INVESTMENT
     
     @Test
-    void updateStatus_RejectedInvestment_ThrowsException() {
+    void updateStatus_CompletedInvestment_ThrowsException() {
 
         // Arrange
-        investment.setStatus(InvestmentStatus.REJECTED);
+        investment.setStatus(InvestmentStatus.COMPLETED);
         InvestmentStatusUpdateDto statusUpdateDto =
                 new InvestmentStatusUpdateDto(
                         ManualInvestmentStatus.APPROVED);

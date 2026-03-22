@@ -18,4 +18,17 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select refreshToken from RefreshToken refreshToken where refreshToken.token = :token")
     Optional<RefreshToken> findByTokenForUpdate(@Param("token") String token);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT rt FROM RefreshToken rt
+    WHERE rt.userId = :userId
+    AND rt.revoked = false
+    ORDER BY rt.createdAt ASC
+    LIMIT 1
+""")
+    Optional<RefreshToken> findOldestActiveToken(Long userId);
+
+
+    long countByUserIdAndRevokedFalse(Long userId);
 }

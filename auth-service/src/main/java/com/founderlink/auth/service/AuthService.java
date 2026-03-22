@@ -4,7 +4,9 @@ import com.founderlink.auth.dto.*;
 import com.founderlink.auth.entity.Role;
 import com.founderlink.auth.entity.User;
 import com.founderlink.auth.exception.EmailAlreadyExistsException;
+import com.founderlink.auth.exception.ExpiredRefreshTokenException;
 import com.founderlink.auth.exception.InvalidRefreshTokenException;
+import com.founderlink.auth.exception.RevokedRefreshTokenException;
 import com.founderlink.auth.repository.UserRepository;
 import com.founderlink.auth.security.JwtService;
 import lombok.NonNull;
@@ -117,9 +119,14 @@ public class AuthService {
     }
 
     public void logout(String refreshToken) {
-        refreshTokenService.validateToken(refreshToken);
-        refreshTokenService.revokeToken(refreshToken);
-        log.debug("Processed logout for refresh token");
+        try {
+            refreshTokenService.revokeToken(refreshToken);
+        } catch (InvalidRefreshTokenException |
+                 RevokedRefreshTokenException |
+                 ExpiredRefreshTokenException ex) {
+
+            log.debug("Logout no-op: {}", ex.getMessage());
+        }
     }
 
     private AuthResponse buildAuthResponse(User user, String accessToken) {

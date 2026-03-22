@@ -1,1 +1,84 @@
-/.metadata/
+# ==========================================
+# MAVEN
+# ==========================================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# ==========================================
+# INTELLIJ IDEA
+# ==========================================
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# ==========================================
+# ECLIPSE
+# ==========================================
+.metadata/
+.classpath
+.factorypath
+.project
+.settings/
+.loadpath
+.recommenders/
+*.launch
+local.properties
+
+# ==========================================
+# VS CODE
+# ==========================================
+.vscode/
+*.code-workspace
+
+# ==========================================
+# SPRING BOOT LOGS
+# ==========================================
+*.log
+logs/
+spring.log
+
+# ==========================================
+# ENVIRONMENT & SECRETS (never push these)
+# ==========================================
+*.env
+.env
+application-local.properties
+application-dev.properties
+application-prod.properties
+secrets.properties
+# ==========================================
+# OS GENERATED FILES
+# ==========================================
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encdata
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ==========================================
+# DATABASE
+# ==========================================
+*.sql.bak
+*.db

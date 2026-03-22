@@ -50,6 +50,8 @@ public class InvestmentServiceImpl implements InvestmentService {
             throw new StartupNotFoundException(
                     "Startup not found with id: " + requestDto.getStartupId());
         }
+    	
+    	verifyStartupExists(requestDto.getStartupId());
 
         // Check duplicate PENDING investment only
         if (investmentRepository
@@ -187,6 +189,39 @@ public class InvestmentServiceImpl implements InvestmentService {
             throw new InvalidStatusTransitionException(
                     "Investment must be APPROVED " +
                     "before marking COMPLETED");
+        }
+    }
+    
+    public void verifyFounderOwnsStartup(
+            Long startupId,
+            Long founderId) {
+
+        // Call Startup Service
+        StartupResponseDto startup = startupServiceClient
+                .getStartupById(startupId);
+
+        // Startup not found
+        if (startup == null) {
+            throw new StartupNotFoundException(
+                    "Startup not found with id: " + startupId);
+        }
+
+        // Founder does not own startup
+        if (!startup.getFounderId().equals(founderId)) {
+            throw new ForbiddenAccessException(
+                    "You are not authorized to " +
+                    "perform this action on this startup");
+        }
+    }
+    
+    public void verifyStartupExists(Long startupId) {
+
+        StartupResponseDto startup = startupServiceClient
+                .getStartupById(startupId);
+
+        if (startup == null) {
+            throw new StartupNotFoundException(
+                    "Startup not found with id: " + startupId);
         }
     }
     

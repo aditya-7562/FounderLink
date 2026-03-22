@@ -96,9 +96,8 @@ class RemoveTeamMemberTest {
                 .delete(any(TeamMember.class));
     }
 
-    // ─────────────────────────────────────────
     // MEMBER NOT FOUND
-    // ─────────────────────────────────────────
+    
     @Test
     void removeTeamMember_NotFound_ThrowsException() {
 

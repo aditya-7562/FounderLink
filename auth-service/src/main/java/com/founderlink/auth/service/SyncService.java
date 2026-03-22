@@ -27,6 +27,7 @@ public class SyncService {
         request.setUserId(user.getId());
         request.setName(user.getName());
         request.setEmail(user.getEmail());
+        request.setRole(user.getRole());
 
         log.debug("Syncing user to user-service");
 

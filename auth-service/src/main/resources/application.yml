@@ -54,6 +54,7 @@ user-service:
   client:
     connect-timeout-ms: 2000
     read-timeout-ms: 5000
+    internal-secret: my-founderlink-internal-secret-2024
 
 resilience4j:
   retry:
