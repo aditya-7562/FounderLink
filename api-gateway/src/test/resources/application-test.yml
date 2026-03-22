@@ -1,0 +1,149 @@
+spring:
+  cloud:
+    discovery:
+      enabled: false
+    gateway:
+      routes:
+        - id: users-test-route
+          uri: forward:/__downstream
+          predicates:
+            - Path=/users/**
+        - id: startup-test-route
+          uri: forward:/__downstream
+          predicates:
+            - Path=/startup/**
+        - id: teams-test-route
+          uri: forward:/__downstream
+          predicates:
+            - Path=/teams/**
+        - id: investments-test-route
+          uri: forward:/__downstream
+          predicates:
+            - Path=/investments/**
+        - id: messages-test-route
+          uri: forward:/__downstream
+          predicates:
+            - Path=/messages/**
+        - id: notifications-test-route
+          uri: forward:/__downstream
+          predicates:
+            - Path=/notifications/**
+        - id: reports-test-route
+          uri: forward:/__downstream
+          predicates:
+            - Path=/reports/**
+
+gateway:
+  security:
+    public-paths:
+      - /auth/**
+      - /eureka/**
+
+rbac:
+  default-policy: DENY
+  rules:
+    - method: GET
+      path: /users
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: GET
+      path: /users/*
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: PUT
+      path: /users/*
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: POST
+      path: /startup
+      roles: [FOUNDER]
+    - method: GET
+      path: /startup/details/*
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: GET
+      path: /startup/founder
+      roles: [FOUNDER]
+    - method: GET
+      path: /startup/search
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: GET
+      path: /startup/*
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: PUT
+      path: /startup/*
+      roles: [FOUNDER]
+    - method: DELETE
+      path: /startup/*
+      roles: [FOUNDER]
+    - method: POST
+      path: /teams/invite
+      roles: [FOUNDER]
+    - method: PUT
+      path: /teams/invitations/*/cancel
+      roles: [FOUNDER]
+    - method: PUT
+      path: /teams/invitations/*/reject
+      roles: [COFOUNDER]
+    - method: GET
+      path: /teams/invitations/user
+      roles: [COFOUNDER]
+    - method: GET
+      path: /teams/invitations/startup/*
+      roles: [FOUNDER]
+    - method: POST
+      path: /teams/join
+      roles: [COFOUNDER]
+    - method: GET
+      path: /teams/startup/*
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: DELETE
+      path: /teams/*
+      roles: [FOUNDER]
+    - method: GET
+      path: /teams/member/history
+      roles: [COFOUNDER, ADMIN]
+    - method: GET
+      path: /teams/member/active
+      roles: [COFOUNDER, ADMIN]
+    - method: POST
+      path: /investments
+      roles: [INVESTOR]
+    - method: GET
+      path: /investments/startup/*
+      roles: [FOUNDER, ADMIN]
+    - method: GET
+      path: /investments/investor
+      roles: [INVESTOR, ADMIN]
+    - method: PUT
+      path: /investments/*/status
+      roles: [FOUNDER, ADMIN]
+    - method: GET
+      path: /investments/*
+      roles: [FOUNDER, INVESTOR, ADMIN]
+    - method: POST
+      path: /messages
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: GET
+      path: /messages/conversation/*/*
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: GET
+      path: /messages/partners/*
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: GET
+      path: /messages/*
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: GET
+      path: /notifications/*/unread
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: GET
+      path: /notifications/*
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+    - method: PUT
+      path: /notifications/*/read
+      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+jwt:
+  secret: FounderLinkSecretKeyForJWTTokenGeneration2024SecureKey
