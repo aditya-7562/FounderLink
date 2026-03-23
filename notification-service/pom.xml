@@ -79,11 +79,6 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-        	<groupId>com.founderlink</groupId>
-        	<artifactId>messaging-service</artifactId>
-        	<version>1.0.0</version>
-        </dependency>
     </dependencies>
 
     <dependencyManagement>
