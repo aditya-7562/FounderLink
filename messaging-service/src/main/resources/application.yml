@@ -5,9 +5,10 @@ spring:
   application:
     name: messaging-service
 
+  config:
+    import: optional:configserver:http://localhost:8888
+
   cloud:
-    config:
-      enabled: false
     openfeign:
       circuitbreaker:
         enabled: true
