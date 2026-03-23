@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8089
 
 spring:
   application:
@@ -17,7 +17,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/auth_service_db?createDatabaseIfNotExist=true
     username: root
-    password: system
+    password: Amma@3023
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -87,3 +87,11 @@ resilience4j:
         ignore-exceptions:
           - com.founderlink.auth.exception.UserServiceBadRequestException
           - com.founderlink.auth.exception.UserServiceNotFoundException
+logging:
+  level:
+    root: INFO
+    com:
+      founderlink:
+        auth: DEBUG
+  file:
+    name: logs/auth-service.log

@@ -1,9 +1,8 @@
 package com.founderlink.startup.events;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import com.founderlink.startup.config.RabbitMQConfig;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,29 +14,36 @@ public class StartupEventPublisher {
 
     private final RabbitTemplate rabbitTemplate;
 
+    @Value("${rabbitmq.exchange}")
+    private String exchange;
+
+    @Value("${rabbitmq.startup.routing-key}")
+    private String startupRoutingKey;
+
+    @Value("${rabbitmq.startup.deleted.routing-key}")
+    private String startupDeletedRoutingKey;
+
     public void publishStartupCreatedEvent(
             StartupCreatedEvent event) {
-    	
         try {
-            log.info("Publishing STARTUP_CREATED event " +
-                            "for startupId: {}",
+            log.info("Publishing STARTUP_CREATED " +
+                    "event for startupId: {}",
                     event.getStartupId());
 
             rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.STARTUP_EXCHANGE,
-                    RabbitMQConfig.STARTUP_ROUTING_KEY,
-                    event
-            );
+                    exchange,
+                    startupRoutingKey,
+                    event);
 
-            log.info("STARTUP_CREATED event " +
-                    "published successfully");
+            log.info("STARTUP_CREATED published!!!");
 
         } catch (Exception e) {
             log.error("Failed to publish " +
-                    "STARTUP_CREATED event: {}",
+                    "STARTUP_CREATED: {}",
                     e.getMessage());
         }
     }
+
     public void publishStartupDeletedEvent(
             StartupDeletedEvent event) {
         try {
@@ -46,17 +52,15 @@ public class StartupEventPublisher {
                     event.getStartupId());
 
             rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.STARTUP_EXCHANGE,
-                    RabbitMQConfig.STARTUP_DELETED_ROUTING_KEY,
-                    event
-            );
+                    exchange,
+                    startupDeletedRoutingKey,
+                    event);
 
-            log.info("STARTUP_DELETED event " +
-                    "published successfully");
+            log.info("STARTUP_DELETED published!!!");
 
         } catch (Exception e) {
             log.error("Failed to publish " +
-                    "STARTUP_DELETED event: {}",
+                    "STARTUP_DELETED: {}",
                     e.getMessage());
         }
     }
