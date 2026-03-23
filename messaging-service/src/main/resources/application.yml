@@ -47,13 +47,12 @@ rabbitmq:
 # Logging
 logging:
   level:
-    com.founderlink.messaging: DEBUG
-    com.founderlink.messaging.client: DEBUG
-    com.founderlink.messaging.service: DEBUG
-    org.springframework.cloud.openfeign: DEBUG
-    org.springframework.web.client: DEBUG
-    com.netflix.discovery: INFO
-    com.netflix.eureka: INFO
+    root: INFO
+    com:
+      founderlink:
+        messaging: DEBUG
+  file:
+    name: logs/messaging-service.log
 
 # Resilience4j Configuration
 resilience4j:

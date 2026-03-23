@@ -87,3 +87,12 @@ resilience4j:
         ignore-exceptions:
           - com.founderlink.auth.exception.UserServiceBadRequestException
           - com.founderlink.auth.exception.UserServiceNotFoundException
+
+logging:
+  level:
+    root: INFO
+    com:
+      founderlink:
+        auth: DEBUG
+  file:
+    name: logs/auth-service.log

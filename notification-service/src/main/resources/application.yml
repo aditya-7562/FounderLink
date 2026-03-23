@@ -84,3 +84,12 @@ resilience4j:
       notificationService:
         timeout-duration: 3s
         cancel-running-future: true
+
+logging:
+  level:
+    root: INFO
+    com:
+      founderlink:
+        notification: DEBUG
+  file:
+    name: logs/notification-service.log
