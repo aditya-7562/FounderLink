@@ -8,6 +8,6 @@ public class StartupServiceApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(StartupServiceApplication.class, args);
+		System.out.println("Startup Service is running!!!!");
 	}
-
 }
