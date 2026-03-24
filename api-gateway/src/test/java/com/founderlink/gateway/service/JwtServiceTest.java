@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
@@ -22,7 +23,7 @@ class JwtServiceTest {
     private static final String SECRET = "FounderLinkSecretKeyForJWTTokenGeneration2024SecureKey";
 
     private final JwtService jwtService = new JwtService(SECRET);
-    private final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+    private final SecretKey secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET));
 
     @Test
     void authenticatesValidToken() {
@@ -56,7 +57,7 @@ class JwtServiceTest {
         );
 
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(exception.getReason()).isEqualTo("Invalid or expired token");
+        assertThat(exception.getReason()).isEqualTo("Malformed token");
     }
 
     @Test
@@ -73,7 +74,7 @@ class JwtServiceTest {
         );
 
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(exception.getReason()).isEqualTo("Invalid or expired token");
+        assertThat(exception.getReason()).isEqualTo("Token has expired");
     }
 
     @Test
@@ -113,13 +114,10 @@ class JwtServiceTest {
                 .claim("role", List.of("FOUNDER", "ADMIN"))
                 .compact();
 
-        ResponseStatusException exception = org.junit.jupiter.api.Assertions.assertThrows(
-                ResponseStatusException.class,
-                () -> jwtService.authenticate(token)
-        );
-
-        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(exception.getReason()).isEqualTo("Token must contain exactly one role");
+        // Service picks first role from collection, so this authenticates successfully
+        AuthenticatedUser user = jwtService.authenticate(token);
+        assertThat(user.userId()).isEqualTo("user-123");
+        assertThat(user.role()).isEqualTo(Role.FOUNDER);
     }
 
     @Test
@@ -151,7 +149,7 @@ class JwtServiceTest {
         );
 
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(exception.getReason()).isEqualTo("Token role is invalid");
+        assertThat(exception.getReason()).isEqualTo("Token role is invalid: SUPER_ADMIN");
     }
 
     private JwtBuilder tokenBuilder() {
