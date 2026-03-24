@@ -1,6 +1,6 @@
 package com.founderlink.gateway.integration;
 
-import com.founderlink.gateway.ApiGatewayApplication;
+import com.founderlink.gateway.ApiGatewayApplication; 
 import com.founderlink.gateway.security.AuthenticatedUser;
 import com.founderlink.gateway.security.Role;
 import com.founderlink.gateway.service.JwtService;

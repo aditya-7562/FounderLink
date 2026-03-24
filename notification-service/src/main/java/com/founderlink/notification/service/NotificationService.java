@@ -150,15 +150,15 @@ public class NotificationService {
 
     public void sendStartupCreatedEmailToAllInvestors(Long startupId, String startupName, String industry, Double fundingGoal) {
         try {
-            List<UserDTO> allUsers = userServiceClient.getAllUsers();
-            log.info("Sending startup created email to {} investors", allUsers.size());
+            List<UserDTO> investors = userServiceClient.getUsersByRole("INVESTOR");
+            log.info("Sending startup created email to {} investors", investors.size());
 
             String notificationMessage = String.format(
                     "New startup '%s' in %s is now open for investment. Funding goal: $%,.2f",
                     startupName, industry, fundingGoal
             );
 
-            allUsers.forEach(user -> {
+            investors.forEach(user -> {
                 try {
                     createNotification(user.getId(), "STARTUP_CREATED", notificationMessage);
                 } catch (Exception e) {
@@ -180,7 +180,7 @@ public class NotificationService {
                     startupName, industry, fundingGoal, startupId
             );
 
-            String[] emails = allUsers.stream()
+            String[] emails = investors.stream()
                     .map(UserDTO::getEmail)
                     .filter(email -> email != null && !email.isEmpty())
                     .toArray(String[]::new);

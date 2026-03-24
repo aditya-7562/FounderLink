@@ -18,7 +18,13 @@ public class UserServiceClientFallback implements UserServiceClient {
         log.warn("User-service is unavailable. Fallback triggered for getAllUsers");
         return Collections.emptyList();
     }
-    
+
+    @Override
+    public List<UserDTO> getUsersByRole(String role) {
+        log.warn("User-service is unavailable. Fallback triggered for getUsersByRole: {}", role);
+        return Collections.emptyList();
+    }
+
     @Override
     public UserDTO getUserById(Long id) {
         log.warn("User-service is unavailable. Fallback triggered for getUserById: {}", id);

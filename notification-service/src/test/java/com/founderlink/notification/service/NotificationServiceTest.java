@@ -231,8 +231,8 @@ class NotificationServiceTest {
     @Test
     @DisplayName("notifyAllUsers - sends notification to each user")
     void notifyAllUsers_SendsNotificationToAllUsers() {
-        UserDTO user1 = new UserDTO(1L, "Alice", "alice@test.com", null, null, null, null);
-        UserDTO user2 = new UserDTO(2L, "Bob", "bob@test.com", null, null, null, null);
+        UserDTO user1 = new UserDTO(1L, "Alice", "alice@test.com", "INVESTOR", null, null, null, null);
+        UserDTO user2 = new UserDTO(2L, "Bob", "bob@test.com", "FOUNDER", null, null, null, null);
         when(userServiceClient.getAllUsers()).thenReturn(List.of(user1, user2));
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification1);
 
@@ -262,23 +262,37 @@ class NotificationServiceTest {
     // --- sendStartupCreatedEmailToAllInvestors tests ---
 
     @Test
-    @DisplayName("sendStartupCreatedEmailToAllInvestors - sends bulk email to all users")
+    @DisplayName("sendStartupCreatedEmailToAllInvestors - sends bulk email only to investors")
     void sendStartupCreatedEmailToAllInvestors_SendsBulkEmail() {
-        UserDTO user1 = new UserDTO(1L, "Alice", "alice@test.com", null, null, null, null);
-        UserDTO user2 = new UserDTO(2L, "Bob", "bob@test.com", null, null, null, null);
-        when(userServiceClient.getAllUsers()).thenReturn(List.of(user1, user2));
+        UserDTO investor1 = new UserDTO(1L, "Alice", "alice@test.com", "INVESTOR", null, null, null, null);
+        UserDTO investor2 = new UserDTO(2L, "Bob", "bob@test.com", "INVESTOR", null, null, null, null);
+        when(userServiceClient.getUsersByRole("INVESTOR")).thenReturn(List.of(investor1, investor2));
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification1);
 
         notificationService.sendStartupCreatedEmailToAllInvestors(1L, "TechStartup", "Tech", 500000.0);
 
+        verify(userServiceClient).getUsersByRole("INVESTOR");
+        verify(userServiceClient, never()).getAllUsers();
         verify(emailService).sendBulkEmail(any(String[].class), anyString(), anyString());
         verify(notificationRepository, times(2)).save(any(Notification.class));
     }
 
     @Test
-    @DisplayName("sendStartupCreatedEmailToAllInvestors - handles empty user list")
+    @DisplayName("sendStartupCreatedEmailToAllInvestors - does not notify non-investor users")
+    void sendStartupCreatedEmailToAllInvestors_DoesNotNotifyNonInvestors() {
+        UserDTO investor = new UserDTO(1L, "Alice", "alice@test.com", "INVESTOR", null, null, null, null);
+        when(userServiceClient.getUsersByRole("INVESTOR")).thenReturn(List.of(investor));
+        when(notificationRepository.save(any(Notification.class))).thenReturn(notification1);
+
+        notificationService.sendStartupCreatedEmailToAllInvestors(1L, "TechStartup", "Tech", 500000.0);
+
+        verify(notificationRepository, times(1)).save(any(Notification.class));
+    }
+
+    @Test
+    @DisplayName("sendStartupCreatedEmailToAllInvestors - handles empty investor list")
     void sendStartupCreatedEmailToAllInvestors_NoUsers() {
-        when(userServiceClient.getAllUsers()).thenReturn(List.of());
+        when(userServiceClient.getUsersByRole("INVESTOR")).thenReturn(List.of());
 
         notificationService.sendStartupCreatedEmailToAllInvestors(1L, "TechStartup", "Tech", 500000.0);
 
@@ -292,8 +306,8 @@ class NotificationServiceTest {
     @DisplayName("sendInvestmentInterestEmailToFounder - sends email and notification to founder")
     void sendInvestmentInterestEmailToFounder_SendsEmail() {
         StartupDTO startup = new StartupDTO(1L, "TechStartup", null, null, null, null, null, 100L);
-        UserDTO founder = new UserDTO(100L, "Alice", "alice@test.com", null, null, null, null);
-        UserDTO investor = new UserDTO(200L, "Bob", "bob@test.com", null, null, null, null);
+        UserDTO founder = new UserDTO(100L, "Alice", "alice@test.com", "FOUNDER", null, null, null, null);
+        UserDTO investor = new UserDTO(200L, "Bob", "bob@test.com", "INVESTOR", null, null, null, null);
         when(startupServiceClient.getStartupById(1L)).thenReturn(startup);
         when(userServiceClient.getUserById(100L)).thenReturn(founder);
         when(userServiceClient.getUserById(200L)).thenReturn(investor);
@@ -312,7 +326,7 @@ class NotificationServiceTest {
         when(startupServiceClient.getStartupById(1L)).thenReturn(startup);
         when(userServiceClient.getUserById(100L)).thenReturn(null);
         when(userServiceClient.getUserById(200L)).thenReturn(
-                new UserDTO(200L, "Bob", "bob@test.com", null, null, null, null));
+                new UserDTO(200L, "Bob", "bob@test.com", "INVESTOR", null, null, null, null));
 
         notificationService.sendInvestmentInterestEmailToFounder(1L, 200L, "Bob");
 
@@ -325,8 +339,8 @@ class NotificationServiceTest {
     @Test
     @DisplayName("sendInvestmentCreatedEmailToFounder - sends email and notification to founder")
     void sendInvestmentCreatedEmailToFounder_SendsEmailToFounder() {
-        UserDTO founder = new UserDTO(100L, "Alice", "alice@test.com", null, null, null, null);
-        UserDTO investor = new UserDTO(200L, "Bob", "bob@test.com", null, null, null, null);
+        UserDTO founder = new UserDTO(100L, "Alice", "alice@test.com", "FOUNDER", null, null, null, null);
+        UserDTO investor = new UserDTO(200L, "Bob", "bob@test.com", "INVESTOR", null, null, null, null);
         when(userServiceClient.getUserById(100L)).thenReturn(founder);
         when(userServiceClient.getUserById(200L)).thenReturn(investor);
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification1);
@@ -342,7 +356,7 @@ class NotificationServiceTest {
     void sendInvestmentCreatedEmailToFounder_SkipsWhenFounderNotFound() {
         when(userServiceClient.getUserById(100L)).thenReturn(null);
         when(userServiceClient.getUserById(200L)).thenReturn(
-                new UserDTO(200L, "Bob", "bob@test.com", null, null, null, null));
+                new UserDTO(200L, "Bob", "bob@test.com", "INVESTOR", null, null, null, null));
 
         notificationService.sendInvestmentCreatedEmailToFounder(1L, 100L, 200L, 50000.0);
 
@@ -355,7 +369,7 @@ class NotificationServiceTest {
     @Test
     @DisplayName("sendTeamInviteEmail - sends email to invited user")
     void sendTeamInviteEmail_SendsEmail() {
-        UserDTO invitedUser = new UserDTO(300L, "Charlie", "charlie@test.com", null, null, null, null);
+        UserDTO invitedUser = new UserDTO(300L, "Charlie", "charlie@test.com", "COFOUNDER", null, null, null, null);
         when(userServiceClient.getUserById(300L)).thenReturn(invitedUser);
 
         notificationService.sendTeamInviteEmail(1L, 300L, "CTO");
@@ -366,7 +380,7 @@ class NotificationServiceTest {
     @Test
     @DisplayName("sendTeamInviteEmail - skips when invited user has no email")
     void sendTeamInviteEmail_SkipsWhenUserHasNoEmail() {
-        when(userServiceClient.getUserById(300L)).thenReturn(new UserDTO(300L, "Charlie", null, null, null, null, null));
+        when(userServiceClient.getUserById(300L)).thenReturn(new UserDTO(300L, "Charlie", null, "COFOUNDER", null, null, null, null));
 
         notificationService.sendTeamInviteEmail(1L, 300L, "CTO");
 
