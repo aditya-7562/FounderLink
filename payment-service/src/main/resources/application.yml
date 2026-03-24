@@ -1,0 +1,108 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: payment-service
+  config:
+    import: configserver:http://config-server:8888
+  datasource:
+    url: jdbc:mysql://localhost:3306/payment_db
+    username: root
+    password: parth123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  redis:
+    host: localhost
+    port: 6379
+    password: # Empty if no password (default)
+    timeout: 60000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        shutdown-timeout: 100000ms
+  cache:
+    type: redis
+    redis:
+      time-to-live: 86400000  # 24 hours in milliseconds
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
+rabbitmq:
+  exchange: founderlink.exchange
+  dlx: founderlink.dlx
+  dlq: founderlink.dlq
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      wallet-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+
+logging:
+  level:
+    root: INFO
+    com.founderlink.payment: DEBUG
+  file:
+    name: logs/payment-service.log
+
+# ==========================================
+# RABBITMQ QUEUES AND EXCHANGES
+# ==========================================
+rabbitmq:
+  exchange: founderlink.exchange
+  investment:
+    created:
+      queue: payment.investment.created.queue
+      routing-key: investment.created
+    approved:
+      queue: payment.investment.approved.queue
+      routing-key: investment.approved
+    rejected:
+      queue: payment.investment.rejected.queue
+      routing-key: investment.rejected
+
+# ==========================================
+# PAYMENT GATEWAY CONFIGURATION
+# ==========================================
+payment:
+  gateway:
+    # Use mock for testing (set to "stripe" for real payments once keys available)
+    provider: mock
+    # stripe:
+    #   api-key: ${STRIPE_API_KEY}
+    #   webhook-secret: ${STRIPE_WEBHOOK_SECRET}
