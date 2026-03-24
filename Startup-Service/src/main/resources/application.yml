@@ -1,0 +1,70 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: startup-service
+  config:
+    import: configserver:http://config-server:8888
+#   datasource:
+#     url: jdbc:mysql://localhost:3306/startup_db
+#     username: root
+#     password: parth123
+#     driver-class-name: com.mysql.cj.jdbc.Driver
+
+#   jpa:
+#     hibernate:
+#       ddl-auto: update
+#     show-sql: true
+#     properties:
+#       hibernate:
+#         format_sql: true
+#         dialect: org.hibernate.dialect.MySQLDialect
+
+#   rabbitmq:
+#     host: localhost
+#     port: 5672
+#     username: guest
+#     password: guest
+
+# eureka:
+#   client:
+#     service-url:
+#       defaultZone: http://localhost:8761/eureka/
+#     register-with-eureka: true
+#     fetch-registry: true
+#   instance:
+#     prefer-ip-address: true
+
+# management:
+#   endpoints:
+#     web:
+#       exposure:
+#         include: health,info
+#   endpoint:
+#     health:
+#       show-details: always
+
+# logging:
+#   level:
+#     root: INFO
+#     com.founderlink.startup: DEBUG
+#   file:
+#     name: logs/startup-service.log
+
+# ==========================================
+# RABBITMQ QUEUES AND EXCHANGES
+# ==========================================
+# rabbitmq:
+#   exchange: founderlink.exchange
+#   startup:
+#     queue: startup.queue
+#     routing-key: startup.created
+#     deleted:
+#       routing-key: startup.deleted
+#   investment:
+#     deleted:
+#       queue: investment.startup.deleted.queue
+#   team:
+#     deleted:
+#       queue: team.startup.deleted.queue

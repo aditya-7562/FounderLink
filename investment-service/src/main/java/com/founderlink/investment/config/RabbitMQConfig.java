@@ -8,78 +8,85 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String INVESTMENT_QUEUE    = "investment.queue";
-    public static final String INVESTMENT_EXCHANGE = "founderlink.exchange";
-    public static final String INVESTMENT_ROUTING_KEY = "investment.created";
-    
-    
-    public static final String STARTUP_DELETED_QUEUE
-            = "investment.startup.deleted.queue";
-    public static final String STARTUP_EXCHANGE
-            = "founderlink.exchange";
-    public static final String STARTUP_DELETED_ROUTING_KEY
-            = "startup.deleted";
+    @Value("${rabbitmq.exchange}")
+    private String exchange;
 
+    @Value("${rabbitmq.investment.queue}")
+    private String investmentQueue;
+
+    @Value("${rabbitmq.investment.routing-key}")
+    private String investmentRoutingKey;
+
+    @Value("${rabbitmq.startup.deleted.queue}")
+    private String startupDeletedQueue;
+
+    @Value("${rabbitmq.startup.deleted.routing-key}")
+    private String startupDeletedRoutingKey;
+
+    // ─────────────────────────────────────────
+    // SINGLE EXCHANGE
+    // ─────────────────────────────────────────
+    @Bean
+    public DirectExchange founderLinkExchange() {
+        return new DirectExchange(exchange);
+    }
+
+    // ─────────────────────────────────────────
+    // QUEUES
+    // ─────────────────────────────────────────
     @Bean
     public Queue investmentQueue() {
-        return new Queue(INVESTMENT_QUEUE, true);
+        return new Queue(investmentQueue, true);
     }
-    
+
     @Bean
     public Queue startupDeletedQueue() {
-        return new Queue(
-                STARTUP_DELETED_QUEUE, true);
-    }
-    
-
-    // STARTUP EXCHANGE
-    // Same exchange as Startup Service
-    
-    @Bean
-    public DirectExchange startupExchange() {
-        return new DirectExchange(STARTUP_EXCHANGE);
+        return new Queue(startupDeletedQueue, true);
     }
 
-   
+    // ─────────────────────────────────────────
+    // BINDINGS
+    // ─────────────────────────────────────────
     @Bean
-    public DirectExchange investmentExchange() {
-        return new DirectExchange(INVESTMENT_EXCHANGE);
+    public Binding investmentCreatedBinding() {
+        return BindingBuilder
+                .bind(investmentQueue())
+                .to(founderLinkExchange())
+                .with(investmentRoutingKey);
     }
-    
-    
-    // STARTUP DELETED BINDING
-    
+
     @Bean
     public Binding startupDeletedBinding() {
         return BindingBuilder
                 .bind(startupDeletedQueue())
-                .to(startupExchange())
-                .with(STARTUP_DELETED_ROUTING_KEY);
+                .to(founderLinkExchange())
+                .with(startupDeletedRoutingKey);
     }
 
-    @Bean
-    public Binding investmentBinding() {
-        return BindingBuilder
-                .bind(investmentQueue())
-                .to(investmentExchange())
-                .with(INVESTMENT_ROUTING_KEY);
-    }
-
+    // ─────────────────────────────────────────
+    // MESSAGE CONVERTER
+    // ─────────────────────────────────────────
     @Bean
     public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
+    // ─────────────────────────────────────────
+    // RABBIT TEMPLATE
+    // ─────────────────────────────────────────
     @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(messageConverter());
+    public RabbitTemplate rabbitTemplate(
+            ConnectionFactory connectionFactory) {
+        RabbitTemplate rabbitTemplate =
+                new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(
+                messageConverter());
         return rabbitTemplate;
     }
 }

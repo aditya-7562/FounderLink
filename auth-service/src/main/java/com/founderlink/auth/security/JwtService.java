@@ -43,12 +43,11 @@ public class JwtService {
         signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String email, String role, Long userId) {
+    public String generateToken(Long userId, String role) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("email", email);
         claims.put("role", role);
-        claims.put("userId", userId);
-        return createToken(claims, email);
+
+        return createToken(claims, userId.toString());
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
@@ -77,7 +76,8 @@ public class JwtService {
     }
 
     public Long extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("userId", Long.class));
+        String sub = extractUsername(token);
+        return Long.parseLong(sub);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -102,7 +102,6 @@ public class JwtService {
             Claims claims = extractAllClaims(token);
             return claims.getSubject() != null
                     && claims.get("role", String.class) != null
-                    && claims.get("userId", Long.class) != null
                     && claims.getExpiration().after(Date.from(clock.instant()));
         } catch (Exception e) {
             return false;

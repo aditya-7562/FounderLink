@@ -181,7 +181,7 @@ class AuthServiceTest {
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
         when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
-        when(jwtService.generateToken(user.getEmail(), user.getRole().name(), user.getId())).thenReturn("jwt-token");
+        when(jwtService.generateToken( user.getId(),user.getRole().name())).thenReturn("jwt-token");
         when(refreshTokenService.createToken(user.getId())).thenReturn("refresh-token");
 
         AuthSession session = authService.login(request);
@@ -198,7 +198,7 @@ class AuthServiceTest {
                         && request.getEmail().equals(token.getPrincipal())
                         && request.getPassword().equals(token.getCredentials())
         ));
-        verify(jwtService).generateToken(user.getEmail(), user.getRole().name(), user.getId());
+        verify(jwtService).generateToken( user.getId(),user.getRole().name());
         verify(refreshTokenService).createToken(user.getId());
     }
 
@@ -216,7 +216,7 @@ class AuthServiceTest {
 
         assertThat(exception.getMessage()).isEqualTo("Bad credentials");
         verify(userRepository, never()).findByEmail(any(String.class));
-        verify(jwtService, never()).generateToken(any(String.class), any(String.class), any(Long.class));
+        verify(jwtService, never()).generateToken(any(Long.class), any(String.class));
         verify(refreshTokenService, never()).createToken(any(Long.class));
     }
 
@@ -236,7 +236,7 @@ class AuthServiceTest {
 
         when(refreshTokenService.validateToken(rawRefreshToken)).thenReturn(persistedRefreshToken);
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(jwtService.generateToken(user.getEmail(), user.getRole().name(), user.getId())).thenReturn("new-access-token");
+        when(jwtService.generateToken( user.getId(),user.getRole().name())).thenReturn("new-access-token");
         when(refreshTokenService.rotateToken(rawRefreshToken)).thenReturn("rotated-refresh-token");
 
         AuthSession session = authService.refresh(rawRefreshToken);
@@ -249,7 +249,7 @@ class AuthServiceTest {
 
         verify(refreshTokenService).validateToken(rawRefreshToken);
         verify(refreshTokenService).rotateToken(rawRefreshToken);
-        verify(jwtService).generateToken(user.getEmail(), user.getRole().name(), user.getId());
+        verify(jwtService).generateToken(user.getId(), user.getRole().name());
     }
 
     @Test

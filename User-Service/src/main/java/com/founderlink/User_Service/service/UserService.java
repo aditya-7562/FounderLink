@@ -3,6 +3,7 @@ package com.founderlink.User_Service.service;
 import com.founderlink.User_Service.dto.UserRequestAuthDto;
 import com.founderlink.User_Service.dto.UserRequestDto;
 import com.founderlink.User_Service.dto.UserResponseDto;
+import com.founderlink.User_Service.entity.Role;
 import com.founderlink.User_Service.entity.User;
 import com.founderlink.User_Service.exceptions.ConflictException;
 import com.founderlink.User_Service.exceptions.UserNotFoundException;
@@ -60,6 +61,13 @@ public class UserService {
 
     public List<UserResponseDto> getAllUsers() {
         return repository.findAll()
+                .stream()
+                .map(u -> modelMapper.map(u, UserResponseDto.class))
+                .toList();
+    }
+
+    public List<UserResponseDto> getUsersByRole(Role role) {
+        return repository.findByRole(role)
                 .stream()
                 .map(u -> modelMapper.map(u, UserResponseDto.class))
                 .toList();

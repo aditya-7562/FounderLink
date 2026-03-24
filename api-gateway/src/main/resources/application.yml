@@ -1,218 +1,230 @@
 server:
-  port: 8080
+  port: 8090
 
 spring:
   application:
     name: api-gateway
   config:
-    import: optional:configserver:http://localhost:8888
-  cloud:
-    gateway:
-      routes:
-        - id: auth-service
-          uri: lb://auth-service
-          predicates:
-            - Path=/auth/**
+    import: configserver:http://config-server:8888
+#   cloud:
+#     gateway:
+#       routes:
+#         - id: auth-service
+#           uri: lb://auth-service
+#           predicates:
+#             - Path=/auth/**
 
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/users/**
+#         - id: user-service
+#           uri: lb://user-service
+#           predicates:
+#             - Path=/users/**
 
-        - id: startup-service
-          uri: lb://startup-service
-          predicates:
-            - Path=/startup/**
+#         - id: startup-service
+#           uri: lb://startup-service
+#           predicates:
+#             - Path=/startup/**
 
-        - id: investment-service
-          uri: lb://investment-service
-          predicates:
-            - Path=/investments/**
+#         - id: investment-service
+#           uri: lb://investment-service
+#           predicates:
+#             - Path=/investments/**
 
-        - id: team-service
-          uri: lb://team-service
-          predicates:
-            - Path=/teams/**
+#         - id: team-service
+#           uri: lb://team-service
+#           predicates:
+#             - Path=/teams/**
 
-        - id: messaging-service
-          uri: lb://messaging-service
-          predicates:
-            - Path=/messages/**
+#         - id: messaging-service
+#           uri: lb://messaging-service
+#           predicates:
+#             - Path=/messages/**
 
-        - id: notification-service
-          uri: lb://notification-service
-          predicates:
-            - Path=/notifications/**
+#         - id: notification-service
+#           uri: lb://notification-service
+#           predicates:
+#             - Path=/notifications/**
 
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins: "http://localhost:4200"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: true
+#       globalcors:
+#         cors-configurations:
+#           '[/**]':
+#             allowedOrigins: "http://localhost:4200"
+#             allowedMethods:
+#               - GET
+#               - POST
+#               - PUT
+#               - DELETE
+#               - OPTIONS
+#             allowedHeaders: "*"
+#             allowCredentials: true
 
-gateway:
-  security:
-    public-paths:
-      - /auth/login
-      - /auth/register
-      - /auth/refresh
-      - /auth/logout
-      - /eureka/**
+# gateway:
+#   security:
+#     public-paths:
+#       - /auth/login
+#       - /auth/register
+#       - /auth/refresh
+#       - /auth/logout
+#       - /eureka/**
 
-rbac:
-  default-policy: DENY
-  rules:
+# rbac:
+#   default-policy: DENY
+#   rules:
 
-    - method: GET
-      path: /users
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /users
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: GET
-      path: /users/*
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /users/role
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: PUT
-      path: /users/*
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /users/*
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: POST
-      path: /startup
-      roles: [FOUNDER]
+#     - method: PUT
+#       path: /users/*
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: GET
-      path: /startup/details/*
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: POST
+#       path: /startup
+#       roles: [FOUNDER]
 
-    - method: GET
-      path: /startup/founder
-      roles: [FOUNDER]
+#     - method: GET
+#       path: /startup
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: GET
-      path: /startup/search
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /startup/details/*
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: GET
-      path: /startup/*
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /startup/founder
+#       roles: [FOUNDER]
 
-    - method: PUT
-      path: /startup/*
-      roles: [FOUNDER]
+#     - method: GET
+#       path: /startup/search
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: DELETE
-      path: /startup/*
-      roles: [FOUNDER]
+#     - method: GET
+#       path: /startup/*
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: POST
-      path: /investments
-      roles: [INVESTOR]
+#     - method: PUT
+#       path: /startup/*
+#       roles: [FOUNDER]
 
-    - method: GET
-      path: /investments/startup/*
-      roles: [FOUNDER, ADMIN]
+#     - method: DELETE
+#       path: /startup/*
+#       roles: [FOUNDER]
 
-    - method: GET
-      path: /investments/investor
-      roles: [INVESTOR, ADMIN]
+#     - method: POST
+#       path: /investments
+#       roles: [INVESTOR]
 
-    - method: PUT
-      path: /investments/*/status
-      roles: [FOUNDER, ADMIN]
+#     - method: GET
+#       path: /investments/startup/*
+#       roles: [FOUNDER, ADMIN]
 
-    - method: GET
-      path: /investments/*
-      roles: [FOUNDER, INVESTOR, ADMIN]
+#     - method: GET
+#       path: /investments/investor
+#       roles: [INVESTOR, ADMIN]
 
-    - method: POST
-      path: /teams/invite
-      roles: [FOUNDER]
+#     - method: PUT
+#       path: /investments/*/status
+#       roles: [FOUNDER, ADMIN]
 
-    - method: PUT
-      path: /teams/invitations/*/cancel
-      roles: [FOUNDER]
+#     - method: GET
+#       path: /investments/*
+#       roles: [FOUNDER, INVESTOR, ADMIN]
 
-    - method: PUT
-      path: /teams/invitations/*/reject
-      roles: [COFOUNDER]
+#     - method: POST
+#       path: /teams/invite
+#       roles: [FOUNDER]
 
-    - method: GET
-      path: /teams/invitations/user
-      roles: [COFOUNDER]
+#     - method: PUT
+#       path: /teams/invitations/*/cancel
+#       roles: [FOUNDER]
 
-    - method: GET
-      path: /teams/invitations/startup/*
-      roles: [FOUNDER]
+#     - method: PUT
+#       path: /teams/invitations/*/reject
+#       roles: [COFOUNDER]
 
-    - method: POST
-      path: /teams/join
-      roles: [COFOUNDER]
+#     - method: GET
+#       path: /teams/invitations/user
+#       roles: [COFOUNDER]
 
-    - method: GET
-      path: /teams/startup/*
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /teams/invitations/startup/*
+#       roles: [FOUNDER]
 
-    - method: DELETE
-      path: /teams/*
-      roles: [FOUNDER]
+#     - method: POST
+#       path: /teams/join
+#       roles: [COFOUNDER]
 
-    - method: GET
-      path: /teams/member/history
-      roles: [COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /teams/startup/*
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: GET
-      path: /teams/member/active
-      roles: [COFOUNDER, ADMIN]
+#     - method: DELETE
+#       path: /teams/*
+#       roles: [FOUNDER]
 
-    - method: POST
-      path: /messages
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /teams/member/history
+#       roles: [COFOUNDER, ADMIN]
 
-    - method: GET
-      path: /messages/*
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /teams/member/active
+#       roles: [COFOUNDER, ADMIN]
 
-    - method: GET
-      path: /messages/conversation/*/*
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: POST
+#       path: /messages
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: GET
-      path: /messages/partners/*
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /messages/*
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: GET
-      path: /notifications/*/unread
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /messages/conversation/*/*
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: GET
-      path: /notifications/*
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /messages/partners/*
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-    - method: PUT
-      path: /notifications/*/read
-      roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#     - method: GET
+#       path: /notifications/*/unread
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
+#     - method: GET
+#       path: /notifications/*
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-jwt:
-  secret: FounderLinkSecretKeyForJWTTokenGeneration2024SecureKey
+#     - method: PUT
+#       path: /notifications/*/read
+#       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-logging:
-  level:
-    root: INFO
-    com:
-      founderlink:
-        gateway: DEBUG
-  file:
-    name: logs/api-gateway.log
+# eureka:
+#   client:
+#     service-url:
+#       defaultZone: http://localhost:8761/eureka/
+#   instance:
+#     prefer-ip-address: true
+
+# jwt:
+#   secret: FounderLinkSecretKeyForJWTTokenGeneration2024SecureKey
+
+
+# logging:
+#   level:
+#     root: INFO
+#     org.springframework.cloud.gateway: DEBUG
+#     org.springframework.web.reactive: DEBUG
+#     reactor.netty: INFO
+#     com:
+#       founderlink:
+#         gateway: DEBUG
+#   file:
+#     name: logs/api-gateway.log

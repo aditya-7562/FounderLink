@@ -8,88 +8,50 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
 
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+#   rabbitmq:
+#     host: localhost
+#     port: 5672
+#     username: guest
+#     password: guest
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/notification_db
-    username: root
-    password: parth123
-    driver-class-name: com.mysql.cj.jdbc.Driver
+#   mail:
+#     host: smtp.gmail.com
+#     port: 587
+#     username: parthjadhav1000@gmail.com
+#     password: nfgmuxgdwvjxpoqv
+#     properties:
+#       mail:
+#         smtp:
+#           auth: true
+#           starttls:
+#             enable: true
+#             required: true
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    database-platform: org.hibernate.dialect.MySQLDialect
+#   datasource:
+#     url: jdbc:mysql://localhost:3306/notification_db
+#     username: root
+#     password: parth123
+#     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  # Email Configuration (Gmail SMTP)
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: parthjadhav1000@gmail.com
-    password: nfgmuxgdwvjxpoqv
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
+#   jpa:
+#     hibernate:
+#       ddl-auto: update
+#     show-sql: true
+#     database-platform: org.hibernate.dialect.MySQLDialect
 
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
+# eureka:
+#   client:
+#     register-with-eureka: true
+#     fetch-registry: true
+#     service-url:
+#       defaultZone: http://localhost:8761/eureka/
+#   instance:
+#     prefer-ip-address: true
 
-rabbitmq:
-  exchange: founderlink.exchange
-  queue:
-    startup: startup.queue
-    investment: investment.queue
-    team: team.queue
-    messaging: messaging.queue
-
-# Resilience4j Configuration
-resilience4j:
-  circuitbreaker:
-    instances:
-      notificationService:
-        register-health-indicator: true
-        sliding-window-size: 10
-        minimum-number-of-calls: 5
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 10s
-        permitted-number-of-calls-in-half-open-state: 3
-        sliding-window-type: COUNT_BASED
-        automatic-transition-from-open-to-half-open-enabled: true
-
-  retry:
-    instances:
-      notificationService:
-        max-attempts: 3
-        wait-duration: 500ms
-        enable-exponential-backoff: true
-        exponential-backoff-multiplier: 2
-
-  timelimiter:
-    instances:
-      notificationService:
-        timeout-duration: 3s
-        cancel-running-future: true
-
-logging:
-  level:
-    root: INFO
-    com:
-      founderlink:
-        notification: DEBUG
-  file:
-    name: logs/notification-service.log
+# rabbitmq:
+#   exchange: founderlink.exchange
+#   queue:
+#     startup: startup.queue
+#     investment: investment.queue
+#     team: team.queue
+#     messaging: messaging.queue

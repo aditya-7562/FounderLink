@@ -21,9 +21,7 @@ public class StartupDeletedEventConsumer {
             investmentRepository;
 
     @RabbitListener(
-        queues = "#{T(com.founderlink.investment" +
-                 ".config.RabbitMQConfig)" +
-                 ".STARTUP_DELETED_QUEUE}")
+        queues = "${rabbitmq.startup.deleted.queue}")
     public void handleStartupDeletedEvent(
             StartupDeletedEvent event) {
 

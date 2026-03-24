@@ -4,14 +4,8 @@ server:
 spring:
   application:
     name: messaging-service
-
   config:
-    import: optional:configserver:http://localhost:8888
-
-  cloud:
-    openfeign:
-      circuitbreaker:
-        enabled: true
+    import: configserver:http://config-server:8888
 
   rabbitmq:
     host: localhost
@@ -23,7 +17,6 @@ spring:
     url: jdbc:mysql://localhost:3306/messaging_db
     username: root
     password: parth123
-    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
@@ -44,15 +37,8 @@ rabbitmq:
   exchange: founderlink.exchange
   routing-key: message.sent
 
-# Logging
-logging:
-  level:
-    root: INFO
-    com:
-      founderlink:
-        messaging: DEBUG
-  file:
-    name: logs/messaging-service.log
+# Feign client configuration
+spring.cloud.openfeign.circuitbreaker.enabled: true
 
 # Resilience4j Configuration
 resilience4j:

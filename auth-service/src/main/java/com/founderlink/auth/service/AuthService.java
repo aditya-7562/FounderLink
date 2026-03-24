@@ -98,7 +98,10 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
 
-        String token = jwtService.generateToken(user.getEmail(), user.getRole().name(), user.getId());
+        String token = jwtService.generateToken(
+                user.getId(),
+                user.getRole().name()
+        );
         String refreshToken = refreshTokenService.createToken(user.getId());
 
         return new AuthSession(buildAuthResponse(user, token), refreshToken);
@@ -112,7 +115,10 @@ public class AuthService {
 
         log.debug("Accepted refresh token usage");
 
-        String accessToken = jwtService.generateToken(user.getEmail(), user.getRole().name(), user.getId());
+        String accessToken = jwtService.generateToken(
+                user.getId(),
+                user.getRole().name()
+        );
         String rotatedRefreshToken = refreshTokenService.rotateToken(refreshToken);
 
         return new AuthSession(buildAuthResponse(user, accessToken), rotatedRefreshToken);
