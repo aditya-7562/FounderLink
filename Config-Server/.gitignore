@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# ENVIRONMENT & SECRETS (never push these)
+*.env
+.env
