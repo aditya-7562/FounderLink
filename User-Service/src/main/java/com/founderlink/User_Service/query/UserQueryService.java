@@ -1,6 +1,7 @@
 package com.founderlink.User_Service.query;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.Cacheable;
@@ -44,7 +45,7 @@ public class UserQueryService {
         return repository.findAll()
                 .stream()
                 .map(u -> modelMapper.map(u, UserResponseDto.class))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
@@ -57,6 +58,6 @@ public class UserQueryService {
         return repository.findByRole(role)
                 .stream()
                 .map(u -> modelMapper.map(u, UserResponseDto.class))
-                .toList();
+                .collect(Collectors.toList());
     }
 }
