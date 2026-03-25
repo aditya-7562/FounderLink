@@ -20,12 +20,11 @@ import com.founderlink.team.dto.response.StartupResponseDto;
 import com.founderlink.team.entity.Invitation;
 import com.founderlink.team.entity.InvitationStatus;
 import com.founderlink.team.entity.TeamRole;
-import com.founderlink.team.events.TeamEventPublisher;
 import com.founderlink.team.exception.ForbiddenAccessException;
 import com.founderlink.team.exception.StartupNotFoundException;
 import com.founderlink.team.mapper.InvitationMapper;
+import com.founderlink.team.query.InvitationQueryService;
 import com.founderlink.team.repository.InvitationRepository;
-import com.founderlink.team.serviceImpl.InvitationServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class GetInvitationsTest {
@@ -37,13 +36,10 @@ class GetInvitationsTest {
     private InvitationMapper invitationMapper;
 
     @Mock
-    private TeamEventPublisher eventPublisher;
-
-    @Mock
     private StartupServiceClient startupServiceClient;
 
     @InjectMocks
-    private InvitationServiceImpl invitationService;
+    private InvitationQueryService invitationService;
 
     private Invitation invitation;
     private InvitationResponseDto responseDto;

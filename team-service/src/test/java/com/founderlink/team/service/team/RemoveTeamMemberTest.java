@@ -22,6 +22,7 @@ import com.founderlink.team.client.StartupServiceClient;
 import com.founderlink.team.dto.response.StartupResponseDto;
 import com.founderlink.team.entity.TeamMember;
 import com.founderlink.team.entity.TeamRole;
+import com.founderlink.team.command.TeamMemberCommandService;
 import com.founderlink.team.exception.ForbiddenAccessException;
 import com.founderlink.team.exception.StartupNotFoundException;
 import com.founderlink.team.exception.TeamMemberNotFoundException;
@@ -29,7 +30,6 @@ import com.founderlink.team.exception.UnauthorizedAccessException;
 import com.founderlink.team.mapper.TeamMemberMapper;
 import com.founderlink.team.repository.InvitationRepository;
 import com.founderlink.team.repository.TeamMemberRepository;
-import com.founderlink.team.serviceImpl.TeamMemberServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class RemoveTeamMemberTest {
@@ -47,7 +47,7 @@ class RemoveTeamMemberTest {
     private StartupServiceClient startupServiceClient;
 
     @InjectMocks
-    private TeamMemberServiceImpl teamMemberService;
+    private TeamMemberCommandService teamMemberService;
 
     private TeamMember teamMember;
     private StartupResponseDto startupResponseDto;

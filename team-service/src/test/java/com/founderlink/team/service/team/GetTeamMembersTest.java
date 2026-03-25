@@ -22,9 +22,8 @@ import com.founderlink.team.entity.TeamRole;
 import com.founderlink.team.exception.ForbiddenAccessException;
 import com.founderlink.team.exception.StartupNotFoundException;
 import com.founderlink.team.mapper.TeamMemberMapper;
-import com.founderlink.team.repository.InvitationRepository;
+import com.founderlink.team.query.TeamMemberQueryService;
 import com.founderlink.team.repository.TeamMemberRepository;
-import com.founderlink.team.serviceImpl.TeamMemberServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class GetTeamMembersTest {
@@ -33,16 +32,13 @@ class GetTeamMembersTest {
     private TeamMemberRepository teamMemberRepository;
 
     @Mock
-    private InvitationRepository invitationRepository;
-
-    @Mock
     private TeamMemberMapper teamMemberMapper;
 
     @Mock
     private StartupServiceClient startupServiceClient;
 
     @InjectMocks
-    private TeamMemberServiceImpl teamMemberService;
+    private TeamMemberQueryService teamMemberService;
 
     private TeamMember teamMember1;
     private TeamMember teamMember2;

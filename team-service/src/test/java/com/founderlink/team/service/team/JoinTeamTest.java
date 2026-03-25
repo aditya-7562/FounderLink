@@ -25,6 +25,7 @@ import com.founderlink.team.entity.Invitation;
 import com.founderlink.team.entity.InvitationStatus;
 import com.founderlink.team.entity.TeamMember;
 import com.founderlink.team.entity.TeamRole;
+import com.founderlink.team.command.TeamMemberCommandService;
 import com.founderlink.team.exception.AlreadyTeamMemberException;
 import com.founderlink.team.exception.InvalidInvitationStatusException;
 import com.founderlink.team.exception.InvitationNotFoundException;
@@ -32,7 +33,6 @@ import com.founderlink.team.exception.UnauthorizedAccessException;
 import com.founderlink.team.mapper.TeamMemberMapper;
 import com.founderlink.team.repository.InvitationRepository;
 import com.founderlink.team.repository.TeamMemberRepository;
-import com.founderlink.team.serviceImpl.TeamMemberServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class JoinTeamTest {
@@ -50,7 +50,7 @@ class JoinTeamTest {
     private StartupServiceClient startupServiceClient;
 
     @InjectMocks
-    private TeamMemberServiceImpl teamMemberService;
+    private TeamMemberCommandService teamMemberService;
 
     private JoinTeamRequestDto requestDto;
     private Invitation invitation;

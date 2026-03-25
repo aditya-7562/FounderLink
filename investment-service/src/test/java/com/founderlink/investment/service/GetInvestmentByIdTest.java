@@ -19,11 +19,10 @@ import com.founderlink.investment.client.StartupServiceClient;
 import com.founderlink.investment.dto.response.InvestmentResponseDto;
 import com.founderlink.investment.entity.Investment;
 import com.founderlink.investment.entity.InvestmentStatus;
-import com.founderlink.investment.events.InvestmentEventPublisher;
 import com.founderlink.investment.exception.InvestmentNotFoundException;
 import com.founderlink.investment.mapper.InvestmentMapper;
+import com.founderlink.investment.query.InvestmentQueryService;
 import com.founderlink.investment.repository.InvestmentRepository;
-import com.founderlink.investment.serviceImpl.InvestmentServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class GetInvestmentByIdTest {
@@ -35,13 +34,10 @@ class GetInvestmentByIdTest {
     private InvestmentMapper investmentMapper;
 
     @Mock
-    private InvestmentEventPublisher eventPublisher;
-
-    @Mock
     private StartupServiceClient startupServiceClient;
 
     @InjectMocks
-    private InvestmentServiceImpl investmentService;
+    private InvestmentQueryService investmentService;
 
     private Investment investment;
     private InvestmentResponseDto responseDto;
