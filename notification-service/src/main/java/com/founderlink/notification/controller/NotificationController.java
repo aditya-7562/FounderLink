@@ -26,7 +26,8 @@ public class NotificationController {
     @GetMapping("/{userId}")
     @Operation(summary = "Get all notifications for a user", description = "Fetches all notifications for the specified user.")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notifications fetched successfully")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notifications fetched successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseEntity<List<NotificationResponseDTO>> getNotifications(@PathVariable Long userId) {
         log.info("GET /notifications/{} - fetching all notifications", userId);
@@ -36,7 +37,8 @@ public class NotificationController {
     @GetMapping("/{userId}/unread")
     @Operation(summary = "Get unread notifications for a user", description = "Fetches all unread notifications for the specified user.")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Unread notifications fetched successfully")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Unread notifications fetched successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseEntity<List<NotificationResponseDTO>> getUnreadNotifications(@PathVariable Long userId) {
         log.info("GET /notifications/{}/unread - fetching unread notifications", userId);
@@ -46,7 +48,8 @@ public class NotificationController {
     @PutMapping("/{id}/read")
     @Operation(summary = "Mark notification as read", description = "Marks the specified notification as read.")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notification marked as read successfully")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notification marked as read successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notification not found")
     })
     public ResponseEntity<NotificationResponseDTO> markAsRead(@PathVariable Long id) {
         log.info("PUT /notifications/{}/read - marking as read", id);

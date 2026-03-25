@@ -48,7 +48,8 @@ public class StartupController {
         @Operation(summary = "Create a new startup", description = "Creates a new startup. Only users with role FOUNDER can create startups.")
         @ApiResponses(value = {
                 @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Startup created successfully"),
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — FOUNDER role required")
         })
         public ResponseEntity<ApiResponse<?>> createStartup(
                         @RequestHeader("X-User-Id") Long founderId,
@@ -82,7 +83,7 @@ public class StartupController {
         @Operation(summary = "Get all startups", description = "Returns all startups. Accessible by INVESTOR, FOUNDER, COFOUNDER, ADMIN.")
         @ApiResponses(value = {
                 @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startups fetched successfully"),
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — insufficient role")
         })
         public ResponseEntity<ApiResponse<?>> getAllStartups(
                         @RequestHeader("X-User-Role") String userRole) {
@@ -114,7 +115,8 @@ public class StartupController {
         @GetMapping("/{id}")
         @Operation(summary = "Get startup by ID", description = "Returns a single startup by its ID. No role check needed.")
         @ApiResponses(value = {
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startup fetched successfully")
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startup fetched successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Startup not found")
         })
         public ResponseEntity<StartupResponseDto> getStartupById(
                         @PathVariable Long id) {
@@ -136,7 +138,8 @@ public class StartupController {
         @GetMapping("/details/{id}")
         @Operation(summary = "Get startup details by ID", description = "Returns startup details for external use.")
         @ApiResponses(value = {
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startup fetched successfully")
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startup fetched successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Startup not found")
         })
         public ResponseEntity<ApiResponse<?>> getStartupDetails(
                         @PathVariable Long id) {
@@ -160,7 +163,7 @@ public class StartupController {
         @Operation(summary = "Get startups by founder", description = "Returns all startups for a given founder. Only users with role FOUNDER can access.")
         @ApiResponses(value = {
                 @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startups fetched successfully"),
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — FOUNDER role required")
         })
         public ResponseEntity<ApiResponse<?>> getStartupsByFounder(
                         @RequestHeader("X-User-Id") Long founderId,
@@ -192,7 +195,9 @@ public class StartupController {
         @Operation(summary = "Update a startup", description = "Updates a startup. Only users with role FOUNDER can update startups.")
         @ApiResponses(value = {
                 @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startup updated successfully"),
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — FOUNDER role required"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Startup not found")
         })
         public ResponseEntity<ApiResponse<?>> updateStartup(
                         @RequestHeader("X-User-Id") Long founderId,
@@ -226,7 +231,8 @@ public class StartupController {
         @Operation(summary = "Delete a startup", description = "Deletes a startup. Only users with role FOUNDER can delete startups.")
         @ApiResponses(value = {
                 @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startup deleted successfully"),
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — FOUNDER role required"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Startup not found")
         })
         public ResponseEntity<ApiResponse<?>> deleteStartup(
                         @RequestHeader("X-User-Id") Long founderId,
@@ -258,7 +264,8 @@ public class StartupController {
         @Operation(summary = "Search startups", description = "Searches startups by industry, stage, and funding. Accessible by INVESTOR, FOUNDER, COFOUNDER, ADMIN.")
         @ApiResponses(value = {
                 @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startups fetched successfully"),
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid search parameters or enum value"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — insufficient role")
         })
         public ResponseEntity<ApiResponse<?>> searchStartups(
                         @RequestHeader("X-User-Role") String userRole,

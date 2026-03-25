@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-// Use fully qualified name for @ApiResponse annotation to avoid collision
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,16 +36,19 @@ public class UserController {
     private static final String INTERNAL_SECRET_HEADER = "X-Internal-Secret";
     private static final String EXPECTED_AUTH_SOURCE = "gateway";
 
-    // Adding Users
     @Operation(summary = "Create user (internal)", description = "Creates a new user via internal endpoint.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User created successfully")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User created successfully"),
+        @ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
+        @ApiResponse(responseCode = "403", description = "Forbidden — invalid internal secret"),
+        @ApiResponse(responseCode = "409", description = "User already exists")
+    })
     @PostMapping("/internal")
     public ResponseEntity<UserResponseDto> createUser(
             @Valid @RequestBody UserRequestAuthDto dto,
             @RequestHeader(name = AUTH_SOURCE_HEADER, required = false) String authSource,
             @RequestHeader(name = INTERNAL_SECRET_HEADER, required = false) String secret) {
 
-        // Validate internal endpoint access
         if (!isValidInternalAccess(authSource, secret)) {
             return ResponseEntity.status(403).build();
         }
@@ -53,32 +57,45 @@ public class UserController {
     }
 
     @Operation(summary = "Get user by ID", description = "Fetches a user by their ID.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User fetched successfully")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User fetched successfully"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUser(@PathVariable Long id) {
         return ResponseEntity.ok(service.getUser(id));
     }
 
-        @Operation(summary = "Update user", description = "Updates a user's information.")
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User updated successfully")
-        @PutMapping("/{id}")
-        public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,
-            @RequestBody UserRequestDto userRequestDto) {
+    @Operation(summary = "Update user", description = "Updates a user's information.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User updated successfully"),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "409", description = "Conflict — duplicate data")
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,
+        @RequestBody UserRequestDto userRequestDto) {
         return ResponseEntity.ok(service.updateUser(id, userRequestDto));
     }
 
     @Operation(summary = "Get all users", description = "Fetches all users.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Users fetched successfully")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Users fetched successfully")
+    })
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         return ResponseEntity.ok(service.getAllUsers());
     }
 
-        @Operation(summary = "Get users by role", description = "Fetches users by their role.")
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Users fetched successfully")
-        @GetMapping("/role")
-        public ResponseEntity<List<UserResponseDto>> getUsersByRole(
-            @RequestHeader(name = "X-User-Role") String roleHeader) {
+    @Operation(summary = "Get users by role", description = "Fetches users by their role.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Users fetched successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid role provided"),
+        @ApiResponse(responseCode = "403", description = "Forbidden — ADMIN role not allowed")
+    })
+    @GetMapping("/role")
+    public ResponseEntity<List<UserResponseDto>> getUsersByRole(
+        @RequestHeader(name = "X-User-Role") String roleHeader) {
 
         log.info("GET /users/role - fetching users by role: {}", roleHeader);
 
@@ -102,11 +119,9 @@ public class UserController {
     }
 
     private boolean isValidInternalAccess(String authSource, String secret) {
-        // Both headers must be present and correct
         if (authSource == null || secret == null) {
             return false;
         }
-
         return EXPECTED_AUTH_SOURCE.equals(authSource) && internalSecret.equals(secret);
     }
 }

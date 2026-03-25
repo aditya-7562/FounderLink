@@ -29,7 +29,9 @@ public class MessageController {
     @PostMapping
     @Operation(summary = "Send a message", description = "Sends a new message from one user to another.")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Message sent successfully")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Message sent successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "503", description = "User service unavailable")
     })
     public ResponseEntity<MessageResponseDTO> sendMessage(@Valid @RequestBody MessageRequestDTO requestDTO) {
         log.info("POST /messages - sendMessage from: {} to: {}", requestDTO.getSenderId(), requestDTO.getReceiverId());
@@ -40,7 +42,8 @@ public class MessageController {
     @GetMapping("/{id}")
     @Operation(summary = "Get message by ID", description = "Retrieves a message by its unique ID.")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Message fetched successfully")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Message fetched successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Message not found")
     })
     public ResponseEntity<MessageResponseDTO> getMessageById(@PathVariable Long id) {
         log.info("GET /messages/{} - getMessageById", id);
