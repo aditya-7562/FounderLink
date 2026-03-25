@@ -44,6 +44,7 @@ public class InvestmentEventPublisher {
             log.error("Failed to publish " +
                     "INVESTMENT_CREATED: {}",
                     e.getMessage());
+            throw new IllegalStateException("Failed to publish INVESTMENT_CREATED event", e);
         }
     }
 
@@ -65,6 +66,7 @@ public class InvestmentEventPublisher {
             log.error("Failed to publish " +
                     "INVESTMENT_APPROVED: {}",
                     e.getMessage());
+            throw new IllegalStateException("Failed to publish INVESTMENT_APPROVED event", e);
         }
     }
 
@@ -86,6 +88,7 @@ public class InvestmentEventPublisher {
             log.error("Failed to publish " +
                     "INVESTMENT_REJECTED: {}",
                     e.getMessage());
+            throw new IllegalStateException("Failed to publish INVESTMENT_REJECTED event", e);
         }
     }
 }

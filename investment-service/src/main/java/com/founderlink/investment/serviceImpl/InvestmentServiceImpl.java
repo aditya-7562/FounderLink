@@ -42,8 +42,67 @@ public class InvestmentServiceImpl implements InvestmentService {
     private final InvestmentQueryService   queryService;
 
     @Override
+<<<<<<< HEAD
     public InvestmentResponseDto createInvestment(Long investorId, InvestmentRequestDto requestDto) {
         return commandService.createInvestment(investorId, requestDto);
+=======
+    public InvestmentResponseDto createInvestment(Long investorId,
+                                                   InvestmentRequestDto requestDto) {
+
+        log.info("Creating investment - investorId: {}, startupId: {}", investorId, requestDto.getStartupId());
+        StartupResponseDto startup = startupServiceClient
+                .getStartupById(requestDto.getStartupId());
+
+        if (startup == null) {
+            throw new StartupNotFoundException(
+                    "Startup not found with id: " + requestDto.getStartupId());
+        }
+    	
+    	verifyStartupExists(requestDto.getStartupId());
+
+        // Check duplicate PENDING investment only
+        if (investmentRepository
+                .existsByStartupIdAndInvestorIdAndStatus(
+                        requestDto.getStartupId(),
+                        investorId,
+                        InvestmentStatus.PENDING)) {
+            throw new DuplicateInvestmentException(
+                    "You have already invested in this startup");
+        }
+
+        Investment investment = investmentMapper
+                .toEntity(requestDto, investorId);
+
+        Investment savedInvestment = investmentRepository
+                .save(investment);
+
+        InvestmentCreatedEvent event = new InvestmentCreatedEvent(
+                savedInvestment.getId(),
+                savedInvestment.getStartupId(),
+                savedInvestment.getInvestorId(),
+                startup.getFounderId(),
+                savedInvestment.getAmount()
+        );
+        eventPublisher.publishInvestmentCreatedEvent(event);
+
+        return investmentMapper.toResponseDto(savedInvestment);
+    }
+
+
+    @Override
+    public List<InvestmentResponseDto> getInvestmentsByStartupId(Long startupId,Long founderId) {
+    	
+    	log.info("Fetching investments for startupId: {}, founderId: {}", startupId, founderId);
+    	verifyFounderOwnsStartup(
+                startupId, founderId); 
+
+        List<Investment> investments = investmentRepository
+                .findByStartupId(startupId);
+
+        return investments.stream()
+                .map(investmentMapper::toResponseDto)
+                .collect(Collectors.toList());
+>>>>>>> 2ccf1aa (fix: payment gateway)
     }
 
     @Override
@@ -80,6 +139,11 @@ public class InvestmentServiceImpl implements InvestmentService {
         verifyFounderOwnsStartup(
                 investment.getStartupId(),
                 founderId);
+
+        if (statusUpdateDto.getStatus() == com.founderlink.investment.entity.ManualInvestmentStatus.COMPLETED) {
+            throw new InvalidStatusTransitionException(
+                    "COMPLETED can only be set from payment result events");
+        }
 
         // Convert ManualInvestmentStatus
         // to InvestmentStatus
@@ -130,10 +194,92 @@ public class InvestmentServiceImpl implements InvestmentService {
     public InvestmentResponseDto getInvestmentById(Long investmentId) {
         return queryService.getInvestmentById(investmentId);
     }
+<<<<<<< HEAD
 
     @Override
     public List<InvestmentResponseDto> getInvestmentsByStartupId(Long startupId, Long founderId) {
         return queryService.getInvestmentsByStartupId(startupId, founderId);
+=======
+
+    @Override
+    public InvestmentResponseDto markCompletedFromPayment(Long investmentId) {
+
+        log.info("Marking investment as COMPLETED from payment result - investmentId: {}", investmentId);
+        Investment investment = investmentRepository.findById(investmentId)
+                .orElseThrow(() -> new InvestmentNotFoundException(
+                        "Investment not found with id: " + investmentId));
+
+        // FIX A: Investment Completion Guard - prevent invalid transitions
+        if (investment.getStatus() != InvestmentStatus.APPROVED) {
+            return investmentMapper.toResponseDto(investment);
+        }
+
+        // FIX A: Duplicate update guard - prevent duplicate marking as COMPLETED
+        if (investment.getStatus() == InvestmentStatus.COMPLETED) {
+            return investmentMapper.toResponseDto(investment);
+        }
+
+        investment.setStatus(InvestmentStatus.COMPLETED);
+        return investmentMapper.toResponseDto(investmentRepository.save(investment));
+    }
+
+    @Override
+    public InvestmentResponseDto markPaymentFailedFromPayment(Long investmentId) {
+
+        log.info("Marking investment as PAYMENT_FAILED from payment result - investmentId: {}", investmentId);
+        Investment investment = investmentRepository.findById(investmentId)
+                .orElseThrow(() -> new InvestmentNotFoundException(
+                        "Investment not found with id: " + investmentId));
+
+        if (investment.getStatus() == InvestmentStatus.PAYMENT_FAILED) {
+            return investmentMapper.toResponseDto(investment);
+        }
+
+        if (investment.getStatus() != InvestmentStatus.APPROVED) {
+            return investmentMapper.toResponseDto(investment);
+        }
+
+        investment.setStatus(InvestmentStatus.PAYMENT_FAILED);
+        return investmentMapper.toResponseDto(investmentRepository.save(investment));
+    }
+    
+    private void validateStatusTransition(
+            InvestmentStatus currentStatus,
+            InvestmentStatus newStatus) {
+
+        if (currentStatus == InvestmentStatus.COMPLETED && newStatus == InvestmentStatus.REJECTED) {
+            throw new IllegalStateException("Cannot reject completed investment");
+        }
+
+        // Cannot update COMPLETED
+        if (currentStatus == InvestmentStatus.COMPLETED) {
+            throw new InvalidStatusTransitionException(
+                    "Cannot update a COMPLETED investment");
+        }
+
+        // Cannot update REJECTED
+        if (currentStatus == InvestmentStatus.REJECTED) {
+            throw new InvalidStatusTransitionException(
+                    "Cannot update a REJECTED investment");
+        }
+
+        // Cannot update STARTUP_CLOSED          ← ADD
+        if (currentStatus ==
+                InvestmentStatus.STARTUP_CLOSED) {
+            throw new InvalidStatusTransitionException(
+                    "Cannot update investment of " +
+                    "a closed startup");
+        }
+
+        // COMPLETED only after APPROVED
+        if (newStatus == InvestmentStatus.COMPLETED
+                && currentStatus !=
+                InvestmentStatus.APPROVED) {
+            throw new InvalidStatusTransitionException(
+                    "Investment must be APPROVED " +
+                    "before marking COMPLETED");
+        }
+>>>>>>> 2ccf1aa (fix: payment gateway)
     }
 
     @Override

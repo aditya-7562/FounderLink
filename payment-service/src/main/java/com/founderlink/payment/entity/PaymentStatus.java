@@ -1,21 +1,17 @@
 package com.founderlink.payment.entity;
 
 /**
- * Payment lifecycle states for saga orchestration.
+ * Payment lifecycle states for Razorpay integration.
  *
  * States:
- * - PENDING_HOLD: Awaiting hold authorization from investor creation
- * - HELD: Funds authorized but not yet charged
- * - CAPTURED: Funds actually charged to investor
- * - TRANSFERRED: Successfully transferred to startup wallet
- * - RELEASED: Funds released (rejection or compensation)
+ * - PENDING: Investment approved, awaiting user to initiate payment
+ * - INITIATED: Razorpay order created, awaiting user payment
+ * - SUCCESS: Payment captured by Razorpay, funds transferred
  * - FAILED: Payment operation failed
  */
 public enum PaymentStatus {
-    PENDING_HOLD,    // Initial state when investment created
-    HELD,            // Stripe authorization successful
-    CAPTURED,        // Stripe capture successful, investor charged
-    TRANSFERRED,     // Successfully deposited to startup wallet
-    RELEASED,        // Funds released (rejection or compensation)
-    FAILED           // Payment failed at some step
+    PENDING,     // Investment approved, payment not yet initiated
+    INITIATED,   // Order created, awaiting payment
+    SUCCESS,     // Payment captured and transferred
+    FAILED       // Payment failed
 }

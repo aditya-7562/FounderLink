@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * Payment entity tracking investment payment lifecycle.
- * States: PENDING_HOLD → HELD → CAPTURED → TRANSFERRED / RELEASED
+ * States: INITIATED → SUCCESS / FAILED
  */
 @Entity
 @Table(name = "payments")
@@ -31,7 +31,7 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private Long investmentId;
 
     @Column(nullable = false)
@@ -53,8 +53,15 @@ public class Payment {
     @Column(unique = true, nullable = false, length = 36)
     private String idempotencyKey;
 
+    // Razorpay fields
     @Column(length = 100)
-    private String externalPaymentId;  // Stripe charge ID
+    private String razorpayOrderId;  // order_xxx
+
+    @Column(length = 100)
+    private String razorpayPaymentId;  // pay_xxx (null until payment)
+
+    @Column(length = 500)
+    private String razorpaySignature;  // for verification
 
     @Column(columnDefinition = "TEXT")
     private String failureReason;
@@ -70,7 +77,7 @@ public class Payment {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         if (this.status == null) {
-            this.status = PaymentStatus.PENDING_HOLD;
+            this.status = PaymentStatus.PENDING;
         }
     }
 }

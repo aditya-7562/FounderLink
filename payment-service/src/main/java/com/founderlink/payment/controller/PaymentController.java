@@ -5,16 +5,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.founderlink.payment.dto.request.PaymentHoldRequestDto;
+import com.founderlink.payment.dto.request.ConfirmPaymentRequest;
+import com.founderlink.payment.dto.request.CreateOrderRequest;
 import com.founderlink.payment.dto.response.ApiResponse;
-import com.founderlink.payment.dto.response.PaymentResponseDto;
-import com.founderlink.payment.service.PaymentService;
+import com.founderlink.payment.dto.response.ConfirmPaymentResponse;
+import com.founderlink.payment.dto.response.CreateOrderResponse;
+import com.founderlink.payment.entity.Payment;
+import com.founderlink.payment.exception.PaymentNotFoundException;
+import com.founderlink.payment.repository.PaymentRepository;
+import com.founderlink.payment.service.RazorpayService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,63 +30,54 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final RazorpayService razorpayService;
+    private final PaymentRepository paymentRepository;
 
     /**
-     * POST /payments/hold
-     * Hold funds when investment is created (authorization step).
+     * POST /payments/create-order
+     * Create Razorpay order for approved investment (user-initiated).
+     * 
+     * Required query params: amount, investorId, startupId, founderId
+     * (These would normally come from investment-service, but for simplicity we pass them)
      */
-    @PostMapping("/hold")
-    public ResponseEntity<ApiResponse<PaymentResponseDto>> holdFunds(
-            @Valid @RequestBody PaymentHoldRequestDto holdRequest) {
+    @PostMapping("/create-order")
+public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(
+        @Valid @RequestBody CreateOrderRequest request) {
 
-        log.info("POST /payments/hold - investmentId: {}, amount: ${}",
-                holdRequest.getInvestmentId(), holdRequest.getAmount());
+    log.info("POST /payments/create-order - investmentId: {}", 
+            request.getInvestmentId());
 
-        PaymentResponseDto response = paymentService.holdFunds(holdRequest);
+    CreateOrderResponse response = razorpayService.createOrder(
+        request.getInvestmentId()
+    );
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(
-                        "Funds held successfully",
-                        response));
-    }
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(new ApiResponse<>(
+                    "Razorpay order created successfully",
+                    response));
+}
 
     /**
-     * PUT /payments/{paymentId}/capture
-     * Capture held funds (actually charge investor).
+     * POST /payments/confirm
+     * Confirm payment after Razorpay checkout success.
      */
-    @PutMapping("/{paymentId}/capture")
-    public ResponseEntity<ApiResponse<PaymentResponseDto>> captureFunds(
-            @PathVariable Long paymentId) {
+    @PostMapping("/confirm")
+    public ResponseEntity<ApiResponse<ConfirmPaymentResponse>> confirmPayment(
+            @Valid @RequestBody ConfirmPaymentRequest request) {
 
-        log.info("PUT /payments/{}/capture", paymentId);
+        log.info("POST /payments/confirm - orderId: {}, paymentId: {}",
+                request.getRazorpayOrderId(), request.getRazorpayPaymentId());
 
-        PaymentResponseDto response = paymentService.captureFunds(paymentId);
-
-        return ResponseEntity
-                .ok(new ApiResponse<>(
-                        "Funds captured successfully",
-                        response));
-    }
-
-    /**
-     * PUT /payments/{paymentId}/release
-     * Release held funds (on rejection or compensation).
-     */
-    @PutMapping("/{paymentId}/release")
-    public ResponseEntity<ApiResponse<PaymentResponseDto>> releaseFunds(
-            @PathVariable Long paymentId,
-            @RequestParam(required = false) String reason) {
-
-        log.info("PUT /payments/{}/release - reason: {}", paymentId, reason);
-
-        String releaseReason = reason != null ? reason : "No reason provided";
-        PaymentResponseDto response = paymentService.releaseFunds(paymentId, releaseReason);
+        ConfirmPaymentResponse response = razorpayService.confirmPayment(
+            request.getRazorpayOrderId(),
+            request.getRazorpayPaymentId(),
+            request.getRazorpaySignature()
+        );
 
         return ResponseEntity
                 .ok(new ApiResponse<>(
-                        "Funds released successfully",
+                        "Payment confirmed successfully",
                         response));
     }
 
@@ -91,17 +86,18 @@ public class PaymentController {
      * Retrieve payment details.
      */
     @GetMapping("/{paymentId}")
-    public ResponseEntity<ApiResponse<PaymentResponseDto>> getPayment(
+    public ResponseEntity<ApiResponse<Payment>> getPayment(
             @PathVariable Long paymentId) {
 
         log.info("GET /payments/{}", paymentId);
 
-        PaymentResponseDto response = paymentService.getPaymentById(paymentId);
+        Payment payment = paymentRepository.findById(paymentId)
+            .orElseThrow(() -> new PaymentNotFoundException("Payment not found: " + paymentId));
 
         return ResponseEntity
                 .ok(new ApiResponse<>(
                         "Payment retrieved successfully",
-                        response));
+                        payment));
     }
 
     /**
@@ -109,16 +105,17 @@ public class PaymentController {
      * Retrieve payment by investment ID.
      */
     @GetMapping("/investment/{investmentId}")
-    public ResponseEntity<ApiResponse<PaymentResponseDto>> getPaymentByInvestment(
+    public ResponseEntity<ApiResponse<Payment>> getPaymentByInvestment(
             @PathVariable Long investmentId) {
 
         log.info("GET /payments/investment/{}", investmentId);
 
-        PaymentResponseDto response = paymentService.getPaymentByInvestmentId(investmentId);
+        Payment payment = paymentRepository.findByInvestmentId(investmentId)
+            .orElseThrow(() -> new PaymentNotFoundException("Payment not found for investment: " + investmentId));
 
         return ResponseEntity
                 .ok(new ApiResponse<>(
                         "Payment retrieved successfully",
-                        response));
+                        payment));
     }
 }

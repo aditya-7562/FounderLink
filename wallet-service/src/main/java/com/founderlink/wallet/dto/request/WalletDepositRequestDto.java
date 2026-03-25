@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WalletDepositRequestDto {
 
+    @NotNull(message = "referenceId is required")
+    private Long referenceId;
+
     @NotNull(message = "startupId is required")
     private Long startupId;
 

@@ -21,7 +21,7 @@ public class PaymentMapper {
         dto.setFounderId(payment.getFounderId());
         dto.setAmount(payment.getAmount());
         dto.setStatus(payment.getStatus());
-        dto.setExternalPaymentId(payment.getExternalPaymentId());
+        dto.setExternalPaymentId(payment.getRazorpayPaymentId());
         dto.setFailureReason(payment.getFailureReason());
         dto.setCreatedAt(payment.getCreatedAt());
         dto.setUpdatedAt(payment.getUpdatedAt());

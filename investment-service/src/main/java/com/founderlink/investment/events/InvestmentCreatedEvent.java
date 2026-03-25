@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InvestmentCreatedEvent {
 
+    private Long investmentId;
     private Long startupId;
     private Long investorId;
     private Long founderId;

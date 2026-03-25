@@ -28,6 +28,20 @@ CREATE TABLE IF NOT EXISTS wallets (
     INDEX idx_startup_id (startup_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS wallet_transactions (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    wallet_id BIGINT NOT NULL,
+    reference_id BIGINT NOT NULL,
+    source_payment_id BIGINT NOT NULL,
+    idempotency_key VARCHAR(100) NOT NULL,
+    amount DECIMAL(19, 2) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uk_reference_id (reference_id),
+    INDEX idx_wallet_id (wallet_id),
+    FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =====================================================
 -- Sample Data (for testing)
 -- =====================================================
