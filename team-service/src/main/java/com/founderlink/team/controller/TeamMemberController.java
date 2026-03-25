@@ -70,7 +70,7 @@ public class TeamMemberController {
 
         log.info("GET /teams/startup/{} - userId: {}, role: {}", startupId, userId, userRole);
         // CoFounder membership check
-        if (userRole.equals("ROLE_COFUNDER")) {
+        if (userRole.equals("ROLE_COFOUNDER")) {
             boolean isMember = teamMemberService
                     .isTeamMember(startupId, userId);
             if (!isMember) {
@@ -81,7 +81,7 @@ public class TeamMemberController {
 
         // Unknown role check
         if (!userRole.equals("ROLE_FOUNDER") &&
-            !userRole.equals("ROLE_COFUNDER") &&
+            !userRole.equals("ROLE_COFOUNDER") &&
             !userRole.equals("ROLE_INVESTOR") &&
             !userRole.equals("ROLE_ADMIN")) {
             throw new ForbiddenAccessException(
@@ -136,7 +136,7 @@ public class TeamMemberController {
             @RequestHeader("X-User-Role") String userRole) {
 
         log.info("GET /teams/member/history - userId: {}", userId);
-        if (!userRole.equals("ROLE_COFUNDER") &&
+        if (!userRole.equals("ROLE_COFOUNDER") &&
             !userRole.equals("ROLE_ADMIN")) {
             log.warn("Access denied for getMemberHistory - role: {}", userRole);
             throw new ForbiddenAccessException(
@@ -164,7 +164,7 @@ public class TeamMemberController {
             @RequestHeader("X-User-Role") String userRole) {
 
         log.info("GET /teams/member/active - userId: {}", userId);
-        if (!userRole.equals("ROLE_COFUNDER") &&
+        if (!userRole.equals("ROLE_COFOUNDER") &&
             !userRole.equals("ROLE_ADMIN")) {
             log.warn("Access denied for getActiveMemberRoles - role: {}", userRole);
             throw new ForbiddenAccessException(
