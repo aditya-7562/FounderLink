@@ -21,8 +21,8 @@ public class OpenApiConfig {
                         .scheme("bearer")
                         .bearerFormat("JWT"))
                 .info(new Info()
-                        .title("User Service API")
-                        .version("1.0")
-                        .description("API documentation for the User Service"));
+                        .title("User Service API Documentation")
+                        .version("1.0.0")
+                        .description("OpenAPI documentation for the User Service."));
     }
 }
