@@ -4,15 +4,15 @@ server:
 spring:
   application:
     name: team-service
-  config:
-    import: configserver:http://config-server:8888
-#   datasource:
+#  config:
+#    import: optional:configserver:http://config-server:8888
+#  datasource:
 #     url: jdbc:mysql://localhost:3306/team_db
 #     username: root
-#     password: parth123
+#     password: Anim@4748
 #     driver-class-name: com.mysql.cj.jdbc.Driver
-
-#   jpa:
+#
+#  jpa:
 #     hibernate:
 #       ddl-auto: update
 #     show-sql: true
@@ -20,26 +20,26 @@ spring:
 #       hibernate:
 #         format_sql: true
 #         dialect: org.hibernate.dialect.MySQLDialect
-
-#   rabbitmq:
+#
+#  rabbitmq:
 #     host: localhost
 #     port: 5672
 #     username: guest
 #     password: guest
-
-#   cloud:
+#
+#  cloud:
 #     openfeign:
 #       circuitbreaker:
 #         enabled: true
-
-# eureka:
+#
+#eureka:
 #   client:
 #     service-url:
 #       defaultZone: http://localhost:8761/eureka/
 #     register-with-eureka: true
 #     fetch-registry: true
-
-# management:
+#
+#management:
 #   endpoints:
 #     web:
 #       exposure:
@@ -47,16 +47,22 @@ spring:
 #   endpoint:
 #     health:
 #       show-details: always
-
-# resilience4j:
+#   tracing:
+#     sampling:
+#       probability: 1.0
+#   zipkin:
+#     tracing:
+#       endpoint: http://localhost:9411/api/v2/spans
+#
+#resilience4j:
 #   circuitbreaker:
 #     instances:
 #       startup-service:
 #         sliding-window-size: 10
 #         failure-rate-threshold: 50
 #         wait-duration-in-open-state: 10s
-
-# logging:
+#
+#logging:
 #   level:
 #     root: INFO
 #     com.founderlink.team: DEBUG
@@ -66,7 +72,7 @@ spring:
 # ==========================================
 # RABBITMQ QUEUES AND EXCHANGES
 # ==========================================
-# rabbitmq:
+#rabbitmq:
 #   exchange: founderlink.exchange
 #   team:
 #     queue: team.queue
@@ -75,3 +81,4 @@ spring:
 #     deleted:
 #       queue: team.startup.deleted.queue
 #       routing-key: startup.deleted
+
