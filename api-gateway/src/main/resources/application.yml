@@ -9,6 +9,57 @@ spring:
 #   cloud:
 #     gateway:
 #       routes:
+#         # ── Swagger API-docs routes (rewrite prefix before forwarding) ──
+#         - id: auth-service-swagger
+#           uri: lb://auth-service
+#           predicates:
+#             - Path=/auth/v3/api-docs/**
+#           filters:
+#             - RewritePath=/auth/(?<remaining>.*), /${remaining}
+
+#         - id: user-service-swagger
+#           uri: lb://user-service
+#           predicates:
+#             - Path=/users/v3/api-docs/**
+#           filters:
+#             - RewritePath=/users/(?<remaining>.*), /${remaining}
+
+#         - id: startup-service-swagger
+#           uri: lb://startup-service
+#           predicates:
+#             - Path=/startup/v3/api-docs/**
+#           filters:
+#             - RewritePath=/startup/(?<remaining>.*), /${remaining}
+
+#         - id: investment-service-swagger
+#           uri: lb://investment-service
+#           predicates:
+#             - Path=/investments/v3/api-docs/**
+#           filters:
+#             - RewritePath=/investments/(?<remaining>.*), /${remaining}
+
+#         - id: team-service-swagger
+#           uri: lb://team-service
+#           predicates:
+#             - Path=/teams/v3/api-docs/**
+#           filters:
+#             - RewritePath=/teams/(?<remaining>.*), /${remaining}
+
+#         - id: messaging-service-swagger
+#           uri: lb://messaging-service
+#           predicates:
+#             - Path=/messages/v3/api-docs/**
+#           filters:
+#             - RewritePath=/messages/(?<remaining>.*), /${remaining}
+
+#         - id: notification-service-swagger
+#           uri: lb://notification-service
+#           predicates:
+#             - Path=/notifications/v3/api-docs/**
+#           filters:
+#             - RewritePath=/notifications/(?<remaining>.*), /${remaining}
+
+#         # ── Service routes (no StripPrefix — controllers own the full path) ──
 #         - id: auth-service
 #           uri: lb://auth-service
 #           predicates:
@@ -43,7 +94,7 @@ spring:
 #           uri: lb://notification-service
 #           predicates:
 #             - Path=/notifications/**
-
+            
 #       globalcors:
 #         cors-configurations:
 #           '[/**]':
@@ -65,6 +116,47 @@ spring:
 #       - /auth/refresh
 #       - /auth/logout
 #       - /eureka/**
+#       # Swagger/OpenAPI endpoints (root and service-prefixed)
+#       - /v3/api-docs
+#       - /v3/api-docs/**
+#       - /swagger-ui/**
+#       - /swagger-resources/**
+#       - /webjars/**
+#       - /auth/v3/api-docs
+#       - /auth/v3/api-docs/**
+#       - /auth/swagger-ui/**
+#       - /auth/swagger-resources/**
+#       - /auth/webjars/**
+#       - /users/v3/api-docs
+#       - /users/v3/api-docs/**
+#       - /users/swagger-ui/**
+#       - /users/swagger-resources/**
+#       - /users/webjars/**
+#       - /startup/v3/api-docs
+#       - /startup/v3/api-docs/**
+#       - /startup/swagger-ui/**
+#       - /startup/swagger-resources/**
+#       - /startup/webjars/**
+#       - /investments/v3/api-docs
+#       - /investments/v3/api-docs/**
+#       - /investments/swagger-ui/**
+#       - /investments/swagger-resources/**
+#       - /investments/webjars/**
+#       - /teams/v3/api-docs
+#       - /teams/v3/api-docs/**
+#       - /teams/swagger-ui/**
+#       - /teams/swagger-resources/**
+#       - /teams/webjars/**
+#       - /messages/v3/api-docs
+#       - /messages/v3/api-docs/**
+#       - /messages/swagger-ui/**
+#       - /messages/swagger-resources/**
+#       - /messages/webjars/**
+#       - /notifications/v3/api-docs
+#       - /notifications/v3/api-docs/**
+#       - /notifications/swagger-ui/**
+#       - /notifications/swagger-resources/**
+#       - /notifications/webjars/**
 
 # rbac:
 #   default-policy: DENY
@@ -228,3 +320,24 @@ spring:
 #         gateway: DEBUG
 #   file:
 #     name: logs/api-gateway.log
+
+# # Swagger UI aggregation for all services
+# springdoc:
+#   swagger-ui:
+#     urls:
+#       - name: gateway
+#         url: /v3/api-docs
+#       - name: auth-service
+#         url: /auth/v3/api-docs
+#       - name: user-service
+#         url: /users/v3/api-docs
+#       - name: startup-service
+#         url: /startup/v3/api-docs
+#       - name: investment-service
+#         url: /investments/v3/api-docs
+#       - name: team-service
+#         url: /teams/v3/api-docs
+#       - name: messaging-service
+#         url: /messages/v3/api-docs
+#       - name: notification-service
+#         url: /notifications/v3/api-docs

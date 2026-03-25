@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.founderlink.team.dto.request.InvitationRequestDto;
 import com.founderlink.team.dto.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+// Use fully qualified name for @ApiResponse annotation to avoid collision
 import com.founderlink.team.dto.response.InvitationResponseDto;
 import com.founderlink.team.exception.ForbiddenAccessException;
 import com.founderlink.team.service.InvitationService;
@@ -27,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/teams")
 @RequiredArgsConstructor
+@Tag(name = "Invitation", description = "APIs for managing team invitations")
 public class InvitationController {
 
     private final InvitationService invitationService;
@@ -35,8 +39,10 @@ public class InvitationController {
     // POST /teams/invite
     // Called by → FOUNDER
     
-    @PostMapping("/invite")
-    public ResponseEntity<ApiResponse<?>> sendInvitation(
+        @Operation(summary = "Send invitation", description = "Allows a founder to send an invitation to a co-founder.")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Invitation sent successfully")
+        @PostMapping("/invite")
+        public ResponseEntity<ApiResponse<?>> sendInvitation(
             @RequestHeader("X-User-Id") Long founderId,
             @RequestHeader("X-User-Role") String userRole,
             @Valid @RequestBody InvitationRequestDto requestDto) {
@@ -63,8 +69,10 @@ public class InvitationController {
     // PUT /teams/invitations/{id}/cancel
     // Called by → FOUNDER
     
-    @PutMapping("/invitations/{id}/cancel")
-    public ResponseEntity<ApiResponse<?>> cancelInvitation(
+        @Operation(summary = "Cancel invitation", description = "Allows a founder to cancel an invitation.")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Invitation cancelled successfully")
+        @PutMapping("/invitations/{id}/cancel")
+        public ResponseEntity<ApiResponse<?>> cancelInvitation(
             @RequestHeader("X-User-Id") Long founderId,
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long id) {
@@ -89,8 +97,10 @@ public class InvitationController {
     // PUT /teams/invitations/{id}/reject
     // Called by → CO-FOUNDER
     
-    @PutMapping("/invitations/{id}/reject")
-    public ResponseEntity<ApiResponse<?>> rejectInvitation(
+        @Operation(summary = "Reject invitation", description = "Allows a co-founder to reject an invitation.")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Invitation rejected successfully")
+        @PutMapping("/invitations/{id}/reject")
+        public ResponseEntity<ApiResponse<?>> rejectInvitation(
             @RequestHeader("X-User-Id") Long userId,
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long id) {
@@ -116,8 +126,10 @@ public class InvitationController {
     // GET /teams/invitations/user/{userId}
     // Called by → CO-FOUNDER
     
-    @GetMapping("/invitations/user")
-    public ResponseEntity<ApiResponse<?>> getInvitationsByUserId(
+        @Operation(summary = "Get invitations by user ID", description = "Fetches invitations for a specific user.")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Invitations fetched successfully")
+        @GetMapping("/invitations/user")
+        public ResponseEntity<ApiResponse<?>> getInvitationsByUserId(
             @RequestHeader("X-User-Id") Long userId,
             @RequestHeader("X-User-Role") String userRole) {
 
@@ -141,8 +153,10 @@ public class InvitationController {
     // GET /teams/invitations/startup/{startupId}
     // Called by → FOUNDER
     
-    @GetMapping("/invitations/startup/{startupId}")
-    public ResponseEntity<ApiResponse<?>> getInvitationsByStartupId(
+        @Operation(summary = "Get invitations by startup ID", description = "Fetches invitations for a specific startup.")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Invitations fetched successfully")
+        @GetMapping("/invitations/startup/{startupId}")
+        public ResponseEntity<ApiResponse<?>> getInvitationsByStartupId(
             @RequestHeader("X-User-Id") Long founderId,
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long startupId) {

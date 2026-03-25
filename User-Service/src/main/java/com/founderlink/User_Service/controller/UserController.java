@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+// Use fully qualified name for @ApiResponse annotation to avoid collision
 
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@Tag(name = "User", description = "APIs for managing users")
 public class UserController {
 
     private final UserService service;
@@ -32,6 +36,8 @@ public class UserController {
     private static final String EXPECTED_AUTH_SOURCE = "gateway";
 
     // Adding Users
+    @Operation(summary = "Create user (internal)", description = "Creates a new user via internal endpoint.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User created successfully")
     @PostMapping("/internal")
     public ResponseEntity<UserResponseDto> createUser(
             @Valid @RequestBody UserRequestAuthDto dto,
@@ -46,24 +52,32 @@ public class UserController {
         return ResponseEntity.ok(service.createUser(dto));
     }
 
+    @Operation(summary = "Get user by ID", description = "Fetches a user by their ID.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User fetched successfully")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUser(@PathVariable Long id) {
         return ResponseEntity.ok(service.getUser(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,
+        @Operation(summary = "Update user", description = "Updates a user's information.")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User updated successfully")
+        @PutMapping("/{id}")
+        public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,
             @RequestBody UserRequestDto userRequestDto) {
         return ResponseEntity.ok(service.updateUser(id, userRequestDto));
     }
 
+    @Operation(summary = "Get all users", description = "Fetches all users.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Users fetched successfully")
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         return ResponseEntity.ok(service.getAllUsers());
     }
 
-    @GetMapping("/role")
-    public ResponseEntity<List<UserResponseDto>> getUsersByRole(
+        @Operation(summary = "Get users by role", description = "Fetches users by their role.")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Users fetched successfully")
+        @GetMapping("/role")
+        public ResponseEntity<List<UserResponseDto>> getUsersByRole(
             @RequestHeader(name = "X-User-Role") String roleHeader) {
 
         log.info("GET /users/role - fetching users by role: {}", roleHeader);

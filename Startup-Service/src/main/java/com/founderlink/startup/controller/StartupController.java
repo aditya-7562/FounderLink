@@ -26,11 +26,15 @@ import com.founderlink.startup.service.StartupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @Slf4j
 @RestController
 @RequestMapping("/startup")
 @RequiredArgsConstructor
+@Tag(name = "Startup", description = "Endpoints for managing startups")
 public class StartupController {
 
         private final StartupService startupService;
@@ -41,6 +45,11 @@ public class StartupController {
         // Called by → FOUNDER
         // ─────────────────────────────────────────
         @PostMapping
+        @Operation(summary = "Create a new startup", description = "Creates a new startup. Only users with role FOUNDER can create startups.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Startup created successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
         public ResponseEntity<ApiResponse<?>> createStartup(
                         @RequestHeader("X-User-Id") Long founderId,
                         @RequestHeader("X-User-Role") String userRole,
@@ -70,6 +79,11 @@ public class StartupController {
         // GET /startup
         // ─────────────────────────────────────────
         @GetMapping
+        @Operation(summary = "Get all startups", description = "Returns all startups. Accessible by INVESTOR, FOUNDER, COFOUNDER, ADMIN.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startups fetched successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
         public ResponseEntity<ApiResponse<?>> getAllStartups(
                         @RequestHeader("X-User-Role") String userRole) {
 
@@ -98,6 +112,10 @@ public class StartupController {
         // No role check needed
         // ─────────────────────────────────────────
         @GetMapping("/{id}")
+        @Operation(summary = "Get startup by ID", description = "Returns a single startup by its ID. No role check needed.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startup fetched successfully")
+        })
         public ResponseEntity<StartupResponseDto> getStartupById(
                         @PathVariable Long id) {
 
@@ -116,6 +134,10 @@ public class StartupController {
         // Called by Frontend
         // ─────────────────────────────────────────
         @GetMapping("/details/{id}")
+        @Operation(summary = "Get startup details by ID", description = "Returns startup details for external use.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startup fetched successfully")
+        })
         public ResponseEntity<ApiResponse<?>> getStartupDetails(
                         @PathVariable Long id) {
 
@@ -135,6 +157,11 @@ public class StartupController {
         // Called by → FOUNDER
         // ─────────────────────────────────────────
         @GetMapping("/founder")
+        @Operation(summary = "Get startups by founder", description = "Returns all startups for a given founder. Only users with role FOUNDER can access.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startups fetched successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
         public ResponseEntity<ApiResponse<?>> getStartupsByFounder(
                         @RequestHeader("X-User-Id") Long founderId,
                         @RequestHeader("X-User-Role") String userRole) {
@@ -162,6 +189,11 @@ public class StartupController {
         // Called by → FOUNDER
         // ─────────────────────────────────────────
         @PutMapping("/{id}")
+        @Operation(summary = "Update a startup", description = "Updates a startup. Only users with role FOUNDER can update startups.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startup updated successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
         public ResponseEntity<ApiResponse<?>> updateStartup(
                         @RequestHeader("X-User-Id") Long founderId,
                         @RequestHeader("X-User-Role") String userRole,
@@ -191,6 +223,11 @@ public class StartupController {
         // Called by → FOUNDER
         // ─────────────────────────────────────────
         @DeleteMapping("/{id}")
+        @Operation(summary = "Delete a startup", description = "Deletes a startup. Only users with role FOUNDER can delete startups.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startup deleted successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
         public ResponseEntity<ApiResponse<?>> deleteStartup(
                         @RequestHeader("X-User-Id") Long founderId,
                         @RequestHeader("X-User-Role") String userRole,
@@ -218,6 +255,11 @@ public class StartupController {
         // Called by → INVESTOR, FOUNDER, ADMIN
         // ─────────────────────────────────────────
         @GetMapping("/search")
+        @Operation(summary = "Search startups", description = "Searches startups by industry, stage, and funding. Accessible by INVESTOR, FOUNDER, COFOUNDER, ADMIN.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Startups fetched successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
         public ResponseEntity<ApiResponse<?>> searchStartups(
                         @RequestHeader("X-User-Role") String userRole,
                         @RequestParam(required = false) String industry,

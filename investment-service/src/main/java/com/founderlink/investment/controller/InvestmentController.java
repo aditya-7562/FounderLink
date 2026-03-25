@@ -23,11 +23,15 @@ import com.founderlink.investment.service.InvestmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @Slf4j
 @RestController
 @RequestMapping("/investments")
 @RequiredArgsConstructor
+@Tag(name = "Investments", description = "Endpoints for managing investments")
 public class InvestmentController {
 
     private final InvestmentService investmentService;
@@ -37,6 +41,11 @@ public class InvestmentController {
     // Called by → INVESTOR
     
     @PostMapping
+        @Operation(summary = "Create a new investment", description = "Creates a new investment. Only users with role INVESTOR can create investments.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Investment created successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
     public ResponseEntity<ApiResponse<?>> createInvestment(
             @RequestHeader("X-User-Id") Long investorId,
             @RequestHeader("X-User-Role") String userRole,
@@ -64,6 +73,11 @@ public class InvestmentController {
     // Called by → FOUNDER
     
     @GetMapping("/startup/{startupId}")
+        @Operation(summary = "Get investments by startup ID", description = "Returns all investments for a given startup. Only users with role FOUNDER or ADMIN can access.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Investments fetched successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
     public ResponseEntity<ApiResponse<?>> getInvestmentsByStartupId(
             @RequestHeader("X-User-Id") Long founderId,
             @RequestHeader("X-User-Role") String userRole,
@@ -93,6 +107,11 @@ public class InvestmentController {
     // Called by → INVESTOR
     
     @GetMapping("/investor")
+        @Operation(summary = "Get investments by investor ID", description = "Returns all investments for a given investor. Only users with role INVESTOR or ADMIN can access.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Investments fetched successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
     public ResponseEntity<ApiResponse<?>> getInvestmentsByInvestorId(
             @RequestHeader("X-User-Id") Long investorId,
             @RequestHeader("X-User-Role") String userRole) {
@@ -119,6 +138,11 @@ public class InvestmentController {
     // Called by → FOUNDER
     
     @PutMapping("/{id}/status")
+        @Operation(summary = "Update investment status", description = "Updates the status of an investment. Only users with role FOUNDER or ADMIN can update.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Investment status updated successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
     public ResponseEntity<ApiResponse<?>> updateInvestmentStatus(
             @RequestHeader("X-User-Id") Long founderId,
             @RequestHeader("X-User-Role") String userRole,
@@ -149,6 +173,11 @@ public class InvestmentController {
     // Called by → FOUNDER + INVESTOR
     
     @GetMapping("/{id}")
+        @Operation(summary = "Get investment by ID", description = "Returns a single investment by its ID. Accessible by FOUNDER, INVESTOR, or ADMIN.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Investment fetched successfully"),
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+        })
     public ResponseEntity<ApiResponse<?>> getInvestmentById(
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long id) {
