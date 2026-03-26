@@ -64,7 +64,7 @@ public class InvestmentCommandService {
         Investment saved = investmentRepository.save(investment);
 
         eventPublisher.publishInvestmentCreatedEvent(new InvestmentCreatedEvent(
-                saved.getStartupId(), saved.getInvestorId(), startup.getFounderId(), saved.getAmount()));
+                saved.getId(), saved.getStartupId(), saved.getInvestorId(), startup.getFounderId(), saved.getAmount()));
 
         return investmentMapper.toResponseDto(saved);
     }
@@ -110,7 +110,17 @@ public class InvestmentCommandService {
         validateStatusTransition(investment.getStatus(), newStatus);
 
         investment.setStatus(newStatus);
-        return investmentMapper.toResponseDto(investmentRepository.save(investment));
+        Investment saved = investmentRepository.save(investment);
+
+        if (newStatus == InvestmentStatus.APPROVED) {
+            eventPublisher.publishInvestmentApprovedEvent(new com.founderlink.investment.events.InvestmentApprovedEvent(
+                    saved.getId(), saved.getInvestorId(), founderId, saved.getStartupId(), saved.getAmount()));
+        } else if (newStatus == InvestmentStatus.REJECTED) {
+            eventPublisher.publishInvestmentRejectedEvent(new com.founderlink.investment.events.InvestmentRejectedEvent(
+                    saved.getId(), saved.getInvestorId(), founderId, saved.getStartupId(), saved.getAmount(), null));
+        }
+
+        return investmentMapper.toResponseDto(saved);
     }
 
     public InvestmentResponseDto updateInvestmentStatusFallback(Long investmentId, Long founderId,

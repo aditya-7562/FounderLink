@@ -5,11 +5,11 @@ spring:
   application:
     name: wallet-service
   config:
-    import: configserver:http://config-server:8888
+    import: optional:configserver:http://config-server:8888
   datasource:
-    url: jdbc:mysql://localhost:3306/wallet_db
+    url: jdbc:mysql://localhost:3306/wallet_db?createDatabaseIfNotExist=true
     username: root
-    password: parth123
+    password: system
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

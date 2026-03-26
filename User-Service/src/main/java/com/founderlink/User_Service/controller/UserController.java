@@ -87,15 +87,12 @@ public class UserController {
         return ResponseEntity.ok(service.getAllUsers());
     }
 
-<<<<<<< HEAD
     @Operation(summary = "Get users by role", description = "Fetches users by their role.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users fetched successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid role provided"),
             @ApiResponse(responseCode = "403", description = "Forbidden — ADMIN role not allowed")
     })
-=======
->>>>>>> 2ccf1aa (fix: payment gateway)
     @GetMapping("/role/{role}")
     public ResponseEntity<List<UserResponseDto>> getUsersByRole(
             @PathVariable String role) {

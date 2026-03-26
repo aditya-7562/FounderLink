@@ -1,5 +1,7 @@
 package com.founderlink.payment.service;
 
+import com.founderlink.payment.client.WalletServiceClient;
+import com.founderlink.payment.dto.external.WalletDepositRequestDto;
 import com.founderlink.payment.dto.response.CreateOrderResponse;
 import com.founderlink.payment.dto.response.ConfirmPaymentResponse;
 import com.founderlink.payment.entity.Payment;
@@ -31,6 +33,7 @@ public class RazorpayService {
     private final RazorpayClient razorpayClient;
     private final PaymentRepository paymentRepository;
     private final PaymentResultEventPublisher paymentResultEventPublisher;
+    private final WalletServiceClient walletServiceClient;
 
     @Value("${razorpay.key.secret}")
     private String keySecret;
@@ -155,6 +158,27 @@ public class RazorpayService {
         paymentRepository.save(payment);
 
         log.info("Payment confirmed successfully for investment: {}", payment.getInvestmentId());
+
+        // 💰 Credit wallet (synchronous call)
+        try {
+            walletServiceClient.createWallet(payment.getStartupId());
+            
+            WalletDepositRequestDto depositRequest = new WalletDepositRequestDto();
+            depositRequest.setReferenceId(payment.getInvestmentId());
+            depositRequest.setStartupId(payment.getStartupId());
+            depositRequest.setAmount(payment.getAmount());
+            depositRequest.setSourcePaymentId(payment.getId());
+            depositRequest.setIdempotencyKey("wallet-deposit-" + payment.getInvestmentId());
+            
+            walletServiceClient.depositFunds(depositRequest);
+            log.info("Wallet credited successfully for startup: {}, amount: {}", 
+                    payment.getStartupId(), payment.getAmount());
+        } catch (Exception e) {
+            log.error("Failed to credit wallet for startup: {}, error: {}", 
+                    payment.getStartupId(), e.getMessage(), e);
+            // Don't fail the payment confirmation, just log the error
+            // Wallet credit can be retried manually or via event replay
+        }
 
         // 📢 Publish event AFTER state update
         paymentResultEventPublisher.publishPaymentCompleted(
