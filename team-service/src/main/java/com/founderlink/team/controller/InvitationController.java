@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.founderlink.team.dto.request.InvitationRequestDto;
 import com.founderlink.team.dto.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.founderlink.team.dto.response.InvitationResponseDto;
 import com.founderlink.team.exception.ForbiddenAccessException;
 import com.founderlink.team.service.InvitationService;
@@ -27,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/teams")
 @RequiredArgsConstructor
+@Tag(name = "Invitation", description = "APIs for managing team invitations")
 public class InvitationController {
 
     private final InvitationService invitationService;
@@ -34,7 +38,15 @@ public class InvitationController {
     // SEND INVITATION
     // POST /teams/invite
     // Called by → FOUNDER
-    
+
+    @Operation(summary = "Send invitation", description = "Allows a founder to send an invitation to a co-founder.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Invitation sent successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — FOUNDER role required"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Startup not found"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Duplicate invitation")
+    })
     @PostMapping("/invite")
     public ResponseEntity<ApiResponse<?>> sendInvitation(
             @RequestHeader("X-User-Id") Long founderId,
@@ -42,7 +54,6 @@ public class InvitationController {
             @Valid @RequestBody InvitationRequestDto requestDto) {
 
         log.info("POST /teams/invite - sendInvitation by founderId: {}", founderId);
-        // Throw exception instead of returning response
         if (!userRole.equals("ROLE_FOUNDER")) {
             log.warn("Access denied for sendInvitation - role: {}", userRole);
             throw new ForbiddenAccessException(
@@ -62,7 +73,14 @@ public class InvitationController {
     // CANCEL INVITATION
     // PUT /teams/invitations/{id}/cancel
     // Called by → FOUNDER
-    
+
+    @Operation(summary = "Cancel invitation", description = "Allows a founder to cancel an invitation.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Invitation cancelled successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid invitation status transition"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — FOUNDER role required"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Invitation not found")
+    })
     @PutMapping("/invitations/{id}/cancel")
     public ResponseEntity<ApiResponse<?>> cancelInvitation(
             @RequestHeader("X-User-Id") Long founderId,
@@ -84,11 +102,18 @@ public class InvitationController {
                         "Invitation cancelled successfully",
                         response));
     }
-    
+
     // REJECT INVITATION
     // PUT /teams/invitations/{id}/reject
     // Called by → CO-FOUNDER
-    
+
+    @Operation(summary = "Reject invitation", description = "Allows a co-founder to reject an invitation.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Invitation rejected successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid invitation status transition"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — COFOUNDER role required"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Invitation not found")
+    })
     @PutMapping("/invitations/{id}/reject")
     public ResponseEntity<ApiResponse<?>> rejectInvitation(
             @RequestHeader("X-User-Id") Long userId,
@@ -111,11 +136,15 @@ public class InvitationController {
                         response));
     }
 
-
     // GET INVITATIONS BY USER ID
-    // GET /teams/invitations/user/{userId}
+    // GET /teams/invitations/user
     // Called by → CO-FOUNDER
-    
+
+    @Operation(summary = "Get invitations by user ID", description = "Fetches invitations for a specific user.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Invitations fetched successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — COFOUNDER role required")
+    })
     @GetMapping("/invitations/user")
     public ResponseEntity<ApiResponse<?>> getInvitationsByUserId(
             @RequestHeader("X-User-Id") Long userId,
@@ -136,11 +165,17 @@ public class InvitationController {
                         "Invitations fetched successfully",
                         response));
     }
-    
+
     // GET INVITATIONS BY STARTUP ID
     // GET /teams/invitations/startup/{startupId}
     // Called by → FOUNDER
-    
+
+    @Operation(summary = "Get invitations by startup ID", description = "Fetches invitations for a specific startup.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Invitations fetched successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — FOUNDER role required"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Startup not found")
+    })
     @GetMapping("/invitations/startup/{startupId}")
     public ResponseEntity<ApiResponse<?>> getInvitationsByStartupId(
             @RequestHeader("X-User-Id") Long founderId,
@@ -155,7 +190,7 @@ public class InvitationController {
         }
 
         List<InvitationResponseDto> response = invitationService
-                .getInvitationsByStartupId(startupId,founderId);
+                .getInvitationsByStartupId(startupId, founderId);
 
         return ResponseEntity
                 .ok(new ApiResponse<>(

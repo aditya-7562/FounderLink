@@ -51,73 +51,79 @@ spring:
 #           - com.founderlink.investment.exception.ForbiddenAccessException
 
 #   datasource:
-#     url: jdbc:mysql://localhost:3306/investment_db
-#     username: root
-#     password: parth123
-#     driver-class-name: com.mysql.cj.jdbc.Driver
+#      url: jdbc:mysql://localhost:3306/investment_db
+#      username: root
+#      password: Anim@4748
+#      driver-class-name: com.mysql.cj.jdbc.Driver
 
 #   jpa:
-#     hibernate:
-#       ddl-auto: update
-#     show-sql: true
-#     properties:
-#       hibernate:
-#         format_sql: true
-#         dialect: org.hibernate.dialect.MySQLDialect
+#      hibernate:
+#        ddl-auto: update
+#      show-sql: true
+#      properties:
+#        hibernate:
+#          format_sql: true
+#          dialect: org.hibernate.dialect.MySQLDialect
 
-#   rabbitmq:
-#     host: localhost
-#     port: 5672
-#     username: guest
-#     password: guest
 
 #   cloud:
-#     openfeign:
-#       circuitbreaker:
-#         enabled: true
+#      openfeign:
+#        circuitbreaker:
+#          enabled: true
 
 # eureka:
-#   client:
-#     service-url:
-#       defaultZone: http://localhost:8761/eureka/
-#     register-with-eureka: true
-#     fetch-registry: true
-#   # instance:
-#   #   prefer-ip-address: true
+#    client:
+#      service-url:
+#        defaultZone: http://localhost:8761/eureka/
+#      register-with-eureka: true
+#      fetch-registry: true
+#    # instance:
+#    #   prefer-ip-address: true
 
 # management:
-#   endpoints:
-#     web:
-#       exposure:
-#         include: health,info
-#   endpoint:
-#     health:
-#       show-details: always
+#    endpoints:
+#      web:
+#        exposure:
+#          include: health,info
+#    endpoint:
+#      health:
+#        show-details: always
+#    tracing:
+#      sampling:
+#        probability: 1.0
+#      zipkin:
+#        tracing:
+#          endpoint: http://localhost:9411/api/v2/spans
+
 
 # resilience4j:
-#   circuitbreaker:
-#     instances:
-#       startup-service:
-#         sliding-window-size: 10
-#         failure-rate-threshold: 50
-#         wait-duration-in-open-state: 10s
+#    circuitbreaker:
+#      instances:
+#        startup-service:
+#          sliding-window-size: 10
+#          failure-rate-threshold: 50
+#          wait-duration-in-open-state: 10s
 
 # logging:
-#   level:
-#     root: INFO
-#     com.founderlink.investment: DEBUG
-#   file:
-#     name: logs/investment-service.log
+#    level:
+#      root: INFO
+#      com.founderlink.investment: DEBUG
+#    file:
+#      name: logs/investment-service.log
 
-# ==========================================
-# RABBITMQ QUEUES AND EXCHANGES
-# ==========================================
+# # ==========================================
+# # RABBITMQ QUEUES AND EXCHANGES
+# # ==========================================
 # rabbitmq:
-#   exchange: founderlink.exchange
-#   investment:
-#     queue: investment.queue
-#     routing-key: investment.created
-#   startup:
-#     deleted:
-#       queue: investment.startup.deleted.queue
-#       routing-key: startup.deleted
+#    host: localhost
+#    port: 5672
+#    username: guest
+#    password: guest
+#    exchange: founderlink.exchange
+#    investment:
+#      queue: investment.queue
+#      routing-key: investment.created
+#    startup:
+#      deleted:
+#        queue: investment.startup.deleted.queue
+#        routing-key: startup.deleted

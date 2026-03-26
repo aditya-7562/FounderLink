@@ -18,23 +18,40 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/auth")
+@Tag(name = "Authentication", description = "Endpoints for user authentication and session management")
 public class AuthController {
 
     private final AuthService authService;
     private final RefreshTokenProperties refreshTokenProperties;
 
     @PostMapping("/register")
+    @Operation(summary = "Register a new user", description = "Creates a new user account and returns registration details.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User registered successfully"),
+        @ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
+        @ApiResponse(responseCode = "409", description = "Email already exists")
+    })
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         RegisterResponse response = authService.register(request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Login user", description = "Authenticates a user and returns an authentication response.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User logged in successfully"),
+        @ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
+        @ApiResponse(responseCode = "401", description = "Invalid email or password")
+    })
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,
                                               HttpServletResponse response) {
         var authSession = authService.login(request);
@@ -43,6 +60,12 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Refresh authentication token", description = "Refreshes the authentication token using a valid refresh token.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token"),
+        @ApiResponse(responseCode = "403", description = "Refresh token has been revoked")
+    })
     public ResponseEntity<AuthResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = resolveRefreshToken(request);
         var authSession = authService.refresh(refreshToken);
@@ -51,6 +74,10 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "Logout user", description = "Logs out the user and clears the refresh token cookie.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "User logged out successfully")
+    })
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         try {
             String refreshToken = resolveRefreshToken(request);

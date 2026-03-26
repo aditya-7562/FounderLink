@@ -15,8 +15,8 @@ public interface UserServiceClient {
     @GetMapping("/users")
     List<UserDTO> getAllUsers();
 
-    @GetMapping("/users/role")
-    List<UserDTO> getUsersByRole(@RequestHeader("X-User-Role") String role);
+    @GetMapping("/users/role/{role}")
+    List<UserDTO> getUsersByRole(@PathVariable("role") String role);
 
     @GetMapping("/users/{id}")
     UserDTO getUserById(@PathVariable Long id);

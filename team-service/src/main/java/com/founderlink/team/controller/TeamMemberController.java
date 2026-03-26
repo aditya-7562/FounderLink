@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.founderlink.team.dto.request.JoinTeamRequestDto;
 import com.founderlink.team.dto.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.founderlink.team.dto.response.TeamMemberResponseDto;
 import com.founderlink.team.exception.ForbiddenAccessException;
 import com.founderlink.team.service.TeamMemberService;
@@ -27,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/teams")
 @RequiredArgsConstructor
+@Tag(name = "Team Member", description = "APIs for managing team members")
 public class TeamMemberController {
 
     private final TeamMemberService teamMemberService;
@@ -35,6 +39,13 @@ public class TeamMemberController {
     // POST /teams/join
     // Called by → CO-FOUNDER
 
+    @Operation(summary = "Join a team", description = "Allows a user to join a team.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Joined team successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — COFOUNDER role required"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Already a team member")
+    })
     @PostMapping("/join")
     public ResponseEntity<ApiResponse<?>> joinTeam(
             @RequestHeader("X-User-Id") Long userId,
@@ -61,7 +72,13 @@ public class TeamMemberController {
     // GET TEAM MEMBERS BY STARTUP ID
     // GET /teams/startup/{startupId}
     // Called by → ALL ROLES
- 
+
+    @Operation(summary = "Get team by startup ID", description = "Fetches the team for a given startup ID.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Team fetched successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — not a team member or insufficient role"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Startup not found")
+    })
     @GetMapping("/startup/{startupId}")
     public ResponseEntity<ApiResponse<?>> getTeamByStartupId(
             @RequestHeader("X-User-Id") Long userId,
@@ -79,7 +96,6 @@ public class TeamMemberController {
             }
         }
 
-        // Unknown role check
         if (!userRole.equals("ROLE_FOUNDER") &&
             !userRole.equals("ROLE_COFOUNDER") &&
             !userRole.equals("ROLE_INVESTOR") &&
@@ -89,7 +105,7 @@ public class TeamMemberController {
         }
 
         List<TeamMemberResponseDto> response = teamMemberService
-                .getTeamByStartupId(startupId,userId,userRole);
+                .getTeamByStartupId(startupId, userId, userRole);
 
         return ResponseEntity
                 .ok(new ApiResponse<>(
@@ -100,7 +116,13 @@ public class TeamMemberController {
     // REMOVE TEAM MEMBER
     // DELETE /teams/{teamMemberId}
     // Called by → FOUNDER
-    
+
+    @Operation(summary = "Remove team member", description = "Removes a member from the team.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Team member removed successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — FOUNDER role required"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Team member not found")
+    })
     @DeleteMapping("/{teamMemberId}")
     public ResponseEntity<ApiResponse<?>> removeTeamMember(
             @RequestHeader("X-User-Id") Long founderId,
@@ -114,8 +136,6 @@ public class TeamMemberController {
                     "Access denied. Only FOUNDERS can remove team members");
         }
 
-        // TODO: FeignClient verify founder owns startup
-
         teamMemberService.removeTeamMember(
                 teamMemberId, founderId);
 
@@ -124,12 +144,18 @@ public class TeamMemberController {
                         "Team member removed successfully",
                         null));
     }
-    
- // ─────────────────────────────────────────
-    // GET MEMBER WORK HISTORY                 ← NEW
+
+    // ─────────────────────────────────────────
+    // GET MEMBER WORK HISTORY
     // GET /teams/member/history
     // Called by → CO-FOUNDER
     // ─────────────────────────────────────────
+
+    @Operation(summary = "Get member history", description = "Fetches the history of a team member.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Member history fetched successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — COFOUNDER or ADMIN role required")
+    })
     @GetMapping("/member/history")
     public ResponseEntity<ApiResponse<?>> getMemberHistory(
             @RequestHeader("X-User-Id") Long userId,
@@ -154,10 +180,16 @@ public class TeamMemberController {
     }
 
     // ─────────────────────────────────────────
-    // GET ACTIVE MEMBER ROLES                 ← NEW
+    // GET ACTIVE MEMBER ROLES
     // GET /teams/member/active
     // Called by → CO-FOUNDER
     // ─────────────────────────────────────────
+
+    @Operation(summary = "Get active member roles", description = "Fetches active roles for a team member.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Active member roles fetched successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied — COFOUNDER or ADMIN role required")
+    })
     @GetMapping("/member/active")
     public ResponseEntity<ApiResponse<?>> getActiveMemberRoles(
             @RequestHeader("X-User-Id") Long userId,

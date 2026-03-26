@@ -63,7 +63,22 @@ spring:
 # rabbitmq:
 #   exchange: founderlink.exchange
 #   queue:
-#     startup: startup.queue
-#     investment: investment.queue
-#     team: team.queue
-#     messaging: messaging.queue
+#      startup: startup.queue
+#      investment: investment.queue
+#      team: team.queue
+#      messaging: messaging.queue
+#
+#management:
+#   endpoints:
+#     web:
+#       exposure:
+#         include: "health,info,tracing"
+#   endpoint:
+#     health:
+#       show-details: always
+#   tracing:
+#     sampling:
+#       probability: 1.0
+#   zipkin:
+#     tracing:
+#       endpoint: http://localhost:9411/api/v2/spans

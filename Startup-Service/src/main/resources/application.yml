@@ -17,10 +17,10 @@ spring:
 #   datasource:
 #     url: jdbc:mysql://localhost:3306/startup_db
 #     username: root
-#     password: parth123
+#     password: Anim@4748
 #     driver-class-name: com.mysql.cj.jdbc.Driver
-
-#   jpa:
+#
+#  jpa:
 #     hibernate:
 #       ddl-auto: update
 #     show-sql: true
@@ -28,14 +28,10 @@ spring:
 #       hibernate:
 #         format_sql: true
 #         dialect: org.hibernate.dialect.MySQLDialect
-
-#   rabbitmq:
-#     host: localhost
-#     port: 5672
-#     username: guest
-#     password: guest
-
-# eureka:
+#
+#
+#
+#eureka:
 #   client:
 #     service-url:
 #       defaultZone: http://localhost:8761/eureka/
@@ -43,8 +39,8 @@ spring:
 #     fetch-registry: true
 #   instance:
 #     prefer-ip-address: true
-
-# management:
+#
+#management:
 #   endpoints:
 #     web:
 #       exposure:
@@ -52,8 +48,14 @@ spring:
 #   endpoint:
 #     health:
 #       show-details: always
-
-# logging:
+#   tracing:
+#     sampling:
+#       probability: 1.0
+#   zipkin:
+#     tracing:
+#       endpoint: http://localhost:9411/api/v2/spans
+#
+#logging:
 #   level:
 #     root: INFO
 #     com.founderlink.startup: DEBUG
@@ -63,16 +65,22 @@ spring:
 # ==========================================
 # RABBITMQ QUEUES AND EXCHANGES
 # ==========================================
-# rabbitmq:
-#   exchange: founderlink.exchange
-#   startup:
+#rabbitmq:
+#  host: localhost
+#  port: 5672
+#  username: guest
+#  password: guest
+#  exchange: founderlink.exchange
+#  startup:
 #     queue: startup.queue
 #     routing-key: startup.created
 #     deleted:
 #       routing-key: startup.deleted
-#   investment:
+#  investment:
 #     deleted:
 #       queue: investment.startup.deleted.queue
-#   team:
+#  team:
 #     deleted:
 #       queue: team.startup.deleted.queue
+
+

@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -32,29 +32,40 @@ import java.time.Instant;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-
     private final CustomUserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login", "/auth/refresh", "/auth/logout").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint((request, response, ex) ->
-                                writeErrorResponse(response, HttpStatus.UNAUTHORIZED, "Authentication required", request.getRequestURI()))
-                        .accessDeniedHandler((request, response, ex) ->
-                                writeErrorResponse(response, HttpStatus.FORBIDDEN, "Access denied", request.getRequestURI()))
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        http.csrf(AbstractHttpConfigurer::disable);
+
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login", "/auth/refresh", "/auth/logout").permitAll()
+                // Allow unauthenticated access to Swagger/OpenAPI endpoints
+                .requestMatchers(
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/webjars/**"
+                ).permitAll()
+                .anyRequest().authenticated()
+        );
+
+        http.exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, ex) ->
+                        writeErrorResponse(response, HttpStatus.UNAUTHORIZED, "Authentication required", request.getRequestURI()))
+                .accessDeniedHandler((request, response, ex) ->
+                        writeErrorResponse(response, HttpStatus.FORBIDDEN, "Access denied", request.getRequestURI()))
+        );
+
+        http.sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        );
+
+        http.authenticationProvider(authenticationProvider());
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
