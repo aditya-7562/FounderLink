@@ -599,7 +599,155 @@ Expected: `200 OK` with status `REJECTED`
 
 ---
 
-## 6. Error / Edge Case Tests
+---
+
+## 6. MESSAGING SERVICE — `http://localhost:8086`
+
+> Pre-conditions: Alice (id=1) is FOUNDER, Carol (id=3) is INVESTOR. Both users must exist in User Service.
+
+---
+
+### 6.1 Send a Message
+```
+POST /messages
+Content-Type: application/json
+
+{
+  "senderId": 1,
+  "receiverId": 3,
+  "content": "Hi Carol, thanks for your interest in our startup!"
+}
+```
+Expected: `201 Created`
+> Save the returned `id` as **MESSAGE_ID** (e.g. 1)
+
+---
+
+### 6.2 Get Message by ID
+```
+GET /messages/1
+```
+Expected: `200 OK` with message details
+
+---
+
+### 6.3 Get Conversation Between Two Users
+```
+GET /messages/conversation/1/3
+```
+Expected: `200 OK` with all messages between Alice (id=1) and Carol (id=3) in chronological order
+
+> Works regardless of parameter order — `/conversation/3/1` returns the same result.
+
+---
+
+### 6.4 Get Conversation Partners for a User
+```
+GET /messages/partners/1
+```
+Expected: `200 OK` with list of user IDs that Alice has exchanged messages with
+
+```json
+[3]
+```
+
+---
+
+### 6.5 Send Reply (reverse direction)
+```
+POST /messages
+Content-Type: application/json
+
+{
+  "senderId": 3,
+  "receiverId": 1,
+  "content": "Of course! I would love to learn more about the equity split."
+}
+```
+Expected: `201 Created`
+
+---
+
+### 6.6 Verify Conversation Has Both Messages
+```
+GET /messages/conversation/1/3
+```
+Expected: `200 OK` with 2 messages in order
+
+---
+
+## 6. Error / Edge Case Tests — Messaging
+
+---
+
+### 6.7 Sender equals receiver
+```
+POST /messages
+Content-Type: application/json
+
+{
+  "senderId": 1,
+  "receiverId": 1,
+  "content": "Talking to myself"
+}
+```
+Expected: `400 Bad Request` — `"Sender and receiver cannot be the same user"`
+
+---
+
+### 6.8 Sender does not exist
+```
+POST /messages
+Content-Type: application/json
+
+{
+  "senderId": 9999,
+  "receiverId": 3,
+  "content": "Ghost message"
+}
+```
+Expected: `400 Bad Request` — `"Sender with ID 9999 does not exist"`
+
+---
+
+### 6.9 Message not found
+```
+GET /messages/9999
+```
+Expected: `404 Not Found`
+
+---
+
+### 6.10 Blank content
+```
+POST /messages
+Content-Type: application/json
+
+{
+  "senderId": 1,
+  "receiverId": 3,
+  "content": ""
+}
+```
+Expected: `400 Bad Request` — validation error
+
+---
+
+### 6.11 Missing senderId
+```
+POST /messages
+Content-Type: application/json
+
+{
+  "receiverId": 3,
+  "content": "No sender"
+}
+```
+Expected: `400 Bad Request` — validation error
+
+---
+
+## 7. Error / Edge Case Tests
 
 These verify your exception handling and role guards are working correctly.
 
@@ -726,7 +874,7 @@ Expected: `403 Forbidden`
 
 ---
 
-## 7. Recommended Test Execution Order
+## 8. Recommended Test Execution Order
 
 ```
 1.  Register FOUNDER, COFOUNDER, INVESTOR         (Auth Service)
@@ -745,7 +893,8 @@ Expected: `403 Forbidden`
 14. Approve → Complete investment                  (Investment Service)
 15. Create second investment, reject it            (Investment Service)
 16. Remove team member                             (Team Service)
-17. Run all error/edge case tests                  (All Services)
-18. Delete Startup (last — triggers cascade event) (Startup Service)
-19. Refresh token, logout                          (Auth Service)
+17. Send message, get conversation, get partners   (Messaging Service)
+18. Run all error/edge case tests                  (All Services)
+19. Delete Startup (last — triggers cascade event) (Startup Service)
+20. Refresh token, logout                          (Auth Service)
 ```
