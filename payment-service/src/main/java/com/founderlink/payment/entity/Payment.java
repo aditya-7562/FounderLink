@@ -63,6 +63,9 @@ public class Payment {
     @Column(length = 500)
     private String razorpaySignature;  // for verification
 
+    @Column(nullable = false)
+    private boolean walletCredited = false;
+
     @Column(columnDefinition = "TEXT")
     private String failureReason;
 

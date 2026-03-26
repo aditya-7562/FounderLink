@@ -6,342 +6,342 @@ spring:
     name: api-gateway
   config:
     import: optional:configserver:http://config-server:8888
-  cloud:
-     gateway:
-       server:
-         webflux:
-           routes:
-             # ── Swagger API-docs routes (rewrite prefix before forwarding) ──
-                      - id: auth-service-swagger
-                        uri: lb://auth-service
-                        predicates:
-                          - Path=/auth/v3/api-docs/**
-                        filters:
-                          - RewritePath=/auth/(?<remaining>.*), /${remaining}
+#   cloud:
+#      gateway:
+#        server:
+#          webflux:
+#            routes:
+#              # ── Swagger API-docs routes (rewrite prefix before forwarding) ──
+#                       - id: auth-service-swagger
+#                         uri: lb://auth-service
+#                         predicates:
+#                           - Path=/auth/v3/api-docs/**
+#                         filters:
+#                           - RewritePath=/auth/(?<remaining>.*), /${remaining}
 
-                      - id: user-service-swagger
-                        uri: lb://user-service
-                        predicates:
-                          - Path=/users/v3/api-docs/**
-                        filters:
-                          - RewritePath=/users/(?<remaining>.*), /${remaining}
+#                       - id: user-service-swagger
+#                         uri: lb://user-service
+#                         predicates:
+#                           - Path=/users/v3/api-docs/**
+#                         filters:
+#                           - RewritePath=/users/(?<remaining>.*), /${remaining}
 
-                      - id: startup-service-swagger
-                        uri: lb://startup-service
-                        predicates:
-                          - Path=/startup/v3/api-docs/**
-                        filters:
-                          - RewritePath=/startup/(?<remaining>.*), /${remaining}
+#                       - id: startup-service-swagger
+#                         uri: lb://startup-service
+#                         predicates:
+#                           - Path=/startup/v3/api-docs/**
+#                         filters:
+#                           - RewritePath=/startup/(?<remaining>.*), /${remaining}
 
-                      - id: investment-service-swagger
-                        uri: lb://investment-service
-                        predicates:
-                          - Path=/investments/v3/api-docs/**
-                        filters:
-                          - RewritePath=/investments/(?<remaining>.*), /${remaining}
+#                       - id: investment-service-swagger
+#                         uri: lb://investment-service
+#                         predicates:
+#                           - Path=/investments/v3/api-docs/**
+#                         filters:
+#                           - RewritePath=/investments/(?<remaining>.*), /${remaining}
 
-                      - id: team-service-swagger
-                        uri: lb://team-service
-                        predicates:
-                          - Path=/teams/v3/api-docs/**
-                        filters:
-                          - RewritePath=/teams/(?<remaining>.*), /${remaining}
+#                       - id: team-service-swagger
+#                         uri: lb://team-service
+#                         predicates:
+#                           - Path=/teams/v3/api-docs/**
+#                         filters:
+#                           - RewritePath=/teams/(?<remaining>.*), /${remaining}
 
-                      - id: messaging-service-swagger
-                        uri: lb://messaging-service
-                        predicates:
-                          - Path=/messages/v3/api-docs/**
-                        filters:
-                          - RewritePath=/messages/(?<remaining>.*), /${remaining}
+#                       - id: messaging-service-swagger
+#                         uri: lb://messaging-service
+#                         predicates:
+#                           - Path=/messages/v3/api-docs/**
+#                         filters:
+#                           - RewritePath=/messages/(?<remaining>.*), /${remaining}
 
-                      - id: notification-service-swagger
-                        uri: lb://notification-service
-                        predicates:
-                          - Path=/notifications/v3/api-docs/**
-                        filters:
-                          - RewritePath=/notifications/(?<remaining>.*), /${remaining}
+#                       - id: notification-service-swagger
+#                         uri: lb://notification-service
+#                         predicates:
+#                           - Path=/notifications/v3/api-docs/**
+#                         filters:
+#                           - RewritePath=/notifications/(?<remaining>.*), /${remaining}
 
-                      # ── Service routes (no StripPrefix — controllers own the full path) ──
-                      - id: auth-service
-                        uri: lb://auth-service
-                        predicates:
-                          - Path=/auth/**
+#                       # ── Service routes (no StripPrefix — controllers own the full path) ──
+#                       - id: auth-service
+#                         uri: lb://auth-service
+#                         predicates:
+#                           - Path=/auth/**
 
-                      - id: user-service
-                        uri: lb://user-service
-                        predicates:
-                          - Path=/users/**
+#                       - id: user-service
+#                         uri: lb://user-service
+#                         predicates:
+#                           - Path=/users/**
 
-                      - id: startup-service
-                        uri: lb://startup-service
-                        predicates:
-                          - Path=/startup/**
+#                       - id: startup-service
+#                         uri: lb://startup-service
+#                         predicates:
+#                           - Path=/startup/**
 
-                      - id: investment-service
-                        uri: lb://investment-service
-                        predicates:
-                          - Path=/investments/**
+#                       - id: investment-service
+#                         uri: lb://investment-service
+#                         predicates:
+#                           - Path=/investments/**
 
-                      - id: team-service
-                        uri: lb://team-service
-                        predicates:
-                          - Path=/teams/**
+#                       - id: team-service
+#                         uri: lb://team-service
+#                         predicates:
+#                           - Path=/teams/**
 
-                      - id: messaging-service
-                        uri: lb://messaging-service
-                        predicates:
-                          - Path=/messages/**
+#                       - id: messaging-service
+#                         uri: lb://messaging-service
+#                         predicates:
+#                           - Path=/messages/**
 
-                      - id: notification-service
-                        uri: lb://notification-service
-                        predicates:
-                          - Path=/notifications/**
-           observability:
-             enabled: true
-           globalcors:
-             cors-configurations:
-               '[/**]':
-                            allowedOrigins: "http://localhost:4200"
-                            allowedMethods:
-                              - GET
-                              - POST
-                              - PUT
-                              - DELETE
-                              - OPTIONS
-                            allowedHeaders: "*"
-                            allowCredentials: true
+#                       - id: notification-service
+#                         uri: lb://notification-service
+#                         predicates:
+#                           - Path=/notifications/**
+#            observability:
+#              enabled: true
+#            globalcors:
+#              cors-configurations:
+#                '[/**]':
+#                             allowedOrigins: "http://localhost:4200"
+#                             allowedMethods:
+#                               - GET
+#                               - POST
+#                               - PUT
+#                               - DELETE
+#                               - OPTIONS
+#                             allowedHeaders: "*"
+#                             allowCredentials: true
 
-gateway:
-   security:
-     public-paths:
-       - /actuator/**
-       - /auth/login
-       - /auth/register
-       - /auth/refresh
-       - /auth/logout
-       - /eureka/**
-       # Swagger/OpenAPI endpoints (root and service-prefixed)
-       - /v3/api-docs
-       - /v3/api-docs/**
-       - /swagger-ui/**
-       - /swagger-resources/**
-       - /webjars/**
-       - /auth/v3/api-docs
-       - /auth/v3/api-docs/**
-       - /auth/swagger-ui/**
-       - /auth/swagger-resources/**
-       - /auth/webjars/**
-       - /users/v3/api-docs
-       - /users/v3/api-docs/**
-       - /users/swagger-ui/**
-       - /users/swagger-resources/**
-       - /users/webjars/**
-       - /startup/v3/api-docs
-       - /startup/v3/api-docs/**
-       - /startup/swagger-ui/**
-       - /startup/swagger-resources/**
-       - /startup/webjars/**
-       - /investments/v3/api-docs
-       - /investments/v3/api-docs/**
-       - /investments/swagger-ui/**
-       - /investments/swagger-resources/**
-       - /investments/webjars/**
-       - /teams/v3/api-docs
-       - /teams/v3/api-docs/**
-       - /teams/swagger-ui/**
-       - /teams/swagger-resources/**
-       - /teams/webjars/**
-       - /messages/v3/api-docs
-       - /messages/v3/api-docs/**
-       - /messages/swagger-ui/**
-       - /messages/swagger-resources/**
-       - /messages/webjars/**
-       - /notifications/v3/api-docs
-       - /notifications/v3/api-docs/**
-       - /notifications/swagger-ui/**
-       - /notifications/swagger-resources/**
-       - /notifications/webjars/**
+# gateway:
+#    security:
+#      public-paths:
+#        - /actuator/**
+#        - /auth/login
+#        - /auth/register
+#        - /auth/refresh
+#        - /auth/logout
+#        - /eureka/**
+#        # Swagger/OpenAPI endpoints (root and service-prefixed)
+#        - /v3/api-docs
+#        - /v3/api-docs/**
+#        - /swagger-ui/**
+#        - /swagger-resources/**
+#        - /webjars/**
+#        - /auth/v3/api-docs
+#        - /auth/v3/api-docs/**
+#        - /auth/swagger-ui/**
+#        - /auth/swagger-resources/**
+#        - /auth/webjars/**
+#        - /users/v3/api-docs
+#        - /users/v3/api-docs/**
+#        - /users/swagger-ui/**
+#        - /users/swagger-resources/**
+#        - /users/webjars/**
+#        - /startup/v3/api-docs
+#        - /startup/v3/api-docs/**
+#        - /startup/swagger-ui/**
+#        - /startup/swagger-resources/**
+#        - /startup/webjars/**
+#        - /investments/v3/api-docs
+#        - /investments/v3/api-docs/**
+#        - /investments/swagger-ui/**
+#        - /investments/swagger-resources/**
+#        - /investments/webjars/**
+#        - /teams/v3/api-docs
+#        - /teams/v3/api-docs/**
+#        - /teams/swagger-ui/**
+#        - /teams/swagger-resources/**
+#        - /teams/webjars/**
+#        - /messages/v3/api-docs
+#        - /messages/v3/api-docs/**
+#        - /messages/swagger-ui/**
+#        - /messages/swagger-resources/**
+#        - /messages/webjars/**
+#        - /notifications/v3/api-docs
+#        - /notifications/v3/api-docs/**
+#        - /notifications/swagger-ui/**
+#        - /notifications/swagger-resources/**
+#        - /notifications/webjars/**
 
-rbac:
-   default-policy: DENY
-   rules:
+# rbac:
+#    default-policy: DENY
+#    rules:
 
-     - method: GET
-       path: /users
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /users
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /users/role
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /users/role
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /users/*
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /users/*
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: PUT
-       path: /users/*
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: PUT
+#        path: /users/*
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: POST
-       path: /startup
-       roles: [FOUNDER]
+#      - method: POST
+#        path: /startup
+#        roles: [FOUNDER]
 
-     - method: GET
-       path: /startup
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /startup
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /startup/details/*
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /startup/details/*
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /startup/founder
-       roles: [FOUNDER]
+#      - method: GET
+#        path: /startup/founder
+#        roles: [FOUNDER]
 
-     - method: GET
-       path: /startup/search
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /startup/search
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /startup/*
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /startup/*
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: PUT
-       path: /startup/*
-       roles: [FOUNDER]
+#      - method: PUT
+#        path: /startup/*
+#        roles: [FOUNDER]
 
-     - method: DELETE
-       path: /startup/*
-       roles: [FOUNDER]
+#      - method: DELETE
+#        path: /startup/*
+#        roles: [FOUNDER]
 
-     - method: POST
-       path: /investments
-       roles: [INVESTOR]
+#      - method: POST
+#        path: /investments
+#        roles: [INVESTOR]
 
-     - method: GET
-       path: /investments/startup/*
-       roles: [FOUNDER, ADMIN]
+#      - method: GET
+#        path: /investments/startup/*
+#        roles: [FOUNDER, ADMIN]
 
-     - method: GET
-       path: /investments/investor
-       roles: [INVESTOR, ADMIN]
+#      - method: GET
+#        path: /investments/investor
+#        roles: [INVESTOR, ADMIN]
 
-     - method: PUT
-       path: /investments/*/status
-       roles: [FOUNDER, ADMIN]
+#      - method: PUT
+#        path: /investments/*/status
+#        roles: [FOUNDER, ADMIN]
 
-     - method: GET
-       path: /investments/*
-       roles: [FOUNDER, INVESTOR, ADMIN]
+#      - method: GET
+#        path: /investments/*
+#        roles: [FOUNDER, INVESTOR, ADMIN]
 
-     - method: POST
-       path: /teams/invite
-       roles: [FOUNDER]
+#      - method: POST
+#        path: /teams/invite
+#        roles: [FOUNDER]
 
-     - method: PUT
-       path: /teams/invitations/*/cancel
-       roles: [FOUNDER]
+#      - method: PUT
+#        path: /teams/invitations/*/cancel
+#        roles: [FOUNDER]
 
-     - method: PUT
-       path: /teams/invitations/*/reject
-       roles: [COFOUNDER]
+#      - method: PUT
+#        path: /teams/invitations/*/reject
+#        roles: [COFOUNDER]
 
-     - method: GET
-       path: /teams/invitations/user
-       roles: [COFOUNDER]
+#      - method: GET
+#        path: /teams/invitations/user
+#        roles: [COFOUNDER]
 
-     - method: GET
-       path: /teams/invitations/startup/*
-       roles: [FOUNDER]
+#      - method: GET
+#        path: /teams/invitations/startup/*
+#        roles: [FOUNDER]
 
-     - method: POST
-       path: /teams/join
-       roles: [COFOUNDER]
+#      - method: POST
+#        path: /teams/join
+#        roles: [COFOUNDER]
 
-     - method: GET
-       path: /teams/startup/*
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /teams/startup/*
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: DELETE
-       path: /teams/*
-       roles: [FOUNDER]
+#      - method: DELETE
+#        path: /teams/*
+#        roles: [FOUNDER]
 
-     - method: GET
-       path: /teams/member/history
-       roles: [COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /teams/member/history
+#        roles: [COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /teams/member/active
-       roles: [COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /teams/member/active
+#        roles: [COFOUNDER, ADMIN]
 
-     - method: POST
-       path: /messages
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: POST
+#        path: /messages
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /messages/*
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /messages/*
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /messages/conversation/*/*
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /messages/conversation/*/*
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /messages/partners/*
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /messages/partners/*
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /notifications/*/unread
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /notifications/*/unread
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: GET
-       path: /notifications/*
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: GET
+#        path: /notifications/*
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-     - method: PUT
-       path: /notifications/*/read
-       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
+#      - method: PUT
+#        path: /notifications/*/read
+#        roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
-eureka:
-   client:
-     service-url:
-       defaultZone: http://localhost:8761/eureka/
-   instance:
-     prefer-ip-address: true
+# eureka:
+#    client:
+#      service-url:
+#        defaultZone: http://localhost:8761/eureka/
+#    instance:
+#      prefer-ip-address: true
 
-jwt:
-   secret: +rIslwknSn6yPvrvu4v8FOAGpJcgSOWQNP8lwl2HimM=
+# jwt:
+#    secret: +rIslwknSn6yPvrvu4v8FOAGpJcgSOWQNP8lwl2HimM=
 
 
-logging:
-  level:
-     root: INFO
-     org.springframework.cloud.gateway: DEBUG
-     org.springframework.web.reactive: DEBUG
-     reactor.netty: INFO
-     com:
-       founderlink:
-         gateway: DEBUG
-  file:
-     name: logs/api-gateway.log
+# logging:
+#   level:
+#      root: INFO
+#      org.springframework.cloud.gateway: DEBUG
+#      org.springframework.web.reactive: DEBUG
+#      reactor.netty: INFO
+#      com:
+#        founderlink:
+#          gateway: DEBUG
+#   file:
+#      name: logs/api-gateway.log
 
- # Swagger UI aggregation for all services
-springdoc:
-   swagger-ui:
-     urls:
-       - name: gateway
-         url: /v3/api-docs
-       - name: auth-service
-         url: /auth/v3/api-docs
-       - name: user-service
-         url: /users/v3/api-docs
-       - name: startup-service
-         url: /startup/v3/api-docs
-       - name: investment-service
-         url: /investments/v3/api-docs
-       - name: team-service
-         url: /teams/v3/api-docs
-       - name: messaging-service
-         url: /messages/v3/api-docs
-       - name: notification-service
-         url: /notifications/v3/api-docs
+#  # Swagger UI aggregation for all services
+# springdoc:
+#    swagger-ui:
+#      urls:
+#        - name: gateway
+#          url: /v3/api-docs
+#        - name: auth-service
+#          url: /auth/v3/api-docs
+#        - name: user-service
+#          url: /users/v3/api-docs
+#        - name: startup-service
+#          url: /startup/v3/api-docs
+#        - name: investment-service
+#          url: /investments/v3/api-docs
+#        - name: team-service
+#          url: /teams/v3/api-docs
+#        - name: messaging-service
+#          url: /messages/v3/api-docs
+#        - name: notification-service
+#          url: /notifications/v3/api-docs

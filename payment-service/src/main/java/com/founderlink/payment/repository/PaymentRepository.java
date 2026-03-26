@@ -23,4 +23,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByStatus(PaymentStatus status);
 
     List<Payment> findByStartupId(Long startupId);
+
+    List<Payment> findByStatusAndWalletCredited(PaymentStatus status, boolean walletCredited);
 }

@@ -6,106 +6,106 @@ spring:
     name: payment-service
   config:
     import: optional:configserver:http://config-server:8888
-  datasource:
-    url: jdbc:mysql://localhost:3306/payment_db?createDatabaseIfNotExist=true
-    username: root
-    password: system
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-    listener:
-      simple:
-        default-requeue-rejected: false
-        concurrency: 1
-        max-concurrency: 5
-        retry:
-          enabled: true
-          max-attempts: 3
-          initial-interval: 1000
-          max-interval: 8000
-          multiplier: 2.0
-          stateless: false
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      password:
-      timeout: 60000ms
-      lettuce:
-        pool:
-          max-active: 8
-          max-idle: 8
-          min-idle: 0
-          shutdown-timeout: 100000ms
-  cache:
-    type: redis
-    redis:
-      time-to-live: 86400000
-  cloud:
-    openfeign:
-      circuitbreaker:
-        enabled: true
+#   datasource:
+#     url: jdbc:mysql://localhost:3306/payment_db?createDatabaseIfNotExist=true
+#     username: root
+#     password: system
+#     driver-class-name: com.mysql.cj.jdbc.Driver
+#   jpa:
+#     hibernate:
+#       ddl-auto: update
+#     show-sql: false
+#     properties:
+#       hibernate:
+#         format_sql: true
+#         dialect: org.hibernate.dialect.MySQLDialect
+#   rabbitmq:
+#     host: localhost
+#     port: 5672
+#     username: guest
+#     password: guest
+#     listener:
+#       simple:
+#         default-requeue-rejected: false
+#         concurrency: 1
+#         max-concurrency: 5
+#         retry:
+#           enabled: true
+#           max-attempts: 3
+#           initial-interval: 1000
+#           max-interval: 8000
+#           multiplier: 2.0
+#           stateless: false
+#   data:
+#     redis:
+#       host: localhost
+#       port: 6379
+#       password:
+#       timeout: 60000ms
+#       lettuce:
+#         pool:
+#           max-active: 8
+#           max-idle: 8
+#           min-idle: 0
+#           shutdown-timeout: 100000ms
+#   cache:
+#     type: redis
+#     redis:
+#       time-to-live: 86400000
+#   cloud:
+#     openfeign:
+#       circuitbreaker:
+#         enabled: true
 
-rabbitmq:
-  exchange: founderlink.exchange
-  dlx: founderlink.dlx
-  dlq: founderlink.dlq
-  investment:
-    created:
-      routing-key: investment.created
-    approved:
-      routing-key: investment.approved
-    rejected:
-      routing-key: investment.rejected
-  payment:
-    completed:
-      routing-key: payment.completed
-    failed:
-      routing-key: payment.failed
+# rabbitmq:
+#   exchange: founderlink.exchange
+#   dlx: founderlink.dlx
+#   dlq: founderlink.dlq
+#   investment:
+#     created:
+#       routing-key: investment.created
+#     approved:
+#       routing-key: investment.approved
+#     rejected:
+#       routing-key: investment.rejected
+#   payment:
+#     completed:
+#       routing-key: payment.completed
+#     failed:
+#       routing-key: payment.failed
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
+# eureka:
+#   client:
+#     service-url:
+#       defaultZone: http://localhost:8761/eureka/
+#     register-with-eureka: true
+#     fetch-registry: true
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: always
+# management:
+#   endpoints:
+#     web:
+#       exposure:
+#         include: health,info
+#   endpoint:
+#     health:
+#       show-details: always
 
-resilience4j:
-  circuitbreaker:
-    instances:
-      wallet-service:
-        sliding-window-size: 10
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 10s
+# resilience4j:
+#   circuitbreaker:
+#     instances:
+#       wallet-service:
+#         sliding-window-size: 10
+#         failure-rate-threshold: 50
+#         wait-duration-in-open-state: 10s
 
-logging:
-  level:
-    root: INFO
-    com.founderlink.payment: DEBUG
-  file:
-    name: logs/payment-service.log
+# logging:
+#   level:
+#     root: INFO
+#     com.founderlink.payment: DEBUG
+#   file:
+#     name: logs/payment-service.log
 
-razorpay:
-  key:
-    id: ${RAZORPAY_KEY_ID:rzp_test_SVMhmfHxoIcbac}
-    secret: ${RAZORPAY_KEY_SECRET:rboFab2fuKUr4zw85gPJ6U6g}
+# razorpay:
+#   key:
+#     id: ${RAZORPAY_KEY_ID}
+#     secret: ${RAZORPAY_KEY_SECRET}

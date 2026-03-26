@@ -531,11 +531,17 @@
 
                 log('=== STEP 3: Creating Razorpay Order ===', 'warning');
 
+                const investorId = document.getElementById('investorId').value;
+
                 const response = await apiCall(
                     'http://localhost:8088/payments/create-order',
                     'POST',
                     {
                         investmentId: state.investmentId
+                    },
+                    {
+                        'X-User-Id': investorId,
+                        'X-User-Role': 'ROLE_INVESTOR'
                     }
                 );
 
@@ -576,7 +582,7 @@
 
                 const options = {
                     key: razorpayKey,
-                    amount: state.amount * 100, // Convert to paise
+                    amount: state.amount, // Amount in rupees — Razorpay validates against order_id
                     currency: state.currency,
                     name: 'FounderLink',
                     description: `Investment ID: ${state.investmentId}`,
@@ -624,6 +630,8 @@
             try {
                 log('=== STEP 5: Confirming Payment ===', 'warning');
 
+                const investorId = document.getElementById('investorId').value;
+
                 const response = await apiCall(
                     'http://localhost:8088/payments/confirm',
                     'POST',
@@ -631,6 +639,10 @@
                         razorpayOrderId: orderId,
                         razorpayPaymentId: paymentId,
                         razorpaySignature: signature
+                    },
+                    {
+                        'X-User-Id': investorId,
+                        'X-User-Role': 'ROLE_INVESTOR'
                     }
                 );
 

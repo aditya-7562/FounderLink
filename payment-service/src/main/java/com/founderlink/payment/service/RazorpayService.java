@@ -7,6 +7,7 @@ import com.founderlink.payment.dto.response.ConfirmPaymentResponse;
 import com.founderlink.payment.entity.Payment;
 import com.founderlink.payment.entity.PaymentStatus;
 import com.founderlink.payment.event.PaymentCompletedEvent;
+import com.founderlink.payment.event.PaymentFailedEvent;
 import com.founderlink.payment.event.PaymentResultEventPublisher;
 import com.founderlink.payment.exception.PaymentGatewayException;
 import com.founderlink.payment.exception.PaymentNotFoundException;
@@ -104,7 +105,7 @@ public class RazorpayService {
         }
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = PaymentGatewayException.class)
     public ConfirmPaymentResponse confirmPayment(String orderId, String paymentId, String signature) {
 
         log.info("Confirming payment - orderId: {}, paymentId: {}", orderId, paymentId);
@@ -136,17 +137,14 @@ public class RazorpayService {
 
             if (!isValid) {
                 log.error("Invalid Razorpay signature for orderId: {}", orderId);
+                failPayment(payment, "Invalid payment signature");
                 throw new PaymentGatewayException("Invalid payment signature");
             }
 
         } catch (RazorpayException e) {
             log.error("Signature verification failed: {}", e.getMessage(), e);
+            failPayment(payment, "Signature verification failed: " + e.getMessage());
             throw new PaymentGatewayException("Signature verification failed", e);
-        }
-
-        // 🔒 Extra safety: ensure order matches stored record
-        if (!orderId.equals(payment.getRazorpayOrderId())) {
-            throw new PaymentGatewayException("Order ID mismatch");
         }
 
         // ✅ Update payment (single source of truth)
@@ -171,13 +169,15 @@ public class RazorpayService {
             depositRequest.setIdempotencyKey("wallet-deposit-" + payment.getInvestmentId());
             
             walletServiceClient.depositFunds(depositRequest);
+
+            payment.setWalletCredited(true);
+            paymentRepository.save(payment);
+
             log.info("Wallet credited successfully for startup: {}, amount: {}", 
                     payment.getStartupId(), payment.getAmount());
         } catch (Exception e) {
-            log.error("Failed to credit wallet for startup: {}, error: {}", 
+            log.error("Failed to credit wallet for startup: {}, error: {}. Will be retried by scheduled job.", 
                     payment.getStartupId(), e.getMessage(), e);
-            // Don't fail the payment confirmation, just log the error
-            // Wallet credit can be retried manually or via event replay
         }
 
         // 📢 Publish event AFTER state update
@@ -185,5 +185,18 @@ public class RazorpayService {
                 new PaymentCompletedEvent(payment.getInvestmentId(), payment.getId()));
 
         return new ConfirmPaymentResponse("SUCCESS", payment.getInvestmentId());
+    }
+
+    private void failPayment(Payment payment, String reason) {
+        payment.setStatus(PaymentStatus.FAILED);
+        payment.setFailureReason(reason);
+        payment.setUpdatedAt(LocalDateTime.now());
+        paymentRepository.save(payment);
+
+        paymentResultEventPublisher.publishPaymentFailed(
+                new PaymentFailedEvent(payment.getInvestmentId(), payment.getId(), reason));
+
+        log.info("Payment marked FAILED for investment: {}, reason: {}",
+                payment.getInvestmentId(), reason);
     }
 }
