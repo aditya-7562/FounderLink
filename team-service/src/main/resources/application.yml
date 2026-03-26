@@ -4,9 +4,52 @@ server:
 spring:
   application:
     name: team-service
-#  config:
-#    import: optional:configserver:http://config-server:8888
-#  datasource:
+  config:
+    import: configserver:http://config-server:8888
+#   data:
+#     redis:
+#       host: localhost
+#       port: 6379
+#   cache:
+#     type: redis
+#     redis:
+#       time-to-live: 600000   # 10 minutes in ms
+
+# resilience4j:
+#   retry:
+#     instances:
+#       startupService:
+#         max-attempts: 3
+#         wait-duration: 500ms
+#         enable-exponential-backoff: true
+#         exponential-backoff-multiplier: 2
+#         retry-exceptions:
+#           - feign.RetryableException
+#           - com.founderlink.team.exception.StartupServiceServerException
+#           - com.founderlink.team.exception.StartupServiceUnavailableException
+#         ignore-exceptions:
+#           - com.founderlink.team.exception.StartupNotFoundException
+#           - com.founderlink.team.exception.ForbiddenAccessException
+#   circuitbreaker:
+#     instances:
+#       startupService:
+#         sliding-window-type: COUNT_BASED
+#         sliding-window-size: 10
+#         minimum-number-of-calls: 5
+#         permitted-number-of-calls-in-half-open-state: 3
+#         wait-duration-in-open-state: 30s
+#         failure-rate-threshold: 50
+#         slow-call-rate-threshold: 50
+#         slow-call-duration-threshold: 3s
+#         automatic-transition-from-open-to-half-open-enabled: true
+#         record-exceptions:
+#           - feign.RetryableException
+#           - com.founderlink.team.exception.StartupServiceServerException
+#           - com.founderlink.team.exception.StartupServiceUnavailableException
+#         ignore-exceptions:
+#           - com.founderlink.team.exception.StartupNotFoundException
+#           - com.founderlink.team.exception.ForbiddenAccessException
+#   datasource:
 #     url: jdbc:mysql://localhost:3306/team_db
 #     username: root
 #     password: Anim@4748

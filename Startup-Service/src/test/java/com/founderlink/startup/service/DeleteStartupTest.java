@@ -21,13 +21,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.founderlink.startup.entity.Startup;
 import com.founderlink.startup.entity.StartupStage;
+import com.founderlink.startup.command.StartupCommandService;
 import com.founderlink.startup.events.StartupDeletedEvent;
 import com.founderlink.startup.events.StartupEventPublisher;
 import com.founderlink.startup.exception.ForbiddenAccessException;
 import com.founderlink.startup.exception.StartupNotFoundException;
 import com.founderlink.startup.mapper.StartupMapper;
 import com.founderlink.startup.repository.StartupRepository;
-import com.founderlink.startup.serviceImpl.StartupServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class DeleteStartupTest {
@@ -42,7 +42,7 @@ class DeleteStartupTest {
     private StartupEventPublisher eventPublisher;
 
     @InjectMocks
-    private StartupServiceImpl startupService;
+    private StartupCommandService startupService;
 
     private Startup startup;
 

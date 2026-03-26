@@ -18,11 +18,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.founderlink.startup.dto.response.StartupResponseDto;
 import com.founderlink.startup.entity.Startup;
 import com.founderlink.startup.entity.StartupStage;
-import com.founderlink.startup.events.StartupEventPublisher;
 import com.founderlink.startup.exception.InvalidSearchException;
 import com.founderlink.startup.mapper.StartupMapper;
+import com.founderlink.startup.query.StartupQueryService;
 import com.founderlink.startup.repository.StartupRepository;
-import com.founderlink.startup.serviceImpl.StartupServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class SearchStartupsTest {
@@ -33,11 +32,8 @@ class SearchStartupsTest {
     @Mock
     private StartupMapper startupMapper;
 
-    @Mock
-    private StartupEventPublisher eventPublisher;
-
     @InjectMocks
-    private StartupServiceImpl startupService;
+    private StartupQueryService startupService;
 
     private Startup startup1;
     private Startup startup2;

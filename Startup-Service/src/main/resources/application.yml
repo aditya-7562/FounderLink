@@ -4,9 +4,17 @@ server:
 spring:
   application:
     name: startup-service
-#  config:
-#    import: optional:configserver:http://config-server:8888
-#  datasource:
+  config:
+    import: configserver:http://config-server:8888
+  # data:
+  #   redis:
+  #     host: localhost
+  #     port: 6379
+  # cache:
+  #   type: redis
+  #   redis:
+  #     time-to-live: 600000   # 10 minutes in ms
+#   datasource:
 #     url: jdbc:mysql://localhost:3306/startup_db
 #     username: root
 #     password: Anim@4748

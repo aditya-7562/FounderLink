@@ -1,6 +1,7 @@
 package com.founderlink.messaging.service;
 
 import com.founderlink.messaging.client.UserServiceClient;
+import com.founderlink.messaging.command.MessageCommandService;
 import com.founderlink.messaging.dto.MessageRequestDTO;
 import com.founderlink.messaging.dto.MessageResponseDTO;
 import com.founderlink.messaging.dto.UserDTO;
@@ -8,6 +9,7 @@ import com.founderlink.messaging.entity.Message;
 import com.founderlink.messaging.event.MessageEventPublisher;
 import com.founderlink.messaging.exception.InvalidMessageException;
 import com.founderlink.messaging.exception.MessageNotFoundException;
+import com.founderlink.messaging.query.MessageQueryService;
 import com.founderlink.messaging.repository.MessageRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +32,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class MessageServiceTest {
 
+    // ── Command side mocks ───────────────────────────────────────────────────
+
     @Mock
     private MessageRepository messageRepository;
 
@@ -40,7 +44,12 @@ class MessageServiceTest {
     private MessageEventPublisher messageEventPublisher;
 
     @InjectMocks
-    private MessageService messageService;
+    private MessageCommandService messageCommandService;
+
+    // ── Query side (shares messageRepository mock — same field name) ─────────
+
+    @InjectMocks
+    private MessageQueryService messageQueryService;
 
     private Message message1;
     private Message message2;
@@ -77,9 +86,9 @@ class MessageServiceTest {
     void sendMessage_WithValidUsers_ReturnsResponseDTO() {
         when(userServiceClient.getUserById(100L)).thenReturn(senderDTO);
         when(userServiceClient.getUserById(200L)).thenReturn(receiverDTO);
-        when(messageRepository.save(any(Message.class))).thenReturn(message1);
+        when(messageRepository.saveAndFlush(any(Message.class))).thenReturn(message1);
 
-        MessageResponseDTO result = messageService.sendMessage(validRequest);
+        MessageResponseDTO result = messageCommandService.sendMessage(validRequest);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
@@ -88,7 +97,7 @@ class MessageServiceTest {
         assertThat(result.getContent()).isEqualTo("Hello from sender!");
         verify(userServiceClient).getUserById(100L);
         verify(userServiceClient).getUserById(200L);
-        verify(messageRepository).save(any(Message.class));
+        verify(messageRepository).saveAndFlush(any(Message.class));
     }
 
     @Test
@@ -96,7 +105,7 @@ class MessageServiceTest {
     void sendMessage_WhenUserServiceReturnsNull_ThrowsException() {
         when(userServiceClient.getUserById(100L)).thenReturn(null);
 
-        assertThatThrownBy(() -> messageService.sendMessage(validRequest))
+        assertThatThrownBy(() -> messageCommandService.sendMessage(validRequest))
                 .isInstanceOf(InvalidMessageException.class)
                 .hasMessageContaining("does not exist");
 
@@ -108,7 +117,7 @@ class MessageServiceTest {
     void sendMessage_WhenSenderEqualsReceiver_ThrowsException() {
         MessageRequestDTO sameUserRequest = new MessageRequestDTO(100L, 100L, "Self message");
 
-        assertThatThrownBy(() -> messageService.sendMessage(sameUserRequest))
+        assertThatThrownBy(() -> messageCommandService.sendMessage(sameUserRequest))
                 .isInstanceOf(InvalidMessageException.class)
                 .hasMessage("Sender and receiver cannot be the same user");
 
@@ -120,7 +129,7 @@ class MessageServiceTest {
     @Test
     @DisplayName("sendMessageFallback - throws when user-service is unavailable")
     void sendMessageFallback_ThrowsWhenServiceUnavailable() {
-        assertThatThrownBy(() -> messageService.sendMessageFallback(
+        assertThatThrownBy(() -> messageCommandService.sendMessageFallback(
                 validRequest, new RuntimeException("Service unavailable")))
                 .isInstanceOf(InvalidMessageException.class)
                 .hasMessageContaining("User Service is unavailable");
@@ -136,7 +145,7 @@ class MessageServiceTest {
         when(messageRepository.findConversation(100L, 200L))
                 .thenReturn(Arrays.asList(message1, message2));
 
-        List<MessageResponseDTO> result = messageService.getConversation(100L, 200L);
+        List<MessageResponseDTO> result = messageQueryService.getConversation(100L, 200L);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getContent()).isEqualTo("Hello from sender!");
@@ -148,7 +157,7 @@ class MessageServiceTest {
     void getConversation_WhenNoMessages_ReturnsEmptyList() {
         when(messageRepository.findConversation(100L, 300L)).thenReturn(List.of());
 
-        List<MessageResponseDTO> result = messageService.getConversation(100L, 300L);
+        List<MessageResponseDTO> result = messageQueryService.getConversation(100L, 300L);
 
         assertThat(result).isEmpty();
     }
@@ -161,7 +170,7 @@ class MessageServiceTest {
         when(messageRepository.findConversationPartners(100L))
                 .thenReturn(Arrays.asList(200L, 300L));
 
-        List<Long> result = messageService.getConversationPartners(100L);
+        List<Long> result = messageQueryService.getConversationPartners(100L);
 
         assertThat(result).containsExactly(200L, 300L);
     }
@@ -173,7 +182,7 @@ class MessageServiceTest {
     void getMessageById_WhenFound_ReturnsDTO() {
         when(messageRepository.findById(1L)).thenReturn(Optional.of(message1));
 
-        MessageResponseDTO result = messageService.getMessageById(1L);
+        MessageResponseDTO result = messageQueryService.getMessageById(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
@@ -185,7 +194,7 @@ class MessageServiceTest {
     void getMessageById_WhenNotFound_ThrowsException() {
         when(messageRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> messageService.getMessageById(999L))
+        assertThatThrownBy(() -> messageQueryService.getMessageById(999L))
                 .isInstanceOf(MessageNotFoundException.class)
                 .hasMessageContaining("999");
     }
@@ -195,7 +204,7 @@ class MessageServiceTest {
     @Test
     @DisplayName("getConversationFallback - returns empty list")
     void getConversationFallback_ReturnsEmptyList() {
-        List<MessageResponseDTO> result = messageService.getConversationFallback(
+        List<MessageResponseDTO> result = messageQueryService.getConversationFallback(
                 100L, 200L, new RuntimeException("fail"));
 
         assertThat(result).isEmpty();
@@ -204,7 +213,7 @@ class MessageServiceTest {
     @Test
     @DisplayName("getConversationPartnersFallback - returns empty list")
     void getConversationPartnersFallback_ReturnsEmptyList() {
-        List<Long> result = messageService.getConversationPartnersFallback(
+        List<Long> result = messageQueryService.getConversationPartnersFallback(
                 100L, new RuntimeException("fail"));
 
         assertThat(result).isEmpty();

@@ -6,6 +6,14 @@ spring:
     name: messaging-service
   config:
     import: optional:configserver:http://config-server:8888
+#   data:
+#     redis:
+#       host: localhost
+#       port: 6379
+#   cache:
+#     type: redis
+#     redis:
+#       time-to-live: 600000   # 10 minutes in ms
 
 #   rabbitmq:
 #     host: localhost
@@ -16,7 +24,7 @@ spring:
 #   datasource:
 #     url: jdbc:mysql://localhost:3306/messaging_db
 #     username: root
-#     password: Anim@4748
+#     password: parth123
 
 #   jpa:
 #     hibernate:
@@ -67,21 +75,3 @@ spring:
 #       messagingService:
 #         timeout-duration: 3s
 #         cancel-running-future: true
-
-
-# management:
-#   endpoints:
-#     web:
-#       exposure:
-#         # include health, info, and tracing to see Zipkin status
-#         # also adding resilience4j to monitor your circuit breakers
-#         include: health,info,tracing,circuitbreakers,retries
-#   endpoint:
-#     health:
-#       show-details: always
-#   tracing:
-#     sampling:
-#       probability: 1.0
-#   zipkin:
-#     tracing:
-#       endpoint: http://localhost:9411/api/v2/spans

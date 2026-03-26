@@ -24,13 +24,13 @@ import com.founderlink.investment.entity.Investment;
 import com.founderlink.investment.entity.InvestmentStatus;
 import com.founderlink.investment.entity.ManualInvestmentStatus;
 import com.founderlink.investment.events.InvestmentEventPublisher;
+import com.founderlink.investment.command.InvestmentCommandService;
 import com.founderlink.investment.exception.ForbiddenAccessException;
 import com.founderlink.investment.exception.InvalidStatusTransitionException;
 import com.founderlink.investment.exception.InvestmentNotFoundException;
 import com.founderlink.investment.exception.StartupNotFoundException;
 import com.founderlink.investment.mapper.InvestmentMapper;
 import com.founderlink.investment.repository.InvestmentRepository;
-import com.founderlink.investment.serviceImpl.InvestmentServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateInvestmentStatusTest {
@@ -48,7 +48,7 @@ class UpdateInvestmentStatusTest {
     private StartupServiceClient startupServiceClient;
 
     @InjectMocks
-    private InvestmentServiceImpl investmentService;
+    private InvestmentCommandService investmentService;
 
     private Investment investment;
     private StartupResponseDto startup;

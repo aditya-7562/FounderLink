@@ -21,10 +21,10 @@ import com.founderlink.startup.dto.response.StartupResponseDto;
 import com.founderlink.startup.entity.Startup;
 import com.founderlink.startup.entity.StartupStage;
 import com.founderlink.startup.events.StartupCreatedEvent;
+import com.founderlink.startup.command.StartupCommandService;
 import com.founderlink.startup.events.StartupEventPublisher;
 import com.founderlink.startup.mapper.StartupMapper;
 import com.founderlink.startup.repository.StartupRepository;
-import com.founderlink.startup.serviceImpl.StartupServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class CreateStartupTest {
@@ -39,7 +39,7 @@ class CreateStartupTest {
     private StartupEventPublisher eventPublisher;
 
     @InjectMocks
-    private StartupServiceImpl startupService;
+    private StartupCommandService startupService;
 
     private StartupRequestDto requestDto;
     private Startup startup;

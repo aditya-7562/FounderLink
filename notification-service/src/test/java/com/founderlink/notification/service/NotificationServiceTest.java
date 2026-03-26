@@ -2,11 +2,13 @@ package com.founderlink.notification.service;
 
 import com.founderlink.notification.client.StartupServiceClient;
 import com.founderlink.notification.client.UserServiceClient;
+import com.founderlink.notification.command.NotificationCommandService;
 import com.founderlink.notification.dto.NotificationResponseDTO;
 import com.founderlink.notification.dto.StartupDTO;
 import com.founderlink.notification.dto.UserDTO;
 import com.founderlink.notification.entity.Notification;
 import com.founderlink.notification.exception.NotificationNotFoundException;
+import com.founderlink.notification.query.NotificationQueryService;
 import com.founderlink.notification.repository.NotificationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,16 +25,32 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
 
+    // ── Command side ─────────────────────────────────────────────────────────
+
     @Mock
     private NotificationRepository notificationRepository;
+
+    @InjectMocks
+    private NotificationCommandService notificationCommandService;
+
+    // ── Query side (shares notificationRepository mock — same field name) ────
+
+    @InjectMocks
+    private NotificationQueryService notificationQueryService;
+
+    // ── Facade (email helpers + delegation) ──────────────────────────────────
+
+    @Mock
+    private NotificationCommandService commandService;
+
+    @Mock
+    private NotificationQueryService queryService;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -77,14 +95,14 @@ class NotificationServiceTest {
         unreadNotification.setCreatedAt(LocalDateTime.now());
     }
 
-    // --- createNotification tests ---
+    // --- createNotification tests (Command side) ---
 
     @Test
     @DisplayName("createNotification - success")
     void createNotification_Success() {
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification1);
 
-        NotificationResponseDTO result = notificationService.createNotification(
+        NotificationResponseDTO result = notificationCommandService.createNotification(
                 100L, "STARTUP_CREATED", "New startup created in Tech industry");
 
         assertThat(result).isNotNull();
@@ -97,7 +115,7 @@ class NotificationServiceTest {
     @Test
     @DisplayName("createNotificationFallback - returns DTO without saving")
     void createNotificationFallback_ReturnsDTOWithoutSaving() {
-        NotificationResponseDTO result = notificationService.createNotificationFallback(
+        NotificationResponseDTO result = notificationCommandService.createNotificationFallback(
                 100L, "STARTUP_CREATED", "Test message", new RuntimeException("DB down"));
 
         assertThat(result).isNotNull();
@@ -107,7 +125,7 @@ class NotificationServiceTest {
         verify(notificationRepository, never()).save(any());
     }
 
-    // --- getNotificationsByUser tests ---
+    // --- getNotificationsByUser tests (Query side) ---
 
     @Test
     @DisplayName("getNotificationsByUser - returns all notifications")
@@ -115,7 +133,7 @@ class NotificationServiceTest {
         when(notificationRepository.findByUserIdOrderByCreatedAtDesc(100L))
                 .thenReturn(Arrays.asList(unreadNotification, notification2, notification1));
 
-        List<NotificationResponseDTO> result = notificationService.getNotificationsByUser(100L);
+        List<NotificationResponseDTO> result = notificationQueryService.getNotificationsByUser(100L);
 
         assertThat(result).hasSize(3);
         assertThat(result.get(0).getType()).isEqualTo("TEAM_INVITE_SENT");
@@ -127,7 +145,7 @@ class NotificationServiceTest {
         when(notificationRepository.findByUserIdOrderByCreatedAtDesc(999L))
                 .thenReturn(List.of());
 
-        List<NotificationResponseDTO> result = notificationService.getNotificationsByUser(999L);
+        List<NotificationResponseDTO> result = notificationQueryService.getNotificationsByUser(999L);
 
         assertThat(result).isEmpty();
     }
@@ -135,13 +153,13 @@ class NotificationServiceTest {
     @Test
     @DisplayName("getNotificationsByUserFallback - returns empty list")
     void getNotificationsByUserFallback_ReturnsEmpty() {
-        List<NotificationResponseDTO> result = notificationService.getNotificationsByUserFallback(
+        List<NotificationResponseDTO> result = notificationQueryService.getNotificationsByUserFallback(
                 100L, new RuntimeException("fail"));
 
         assertThat(result).isEmpty();
     }
 
-    // --- getUnreadNotifications tests ---
+    // --- getUnreadNotifications tests (Query side) ---
 
     @Test
     @DisplayName("getUnreadNotifications - returns only unread")
@@ -149,7 +167,7 @@ class NotificationServiceTest {
         when(notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(100L))
                 .thenReturn(List.of(unreadNotification));
 
-        List<NotificationResponseDTO> result = notificationService.getUnreadNotifications(100L);
+        List<NotificationResponseDTO> result = notificationQueryService.getUnreadNotifications(100L);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).isRead()).isFalse();
@@ -159,13 +177,13 @@ class NotificationServiceTest {
     @Test
     @DisplayName("getUnreadNotificationsFallback - returns empty list")
     void getUnreadNotificationsFallback_ReturnsEmpty() {
-        List<NotificationResponseDTO> result = notificationService.getUnreadNotificationsFallback(
+        List<NotificationResponseDTO> result = notificationQueryService.getUnreadNotificationsFallback(
                 100L, new RuntimeException("fail"));
 
         assertThat(result).isEmpty();
     }
 
-    // --- markAsRead tests ---
+    // --- markAsRead tests (Command side) ---
 
     @Test
     @DisplayName("markAsRead - success")
@@ -189,7 +207,7 @@ class NotificationServiceTest {
         when(notificationRepository.findById(3L)).thenReturn(Optional.of(unread));
         when(notificationRepository.save(any(Notification.class))).thenReturn(readVersion);
 
-        NotificationResponseDTO result = notificationService.markAsRead(3L);
+        NotificationResponseDTO result = notificationCommandService.markAsRead(3L);
 
         assertThat(result).isNotNull();
         assertThat(result.isRead()).isTrue();
@@ -201,7 +219,7 @@ class NotificationServiceTest {
     void markAsRead_WhenNotFound_ThrowsException() {
         when(notificationRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> notificationService.markAsRead(999L))
+        assertThatThrownBy(() -> notificationCommandService.markAsRead(999L))
                 .isInstanceOf(NotificationNotFoundException.class)
                 .hasMessageContaining("999");
     }
@@ -211,14 +229,14 @@ class NotificationServiceTest {
     void markAsReadFallback_RethrowsNotFound() {
         NotificationNotFoundException ex = new NotificationNotFoundException(999L);
 
-        assertThatThrownBy(() -> notificationService.markAsReadFallback(999L, ex))
+        assertThatThrownBy(() -> notificationCommandService.markAsReadFallback(999L, ex))
                 .isInstanceOf(NotificationNotFoundException.class);
     }
 
     @Test
     @DisplayName("markAsReadFallback - returns partial DTO for other errors")
     void markAsReadFallback_ReturnsPartialDTO() {
-        NotificationResponseDTO result = notificationService.markAsReadFallback(
+        NotificationResponseDTO result = notificationCommandService.markAsReadFallback(
                 1L, new RuntimeException("DB error"));
 
         assertThat(result).isNotNull();
@@ -226,7 +244,7 @@ class NotificationServiceTest {
         assertThat(result.isRead()).isTrue();
     }
 
-    // --- notifyAllUsers tests ---
+    // --- notifyAllUsers tests (Facade) ---
 
     @Test
     @DisplayName("notifyAllUsers - sends notification to each user")
@@ -234,11 +252,12 @@ class NotificationServiceTest {
         UserDTO user1 = new UserDTO(1L, "Alice", "alice@test.com", "INVESTOR", null, null, null, null);
         UserDTO user2 = new UserDTO(2L, "Bob", "bob@test.com", "FOUNDER", null, null, null, null);
         when(userServiceClient.getAllUsers()).thenReturn(List.of(user1, user2));
-        when(notificationRepository.save(any(Notification.class))).thenReturn(notification1);
+        when(commandService.createNotification(anyLong(), anyString(), anyString()))
+                .thenReturn(NotificationResponseDTO.builder().build());
 
         notificationService.notifyAllUsers("STARTUP_CREATED", "New startup!");
 
-        verify(notificationRepository, times(2)).save(any(Notification.class));
+        verify(commandService, times(2)).createNotification(anyLong(), anyString(), anyString());
     }
 
     @Test
@@ -256,10 +275,10 @@ class NotificationServiceTest {
     void notifyAllUsersFallback_LogsWithoutThrowing() {
         notificationService.notifyAllUsersFallback("TYPE", "msg", new RuntimeException("fail"));
 
-        verifyNoInteractions(notificationRepository);
+        verifyNoInteractions(commandService);
     }
 
-    // --- sendStartupCreatedEmailToAllInvestors tests ---
+    // --- sendStartupCreatedEmailToAllInvestors tests (Facade) ---
 
     @Test
     @DisplayName("sendStartupCreatedEmailToAllInvestors - sends bulk email only to investors")
@@ -267,14 +286,15 @@ class NotificationServiceTest {
         UserDTO investor1 = new UserDTO(1L, "Alice", "alice@test.com", "INVESTOR", null, null, null, null);
         UserDTO investor2 = new UserDTO(2L, "Bob", "bob@test.com", "INVESTOR", null, null, null, null);
         when(userServiceClient.getUsersByRole("INVESTOR")).thenReturn(List.of(investor1, investor2));
-        when(notificationRepository.save(any(Notification.class))).thenReturn(notification1);
+        when(commandService.createNotification(anyLong(), anyString(), anyString()))
+                .thenReturn(NotificationResponseDTO.builder().build());
 
         notificationService.sendStartupCreatedEmailToAllInvestors(1L, "TechStartup", "Tech", 500000.0);
 
         verify(userServiceClient).getUsersByRole("INVESTOR");
         verify(userServiceClient, never()).getAllUsers();
         verify(emailService).sendBulkEmail(any(String[].class), anyString(), anyString());
-        verify(notificationRepository, times(2)).save(any(Notification.class));
+        verify(commandService, times(2)).createNotification(anyLong(), anyString(), anyString());
     }
 
     @Test
@@ -282,11 +302,12 @@ class NotificationServiceTest {
     void sendStartupCreatedEmailToAllInvestors_DoesNotNotifyNonInvestors() {
         UserDTO investor = new UserDTO(1L, "Alice", "alice@test.com", "INVESTOR", null, null, null, null);
         when(userServiceClient.getUsersByRole("INVESTOR")).thenReturn(List.of(investor));
-        when(notificationRepository.save(any(Notification.class))).thenReturn(notification1);
+        when(commandService.createNotification(anyLong(), anyString(), anyString()))
+                .thenReturn(NotificationResponseDTO.builder().build());
 
         notificationService.sendStartupCreatedEmailToAllInvestors(1L, "TechStartup", "Tech", 500000.0);
 
-        verify(notificationRepository, times(1)).save(any(Notification.class));
+        verify(commandService, times(1)).createNotification(anyLong(), anyString(), anyString());
     }
 
     @Test
@@ -297,31 +318,32 @@ class NotificationServiceTest {
         notificationService.sendStartupCreatedEmailToAllInvestors(1L, "TechStartup", "Tech", 500000.0);
 
         verify(emailService).sendBulkEmail(any(String[].class), anyString(), anyString());
-        verify(notificationRepository, never()).save(any(Notification.class));
+        verify(commandService, never()).createNotification(anyLong(), anyString(), anyString());
     }
 
-    // --- sendInvestmentInterestEmailToFounder tests ---
+    // --- sendInvestmentInterestEmailToFounder tests (Facade) ---
 
     @Test
     @DisplayName("sendInvestmentInterestEmailToFounder - sends email and notification to founder")
     void sendInvestmentInterestEmailToFounder_SendsEmail() {
         StartupDTO startup = new StartupDTO(1L, "TechStartup", null, null, null, null, null, 100L);
-        UserDTO founder = new UserDTO(100L, "Alice", "alice@test.com", "FOUNDER", null, null, null, null);
+        UserDTO founder  = new UserDTO(100L, "Alice", "alice@test.com", "FOUNDER", null, null, null, null);
         UserDTO investor = new UserDTO(200L, "Bob", "bob@test.com", "INVESTOR", null, null, null, null);
         when(startupServiceClient.getStartupById(1L)).thenReturn(startup);
         when(userServiceClient.getUserById(100L)).thenReturn(founder);
         when(userServiceClient.getUserById(200L)).thenReturn(investor);
-        when(notificationRepository.save(any(Notification.class))).thenReturn(notification1);
+        when(commandService.createNotification(anyLong(), anyString(), anyString()))
+                .thenReturn(NotificationResponseDTO.builder().build());
 
         notificationService.sendInvestmentInterestEmailToFounder(1L, 200L, "Bob");
 
         verify(emailService).sendEmail(eq("alice@test.com"), anyString(), anyString());
-        verify(notificationRepository).save(any(Notification.class));
+        verify(commandService).createNotification(anyLong(), anyString(), anyString());
     }
 
     @Test
     @DisplayName("sendInvestmentInterestEmailToFounder - skips when founder is null")
-    void sendInvestmentInterestEmailToFounder_SkipsWhenInvestorNotFound() {
+    void sendInvestmentInterestEmailToFounder_SkipsWhenFounderNotFound() {
         StartupDTO startup = new StartupDTO(1L, "TechStartup", null, null, null, null, null, 100L);
         when(startupServiceClient.getStartupById(1L)).thenReturn(startup);
         when(userServiceClient.getUserById(100L)).thenReturn(null);
@@ -331,24 +353,25 @@ class NotificationServiceTest {
         notificationService.sendInvestmentInterestEmailToFounder(1L, 200L, "Bob");
 
         verify(emailService, never()).sendEmail(any(), any(), any());
-        verify(notificationRepository, never()).save(any(Notification.class));
+        verify(commandService, never()).createNotification(anyLong(), anyString(), anyString());
     }
 
-    // --- sendInvestmentCreatedEmailToFounder tests ---
+    // --- sendInvestmentCreatedEmailToFounder tests (Facade) ---
 
     @Test
     @DisplayName("sendInvestmentCreatedEmailToFounder - sends email and notification to founder")
     void sendInvestmentCreatedEmailToFounder_SendsEmailToFounder() {
-        UserDTO founder = new UserDTO(100L, "Alice", "alice@test.com", "FOUNDER", null, null, null, null);
+        UserDTO founder  = new UserDTO(100L, "Alice", "alice@test.com", "FOUNDER", null, null, null, null);
         UserDTO investor = new UserDTO(200L, "Bob", "bob@test.com", "INVESTOR", null, null, null, null);
         when(userServiceClient.getUserById(100L)).thenReturn(founder);
         when(userServiceClient.getUserById(200L)).thenReturn(investor);
-        when(notificationRepository.save(any(Notification.class))).thenReturn(notification1);
+        when(commandService.createNotification(anyLong(), anyString(), anyString()))
+                .thenReturn(NotificationResponseDTO.builder().build());
 
         notificationService.sendInvestmentCreatedEmailToFounder(1L, 100L, 200L, 50000.0);
 
         verify(emailService).sendEmail(eq("alice@test.com"), anyString(), anyString());
-        verify(notificationRepository).save(any(Notification.class));
+        verify(commandService).createNotification(anyLong(), anyString(), anyString());
     }
 
     @Test
@@ -361,10 +384,10 @@ class NotificationServiceTest {
         notificationService.sendInvestmentCreatedEmailToFounder(1L, 100L, 200L, 50000.0);
 
         verify(emailService, never()).sendEmail(any(), any(), any());
-        verify(notificationRepository, never()).save(any(Notification.class));
+        verify(commandService, never()).createNotification(anyLong(), anyString(), anyString());
     }
 
-    // --- sendTeamInviteEmail tests ---
+    // --- sendTeamInviteEmail tests (Facade) ---
 
     @Test
     @DisplayName("sendTeamInviteEmail - sends email to invited user")
@@ -380,7 +403,8 @@ class NotificationServiceTest {
     @Test
     @DisplayName("sendTeamInviteEmail - skips when invited user has no email")
     void sendTeamInviteEmail_SkipsWhenUserHasNoEmail() {
-        when(userServiceClient.getUserById(300L)).thenReturn(new UserDTO(300L, "Charlie", null, "COFOUNDER", null, null, null, null));
+        when(userServiceClient.getUserById(300L)).thenReturn(
+                new UserDTO(300L, "Charlie", null, "COFOUNDER", null, null, null, null));
 
         notificationService.sendTeamInviteEmail(1L, 300L, "CTO");
 

@@ -1,12 +1,10 @@
 package com.founderlink.team.service.team;
-import com.founderlink.team.client.StartupServiceClient;
 import com.founderlink.team.dto.response.TeamMemberResponseDto;
 import com.founderlink.team.entity.TeamMember;
 import com.founderlink.team.entity.TeamRole;
 import com.founderlink.team.mapper.TeamMemberMapper;
-import com.founderlink.team.repository.InvitationRepository;
+import com.founderlink.team.query.TeamMemberQueryService;
 import com.founderlink.team.repository.TeamMemberRepository;
-import com.founderlink.team.serviceImpl.TeamMemberServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,16 +25,10 @@ class GetMemberHistoryTest {
     private TeamMemberRepository teamMemberRepository;
 
     @Mock
-    private InvitationRepository invitationRepository;
-
-    @Mock
     private TeamMemberMapper teamMemberMapper;
 
-    @Mock
-    private StartupServiceClient startupServiceClient;
-
     @InjectMocks
-    private TeamMemberServiceImpl teamMemberService;
+    private TeamMemberQueryService teamMemberService;
 
     private TeamMember activeMember;
     private TeamMember inactiveMember;

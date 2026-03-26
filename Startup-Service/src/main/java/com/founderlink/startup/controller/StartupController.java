@@ -277,7 +277,7 @@ public class StartupController {
                 log.info("GET /startup/search - industry: {}, stage: {}, role: {}", industry, stage, userRole);
                 if (!userRole.equals("ROLE_INVESTOR") &&
                                 !userRole.equals("ROLE_FOUNDER") &&
-                                !userRole.equals("ROLE_COFUNDER") &&
+                                !userRole.equals("ROLE_COFOUNDER") &&
                                 !userRole.equals("ROLE_ADMIN")) {
                         throw new ForbiddenAccessException(
                                         "Access denied");
