@@ -127,10 +127,11 @@ spring:
 #      deleted:
 #        queue: investment.startup.deleted.queue
 #        routing-key: startup.deleted
+    import: optional:configserver:http://config-server:8888
   datasource:
-    url: jdbc:mysql://localhost:3306/investment_db
+    url: jdbc:mysql://localhost:3306/investment_db?createDatabaseIfNotExist=true
     username: root
-    password: parth123
+    password: system
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
