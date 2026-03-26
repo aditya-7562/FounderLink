@@ -1,0 +1,67 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: investment-service
+  datasource:
+    url: jdbc:mysql://mysql:3306/investment_db?createDatabaseIfNotExist=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
+resilience4j:
+  retry:
+    instances:
+      startupService:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - feign.RetryableException
+          - com.founderlink.investment.exception.StartupServiceServerException
+          - com.founderlink.investment.exception.StartupServiceUnavailableException
+        ignore-exceptions:
+          - com.founderlink.investment.exception.StartupNotFoundException
+          - com.founderlink.investment.exception.ForbiddenAccessException
+  circuitbreaker:
+    instances:
+      startupService:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 3s
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - feign.RetryableException
+          - com.founderlink.investment.exception.StartupServiceServerException
+          - com.founderlink.investment.exception.StartupServiceUnavailableException
+        ignore-exceptions:
+          - com.founderlink.investment.exception.StartupNotFoundException
+          - com.founderlink.investment.exception.ForbiddenAccessException
+
+logging:
+  level:
+    com.founderlink.investment: DEBUG
+
+# RabbitMQ queues and routing keys
+rabbitmq:
+  investment:
+    queue: investment.queue
+    routing-key: investment.created
+  startup:
+    deleted:
+      queue: investment.startup.deleted.queue
+      routing-key: startup.deleted

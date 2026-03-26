@@ -1,0 +1,67 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+
+  - job_name: api-gateway
+    static_configs:
+      - targets: [ localhost ]
+        labels:
+          service: api-gateway
+          __path__: /var/log/founderlink/api-gateway.log
+
+  - job_name: auth-service
+    static_configs:
+      - targets: [ localhost ]
+        labels:
+          service: auth-service
+          __path__: /var/log/founderlink/auth-service.log
+
+  - job_name: user-service
+    static_configs:
+      - targets: [ localhost ]
+        labels:
+          service: user-service
+          __path__: /var/log/founderlink/user-service.log
+
+  - job_name: startup-service
+    static_configs:
+      - targets: [ localhost ]
+        labels:
+          service: startup-service
+          __path__: /var/log/founderlink/startup-service.log
+
+  - job_name: investment-service
+    static_configs:
+      - targets: [ localhost ]
+        labels:
+          service: investment-service
+          __path__: /var/log/founderlink/investment-service.log
+
+  - job_name: team-service
+    static_configs:
+      - targets: [ localhost ]
+        labels:
+          service: team-service
+          __path__: /var/log/founderlink/team-service.log
+
+  - job_name: messaging-service
+    static_configs:
+      - targets: [ localhost ]
+        labels:
+          service: messaging-service
+          __path__: /var/log/founderlink/messaging-service.log
+
+  - job_name: notification-service
+    static_configs:
+      - targets: [ localhost ]
+        labels:
+          service: notification-service
+          __path__: /var/log/founderlink/notification-service.log

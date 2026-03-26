@@ -11,6 +11,8 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import io.micrometer.observation.ObservationRegistry;
+
 @Configuration
 public class RabbitMQConfig {
 
@@ -29,17 +31,11 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.startup.deleted.routing-key}")
     private String startupDeletedRoutingKey;
 
-    // ─────────────────────────────────────────
-    // SINGLE EXCHANGE
-    // ─────────────────────────────────────────
     @Bean
     public DirectExchange founderLinkExchange() {
         return new DirectExchange(exchange);
     }
 
-    // ─────────────────────────────────────────
-    // QUEUES
-    // ─────────────────────────────────────────
     @Bean
     public Queue investmentQueue() {
         return new Queue(investmentQueue, true);
@@ -50,43 +46,29 @@ public class RabbitMQConfig {
         return new Queue(startupDeletedQueue, true);
     }
 
-    // ─────────────────────────────────────────
-    // BINDINGS
-    // ─────────────────────────────────────────
     @Bean
     public Binding investmentCreatedBinding() {
-        return BindingBuilder
-                .bind(investmentQueue())
-                .to(founderLinkExchange())
-                .with(investmentRoutingKey);
+        return BindingBuilder.bind(investmentQueue()).to(founderLinkExchange()).with(investmentRoutingKey);
     }
 
     @Bean
     public Binding startupDeletedBinding() {
-        return BindingBuilder
-                .bind(startupDeletedQueue())
-                .to(founderLinkExchange())
-                .with(startupDeletedRoutingKey);
+        return BindingBuilder.bind(startupDeletedQueue()).to(founderLinkExchange()).with(startupDeletedRoutingKey);
     }
 
-    // ─────────────────────────────────────────
-    // MESSAGE CONVERTER
-    // ─────────────────────────────────────────
     @Bean
     public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
-    // ─────────────────────────────────────────
-    // RABBIT TEMPLATE
-    // ─────────────────────────────────────────
+    // ── Trace propagation: injects TraceId into outgoing RabbitMQ messages ──
+    // and extracts TraceId from incoming RabbitMQ messages automatically
     @Bean
-    public RabbitTemplate rabbitTemplate(
-            ConnectionFactory connectionFactory) {
-        RabbitTemplate rabbitTemplate =
-                new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(
-                messageConverter());
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
+                                          ObservationRegistry observationRegistry) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(messageConverter());
+        rabbitTemplate.setObservationEnabled(true);
         return rabbitTemplate;
     }
 }
