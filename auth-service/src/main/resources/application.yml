@@ -1,116 +1,119 @@
 server:
-  port: 8089
+  port: 8082
 
 spring:
   application:
     name: auth-service
   config:
     import: optional:configserver:http://localhost:8888
+
 #   cloud:
-#      openfeign:
-#        client:
-#          config:
-#            user-service:
-#              connectTimeout: 2000
-#              readTimeout: 5000
-#              loggerLevel: basic
+#     config:
+#       enabled: false
+#     openfeign:
+#         client:
+#           config:
+#             user-service:
+#               connectTimeout: 2000
+#               readTimeout: 5000
+#               loggerLevel: basic
 #   datasource:
-#      url: jdbc:mysql://localhost:3306/auth_service_db?createDatabaseIfNotExist=true
-#      username: root
-#      password: Anim@4748
-#      driver-class-name: com.mysql.cj.jdbc.Driver
+#       url: jdbc:mysql://localhost:3306/auth_service_db?createDatabaseIfNotExist=true
+#       username: root
+#       password: system
+#       driver-class-name: com.mysql.cj.jdbc.Driver
 #   jpa:
-#      hibernate:
-#        ddl-auto: update
-#      show-sql: true
-#      database-platform: org.hibernate.dialect.MySQLDialect
+#       hibernate:
+#         ddl-auto: update
+#       show-sql: true
+#       database-platform: org.hibernate.dialect.MySQLDialect
 #   eureka:
-#    client:
-#      service-url:
-#        defaultZone: http://localhost:8761/eureka/
-#    instance:
-#      prefer-ip-address: true
+#     client:
+#       service-url:
+#         defaultZone: http://localhost:8761/eureka/
+#     instance:
+#       prefer-ip-address: true
 
 # jwt:
-#    secret: FounderLinkSecretKeyForJWTTokenGeneration2024SecureKey
-#    access-token-expiration: 15m
+#     secret: hsbhbajhuwhqlmxksdjielmsjnclsllN
+#     access-token-expiration: 15m
 
 # security:
-#    refresh-token:
-#      expiration: 30d
-#      cookie-name: refresh_token
-#      cookie-path: /auth
-#      cookie-same-site: Strict
-#      cookie-secure: true
+#     refresh-token:
+#       expiration: 30d
+#       cookie-name: refresh_token
+#       cookie-path: /auth
+#       cookie-same-site: Strict
+#       cookie-secure: true
 
 # seed:
-#    admin:
-#      enabled: false
-#      name: Super Admin
-#      email: admin@founderlink.com
-#      password: ""
+#     admin:
+#       enabled: false
+#       name: Super Admin
+#       email: admin@founderlink.com
+#       password: ""
 
 # user-service:
-#    client:
-#      connect-timeout-ms: 2000
-#      read-timeout-ms: 5000
-#      internal-secret: my-founderlink-internal-secret-2024
+#     client:
+#       connect-timeout-ms: 2000
+#       read-timeout-ms: 5000
+#       internal-secret: my-founderlink-internal-secret-2024
 
 # resilience4j:
-#    retry:
-#      instances:
-#        userServiceSync:
-#          max-attempts: 3
-#          wait-duration: 1s
-#          enable-exponential-backoff: true
-#          exponential-backoff-multiplier: 2
-#          retry-exceptions:
-#            - feign.RetryableException
-#            - com.founderlink.auth.exception.UserServiceServerException
-#            - com.founderlink.auth.exception.UserServiceUnavailableException
-#    circuitbreaker:
-#      instances:
-#        userServiceSync:
-#          sliding-window-type: COUNT_BASED
-#          sliding-window-size: 10
-#          minimum-number-of-calls: 5
-#          permitted-number-of-calls-in-half-open-state: 3
-#          wait-duration-in-open-state: 30s
-#          failure-rate-threshold: 50
-#          slow-call-rate-threshold: 50
-#          slow-call-duration-threshold: 3s
-#          automatic-transition-from-open-to-half-open-enabled: true
-#          record-exceptions:
-#            - feign.RetryableException
-#            - com.founderlink.auth.exception.UserServiceServerException
-#            - com.founderlink.auth.exception.UserServiceUnavailableException
-#          ignore-exceptions:
-#            - com.founderlink.auth.exception.UserServiceBadRequestException
-#            - com.founderlink.auth.exception.UserServiceNotFoundException
+#     retry:
+#       instances:
+#         userServiceSync:
+#           max-attempts: 3
+#           wait-duration: 1s
+#           enable-exponential-backoff: true
+#           exponential-backoff-multiplier: 2
+#           retry-exceptions:
+#             - feign.RetryableException
+#             - com.founderlink.auth.exception.UserServiceServerException
+#             - com.founderlink.auth.exception.UserServiceUnavailableException
+#     circuitbreaker:
+#       instances:
+#         userServiceSync:
+#           sliding-window-type: COUNT_BASED
+#           sliding-window-size: 10
+#           minimum-number-of-calls: 5
+#           permitted-number-of-calls-in-half-open-state: 3
+#           wait-duration-in-open-state: 30s
+#           failure-rate-threshold: 50
+#           slow-call-rate-threshold: 50
+#           slow-call-duration-threshold: 3s
+#           automatic-transition-from-open-to-half-open-enabled: true
+#           record-exceptions:
+#             - feign.RetryableException
+#             - com.founderlink.auth.exception.UserServiceServerException
+#             - com.founderlink.auth.exception.UserServiceUnavailableException
+#           ignore-exceptions:
+#             - com.founderlink.auth.exception.UserServiceBadRequestException
+#             - com.founderlink.auth.exception.UserServiceNotFoundException
 
 
 # logging:
-#    level:
-#      root: INFO
-#      com:
-#        founderlink:
-#          auth: DEBUG
-#    file:
-#      name: logs/auth-service.log
+#     level:
+#       root: INFO
+#       com:
+#         founderlink:
+#           auth: DEBUG
+#     file:
+#       name: logs/auth-service.log
 
 # management:
-#   tracing:
-#     sampling:
-#       probability: 1.0
-#   zipkin:
-#     tracing:
-#       endpoint: http://localhost:9411/api/v2/spans
-#   endpoints:
-#     web:
-#           exposure:
-#             # 'health' and 'info' are usually enough,
-#             # but 'tracing' helps verify Zipkin integration.
-#             include: health,info,tracing,prometheus
-#   endpoint:
-#     health:
-#           show-details: always # Shows DB and Eureka status details
+#    tracing:
+#      sampling:
+#        probability: 1.0
+#    zipkin:
+#      tracing:
+#        endpoint: http://localhost:9411/api/v2/spans
+#    endpoints:
+#      web:
+#            exposure:
+#              # 'health' and 'info' are usually enough,
+#              # but 'tracing' helps verify Zipkin integration.
+#              include: health,info,tracing,prometheus
+#    endpoint:
+#      health:
+#            show-details: always # Shows DB and Eureka status details

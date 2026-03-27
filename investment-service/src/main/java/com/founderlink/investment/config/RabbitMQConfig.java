@@ -31,6 +31,21 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.startup.deleted.routing-key}")
     private String startupDeletedRoutingKey;
 
+    @Value("${rabbitmq.payment.completed.queue}")
+    private String paymentCompletedQueue;
+
+    @Value("${rabbitmq.payment.completed.routing-key}")
+    private String paymentCompletedRoutingKey;
+
+    @Value("${rabbitmq.payment.failed.queue}")
+    private String paymentFailedQueue;
+
+    @Value("${rabbitmq.payment.failed.routing-key}")
+    private String paymentFailedRoutingKey;
+
+    // ─────────────────────────────────────────
+    // SINGLE EXCHANGE
+    // ─────────────────────────────────────────
     @Bean
     public DirectExchange founderLinkExchange() {
         return new DirectExchange(exchange);
@@ -47,6 +62,19 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue paymentCompletedQueue() {
+        return new Queue(paymentCompletedQueue, true);
+    }
+
+    @Bean
+    public Queue paymentFailedQueue() {
+        return new Queue(paymentFailedQueue, true);
+    }
+
+    // ─────────────────────────────────────────
+    // BINDINGS
+    // ─────────────────────────────────────────
+    @Bean
     public Binding investmentCreatedBinding() {
         return BindingBuilder.bind(investmentQueue()).to(founderLinkExchange()).with(investmentRoutingKey);
     }
@@ -56,6 +84,25 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(startupDeletedQueue()).to(founderLinkExchange()).with(startupDeletedRoutingKey);
     }
 
+    @Bean
+    public Binding paymentCompletedBinding() {
+        return BindingBuilder
+                .bind(paymentCompletedQueue())
+                .to(founderLinkExchange())
+                .with(paymentCompletedRoutingKey);
+    }
+
+    @Bean
+    public Binding paymentFailedBinding() {
+        return BindingBuilder
+                .bind(paymentFailedQueue())
+                .to(founderLinkExchange())
+                .with(paymentFailedRoutingKey);
+    }
+
+    // ─────────────────────────────────────────
+    // MESSAGE CONVERTER
+    // ─────────────────────────────────────────
     @Bean
     public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();

@@ -20,6 +20,12 @@ public class InvestmentEventPublisher {
     @Value("${rabbitmq.investment.routing-key}")
     private String investmentRoutingKey;
 
+    @Value("${rabbitmq.investment.approved.routing-key}")
+    private String investmentApprovedRoutingKey;
+
+    @Value("${rabbitmq.investment.rejected.routing-key}")
+    private String investmentRejectedRoutingKey;
+
     public void publishInvestmentCreatedEvent(
             InvestmentCreatedEvent event) {
         try {
@@ -38,6 +44,51 @@ public class InvestmentEventPublisher {
             log.error("Failed to publish " +
                     "INVESTMENT_CREATED: {}",
                     e.getMessage());
+            throw new IllegalStateException("Failed to publish INVESTMENT_CREATED event", e);
+        }
+    }
+
+    public void publishInvestmentApprovedEvent(
+            InvestmentApprovedEvent event) {
+        try {
+            log.info("Publishing INVESTMENT_APPROVED " +
+                    "event for investmentId: {}",
+                    event.getInvestmentId());
+
+            rabbitTemplate.convertAndSend(
+                    exchange,
+                    investmentApprovedRoutingKey,
+                    event);
+
+            log.info("INVESTMENT_APPROVED published!!!!");
+
+        } catch (Exception e) {
+            log.error("Failed to publish " +
+                    "INVESTMENT_APPROVED: {}",
+                    e.getMessage());
+            throw new IllegalStateException("Failed to publish INVESTMENT_APPROVED event", e);
+        }
+    }
+
+    public void publishInvestmentRejectedEvent(
+            InvestmentRejectedEvent event) {
+        try {
+            log.info("Publishing INVESTMENT_REJECTED " +
+                    "event for investmentId: {}",
+                    event.getInvestmentId());
+
+            rabbitTemplate.convertAndSend(
+                    exchange,
+                    investmentRejectedRoutingKey,
+                    event);
+
+            log.info("INVESTMENT_REJECTED published!!!!");
+
+        } catch (Exception e) {
+            log.error("Failed to publish " +
+                    "INVESTMENT_REJECTED: {}",
+                    e.getMessage());
+            throw new IllegalStateException("Failed to publish INVESTMENT_REJECTED event", e);
         }
     }
 }

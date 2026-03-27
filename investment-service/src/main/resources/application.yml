@@ -15,6 +15,26 @@ spring:
 #     redis:
 #       time-to-live: 600000   # 10 minutes in ms
 
+#   datasource:
+#      url: jdbc:mysql://localhost:3306/investment_db?createDatabaseIfNotExist=true
+#      username: root
+#      password: system
+#      driver-class-name: com.mysql.cj.jdbc.Driver
+
+#   jpa:
+#      hibernate:
+#        ddl-auto: update
+#      show-sql: true
+#      properties:
+#        hibernate:
+#          format_sql: true
+#          dialect: org.hibernate.dialect.MySQLDialect
+#   rabbitmq:
+#     host: localhost
+#     port: 5672
+#     username: guest
+#     password: guest
+
 # resilience4j:
 #   retry:
 #     instances:
@@ -50,22 +70,6 @@ spring:
 #           - com.founderlink.investment.exception.StartupNotFoundException
 #           - com.founderlink.investment.exception.ForbiddenAccessException
 
-#   datasource:
-#      url: jdbc:mysql://localhost:3306/investment_db
-#      username: root
-#      password: Anim@4748
-#      driver-class-name: com.mysql.cj.jdbc.Driver
-
-#   jpa:
-#      hibernate:
-#        ddl-auto: update
-#      show-sql: true
-#      properties:
-#        hibernate:
-#          format_sql: true
-#          dialect: org.hibernate.dialect.MySQLDialect
-
-
 #   cloud:
 #      openfeign:
 #        circuitbreaker:
@@ -95,15 +99,6 @@ spring:
 #        tracing:
 #          endpoint: http://localhost:9411/api/v2/spans
 
-
-# resilience4j:
-#    circuitbreaker:
-#      instances:
-#        startup-service:
-#          sliding-window-size: 10
-#          failure-rate-threshold: 50
-#          wait-duration-in-open-state: 10s
-
 # logging:
 #    level:
 #      root: INFO
@@ -115,15 +110,24 @@ spring:
 # # RABBITMQ QUEUES AND EXCHANGES
 # # ==========================================
 # rabbitmq:
-#    host: localhost
-#    port: 5672
-#    username: guest
-#    password: guest
-#    exchange: founderlink.exchange
-#    investment:
-#      queue: investment.queue
-#      routing-key: investment.created
-#    startup:
-#      deleted:
-#        queue: investment.startup.deleted.queue
-#        routing-key: startup.deleted
+#   exchange: founderlink.exchange
+#   investment:
+#     queue: investment.queue
+#     routing-key: investment.created
+#     approved:
+#       queue: investment.approved.queue
+#       routing-key: investment.approved
+#     rejected:
+#       queue: investment.rejected.queue
+#       routing-key: investment.rejected
+#   startup:
+#     deleted:
+#       queue: investment.startup.deleted.queue
+#       routing-key: startup.deleted
+#   payment:
+#     completed:
+#       queue: investment.payment.completed.queue
+#       routing-key: payment.completed
+#     failed:
+#       queue: investment.payment.failed.queue
+#       routing-key: payment.failed

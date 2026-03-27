@@ -19,6 +19,11 @@ spring:
 #     username: root
 #     password: Anim@4748
 #     driver-class-name: com.mysql.cj.jdbc.Driver
+#   rabbitmq:
+      # host: localhost
+      # port: 5672
+      # username: guest
+      # password: guest
 #
 #  jpa:
 #     hibernate:
@@ -61,15 +66,7 @@ spring:
 #     com.founderlink.startup: DEBUG
 #   file:
 #     name: logs/startup-service.log
-
-# ==========================================
-# RABBITMQ QUEUES AND EXCHANGES
-# ==========================================
-#rabbitmq:
-#  host: localhost
-#  port: 5672
-#  username: guest
-#  password: guest
+# rabbitmq:
 #  exchange: founderlink.exchange
 #  startup:
 #     queue: startup.queue

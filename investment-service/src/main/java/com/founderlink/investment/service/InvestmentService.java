@@ -5,7 +5,6 @@ import java.util.List;
 import com.founderlink.investment.dto.request.InvestmentRequestDto;
 import com.founderlink.investment.dto.request.InvestmentStatusUpdateDto;
 import com.founderlink.investment.dto.response.InvestmentResponseDto;
-
 public interface InvestmentService {
 
   
@@ -21,4 +20,8 @@ public interface InvestmentService {
                                                   InvestmentStatusUpdateDto statusUpdateDto);
     
     InvestmentResponseDto getInvestmentById(Long investmentId);
+
+    InvestmentResponseDto markCompletedFromPayment(Long investmentId);
+
+    InvestmentResponseDto markPaymentFailedFromPayment(Long investmentId);
 }
