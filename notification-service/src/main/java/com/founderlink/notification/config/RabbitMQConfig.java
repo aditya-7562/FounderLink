@@ -58,11 +58,6 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public TopicExchange notificationExchange() {
-        return new TopicExchange("notification-exchange");
-    }
-
-    @Bean
     public Binding startupBinding(Queue startupQueue, DirectExchange exchange) {
         return BindingBuilder.bind(startupQueue).to(exchange).with("startup.created");
     }
@@ -83,8 +78,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding passwordResetBinding(Queue passwordResetQueue, TopicExchange notificationExchange) {
-        return BindingBuilder.bind(passwordResetQueue()).to(notificationExchange).with("password.reset");
+    public Binding passwordResetBinding(Queue passwordResetQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(passwordResetQueue()).to(exchange).with("password.reset");
     }
 
     @Bean

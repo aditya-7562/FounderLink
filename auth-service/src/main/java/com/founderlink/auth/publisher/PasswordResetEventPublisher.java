@@ -17,7 +17,7 @@ public class PasswordResetEventPublisher {
     public void publishPasswordResetEvent(PasswordResetEmailEvent event) {
         try {
             rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.NOTIFICATION_EXCHANGE,
+                    RabbitMQConfig.FOUNDERLINK_EXCHANGE,
                     RabbitMQConfig.PASSWORD_RESET_ROUTING_KEY,
                     event
             );
