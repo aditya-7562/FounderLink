@@ -31,9 +31,9 @@ import com.founderlink.investment.repository.InvestmentRepository;
 import com.founderlink.investment.serviceImpl.InvestmentServiceImpl;
 
 /**
- * Test suite for investment status update event publishing (PHASE 1).
- * Verifies that InvestmentApprovedEvent and InvestmentRejectedEvent
- * are properly published when status changes.
+ * Test suite for investment status update service delegation.
+ * Verifies that InvestmentServiceImpl properly delegates to InvestmentCommandService
+ * for status updates.
  */
 @ExtendWith(MockitoExtension.class)
 class UpdateInvestmentStatusEventPublishingTest {

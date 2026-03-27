@@ -15,16 +15,16 @@ public class AdminSeedRunner implements CommandLineRunner {
 
     private final AdminSeeder adminSeeder;
 
-    @Value("${seed.admin.enabled:false}")
+    @Value("${seed.admin.enabled}")
     private boolean seedAdmin;
 
-    @Value("${seed.admin.name:Super Admin}")
+    @Value("${seed.admin.name}")
     private String adminName;
 
-    @Value("${seed.admin.email:admin@founderlink.com}")
+    @Value("${seed.admin.email}")
     private String adminEmail;
 
-    @Value("${seed.admin.password:}")
+    @Value("${seed.admin.password}")
     private String adminPassword;
 
     @Override

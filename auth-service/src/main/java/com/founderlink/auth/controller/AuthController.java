@@ -5,8 +5,8 @@ import com.founderlink.auth.dto.AuthResponse;
 import com.founderlink.auth.dto.LoginRequest;
 import com.founderlink.auth.dto.RegisterRequest;
 import com.founderlink.auth.dto.RegisterResponse;
-import com.founderlink.auth.exception.InvalidRefreshTokenException;
 import com.founderlink.auth.service.AuthService;
+import com.founderlink.auth.service.AuthSession;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,9 +36,9 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Creates a new user account and returns registration details.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "User registered successfully"),
-        @ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
-        @ApiResponse(responseCode = "409", description = "Email already exists")
+            @ApiResponse(responseCode = "200", description = "User registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
+            @ApiResponse(responseCode = "409", description = "Email already exists")
     })
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         RegisterResponse response = authService.register(request);
@@ -48,13 +48,13 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "Login user", description = "Authenticates a user and returns an authentication response.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "User logged in successfully"),
-        @ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
-        @ApiResponse(responseCode = "401", description = "Invalid email or password")
+            @ApiResponse(responseCode = "200", description = "User logged in successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
+            @ApiResponse(responseCode = "401", description = "Invalid email or password")
     })
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,
                                               HttpServletResponse response) {
-        var authSession = authService.login(request);
+        AuthSession authSession = authService.login(request);
         addRefreshTokenCookie(response, authSession.refreshToken());
         return ResponseEntity.ok(authSession.authResponse());
     }
@@ -62,13 +62,13 @@ public class AuthController {
     @PostMapping("/refresh")
     @Operation(summary = "Refresh authentication token", description = "Refreshes the authentication token using a valid refresh token.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
-        @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token"),
-        @ApiResponse(responseCode = "403", description = "Refresh token has been revoked")
+            @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token"),
+            @ApiResponse(responseCode = "403", description = "Refresh token has been revoked")
     })
     public ResponseEntity<AuthResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = resolveRefreshToken(request);
-        var authSession = authService.refresh(refreshToken);
+        AuthSession authSession = authService.refresh(refreshToken);
         addRefreshTokenCookie(response, authSession.refreshToken());
         return ResponseEntity.ok(authSession.authResponse());
     }
@@ -76,14 +76,16 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "Logout user", description = "Logs out the user and clears the refresh token cookie.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "User logged out successfully")
+            @ApiResponse(responseCode = "204", description = "User logged out successfully")
     })
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         try {
             String refreshToken = resolveRefreshToken(request);
-            authService.logout(refreshToken);
-        } catch (InvalidRefreshTokenException ex) {
-            log.debug("Logout request completed without a valid refresh token");
+            if (StringUtils.hasText(refreshToken)) {
+                authService.logout(refreshToken);
+            }
+        } catch (Exception ex) {
+            log.debug("Logout cleanup performed");
         }
 
         clearRefreshTokenCookie(response);
@@ -104,7 +106,7 @@ public class AuthController {
             return authorizationHeader.trim();
         }
 
-        throw new InvalidRefreshTokenException("Refresh token is missing");
+        return null;
     }
 
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {
