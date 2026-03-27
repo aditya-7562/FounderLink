@@ -54,6 +54,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue passwordResetQueue() {
+        return new Queue("password-reset-queue", true);
+    }
+
+    @Bean
     public Binding startupBinding(Queue startupQueue, DirectExchange exchange) {
         return BindingBuilder.bind(startupQueue).to(exchange).with("startup.created");
     }
@@ -71,6 +76,11 @@ public class RabbitMQConfig {
     @Bean
     public Binding messagingBinding(Queue messagingQueue, DirectExchange exchange) {
         return BindingBuilder.bind(messagingQueue).to(exchange).with("message.sent");
+    }
+
+    @Bean
+    public Binding passwordResetBinding(Queue passwordResetQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(passwordResetQueue()).to(exchange).with("password.reset");
     }
 
     @Bean

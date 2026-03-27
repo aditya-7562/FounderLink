@@ -62,6 +62,12 @@ class AuthServiceTest {
     private SyncService syncService;
 
     @Mock
+    private com.founderlink.auth.repository.PasswordResetPinRepository passwordResetPinRepository;
+
+    @Mock
+    private com.founderlink.auth.publisher.PasswordResetEventPublisher passwordResetEventPublisher;
+
+    @Mock
     private Authentication authentication;
 
     @InjectMocks
@@ -69,6 +75,12 @@ class AuthServiceTest {
 
     @Captor
     private ArgumentCaptor<User> userCaptor;
+
+    @Captor
+    private ArgumentCaptor<com.founderlink.auth.entity.PasswordResetPin> passwordResetPinCaptor;
+
+    @Captor
+    private ArgumentCaptor<com.founderlink.auth.dto.PasswordResetEmailEvent> passwordResetEventCaptor;
 
     @Test
     void registerShouldPersistUserAndSyncSuccessfully() {
@@ -272,5 +284,186 @@ class AuthServiceTest {
 
         assertThat(exception.getMessage()).isEqualTo("Refresh token references a missing user");
         verify(refreshTokenService, never()).rotateToken(any(String.class));
+    }
+
+    @Test
+    void forgotPasswordShouldGeneratePinAndPublishEvent() {
+        String email = "test@founderlink.com";
+        User user = new User();
+        user.setId(1L);
+        user.setEmail(email);
+        user.setName("Test User");
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(passwordResetPinRepository.save(any(com.founderlink.auth.entity.PasswordResetPin.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        com.founderlink.auth.dto.ForgotPasswordResponse response = authService.forgotPassword(email);
+
+        assertThat(response.getMessage()).isEqualTo("Password reset PIN has been sent to your email");
+
+        verify(passwordResetPinRepository).deleteByEmail(email);
+        verify(passwordResetPinRepository).save(passwordResetPinCaptor.capture());
+        verify(passwordResetEventPublisher).publishPasswordResetEvent(passwordResetEventCaptor.capture());
+
+        com.founderlink.auth.entity.PasswordResetPin savedPin = passwordResetPinCaptor.getValue();
+        assertThat(savedPin.getEmail()).isEqualTo(email);
+        assertThat(savedPin.getPin()).matches("\\d{6}");
+        assertThat(savedPin.isUsed()).isFalse();
+        assertThat(savedPin.getExpiryDate()).isAfter(java.time.LocalDateTime.now().plusMinutes(4));
+        assertThat(savedPin.getExpiryDate()).isBefore(java.time.LocalDateTime.now().plusMinutes(6));
+
+        com.founderlink.auth.dto.PasswordResetEmailEvent event = passwordResetEventCaptor.getValue();
+        assertThat(event.getEmail()).isEqualTo(email);
+        assertThat(event.getUserName()).isEqualTo("Test User");
+        assertThat(event.getPin()).matches("\\d{6}");
+    }
+
+    @Test
+    void forgotPasswordShouldThrowWhenEmailNotFound() {
+        String email = "nonexistent@founderlink.com";
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        BadCredentialsException exception = assertThrows(
+                BadCredentialsException.class,
+                () -> authService.forgotPassword(email)
+        );
+
+        assertThat(exception.getMessage()).isEqualTo("Email not found");
+        verify(passwordResetPinRepository, never()).deleteByEmail(any());
+        verify(passwordResetPinRepository, never()).save(any());
+        verify(passwordResetEventPublisher, never()).publishPasswordResetEvent(any());
+    }
+
+    @Test
+    void resetPasswordShouldUpdatePasswordSuccessfully() {
+        String email = "test@founderlink.com";
+        String pin = "123456";
+        String newPassword = "NewPassword123";
+
+        User user = new User();
+        user.setId(1L);
+        user.setEmail(email);
+        user.setPassword("oldEncodedPassword");
+
+        com.founderlink.auth.entity.PasswordResetPin resetPin = com.founderlink.auth.entity.PasswordResetPin.builder()
+                .id(1L)
+                .email(email)
+                .pin(pin)
+                .expiryDate(java.time.LocalDateTime.now().plusMinutes(3))
+                .used(false)
+                .build();
+
+        when(passwordResetPinRepository.findByEmailAndPin(email, pin)).thenReturn(Optional.of(resetPin));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode(newPassword)).thenReturn("newEncodedPassword");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(passwordResetPinRepository.save(any(com.founderlink.auth.entity.PasswordResetPin.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        com.founderlink.auth.dto.ResetPasswordResponse response = authService.resetPassword(email, pin, newPassword);
+
+        assertThat(response.getMessage()).isEqualTo("Password has been reset successfully");
+
+        verify(userRepository).save(userCaptor.capture());
+        User savedUser = userCaptor.getValue();
+        assertThat(savedUser.getPassword()).isEqualTo("newEncodedPassword");
+
+        verify(passwordResetPinRepository).save(passwordResetPinCaptor.capture());
+        com.founderlink.auth.entity.PasswordResetPin savedPin = passwordResetPinCaptor.getValue();
+        assertThat(savedPin.isUsed()).isTrue();
+    }
+
+    @Test
+    void resetPasswordShouldThrowWhenPinIsInvalid() {
+        String email = "test@founderlink.com";
+        String pin = "999999";
+        String newPassword = "NewPassword123";
+
+        when(passwordResetPinRepository.findByEmailAndPin(email, pin)).thenReturn(Optional.empty());
+
+        com.founderlink.auth.exception.InvalidPasswordResetPinException exception = assertThrows(
+                com.founderlink.auth.exception.InvalidPasswordResetPinException.class,
+                () -> authService.resetPassword(email, pin, newPassword)
+        );
+
+        assertThat(exception.getMessage()).isEqualTo("Invalid PIN or email");
+        verify(userRepository, never()).save(any());
+        verify(passwordResetPinRepository, never()).save(any());
+    }
+
+    @Test
+    void resetPasswordShouldThrowWhenPinIsAlreadyUsed() {
+        String email = "test@founderlink.com";
+        String pin = "123456";
+        String newPassword = "NewPassword123";
+
+        com.founderlink.auth.entity.PasswordResetPin resetPin = com.founderlink.auth.entity.PasswordResetPin.builder()
+                .id(1L)
+                .email(email)
+                .pin(pin)
+                .expiryDate(java.time.LocalDateTime.now().plusMinutes(3))
+                .used(true)
+                .build();
+
+        when(passwordResetPinRepository.findByEmailAndPin(email, pin)).thenReturn(Optional.of(resetPin));
+
+        com.founderlink.auth.exception.UsedPasswordResetPinException exception = assertThrows(
+                com.founderlink.auth.exception.UsedPasswordResetPinException.class,
+                () -> authService.resetPassword(email, pin, newPassword)
+        );
+
+        assertThat(exception.getMessage()).isEqualTo("PIN has already been used");
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void resetPasswordShouldThrowWhenPinIsExpired() {
+        String email = "test@founderlink.com";
+        String pin = "123456";
+        String newPassword = "NewPassword123";
+
+        com.founderlink.auth.entity.PasswordResetPin resetPin = com.founderlink.auth.entity.PasswordResetPin.builder()
+                .id(1L)
+                .email(email)
+                .pin(pin)
+                .expiryDate(java.time.LocalDateTime.now().minusMinutes(1))
+                .used(false)
+                .build();
+
+        when(passwordResetPinRepository.findByEmailAndPin(email, pin)).thenReturn(Optional.of(resetPin));
+
+        com.founderlink.auth.exception.ExpiredPasswordResetPinException exception = assertThrows(
+                com.founderlink.auth.exception.ExpiredPasswordResetPinException.class,
+                () -> authService.resetPassword(email, pin, newPassword)
+        );
+
+        assertThat(exception.getMessage()).isEqualTo("PIN has expired");
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void resetPasswordShouldThrowWhenUserNotFound() {
+        String email = "test@founderlink.com";
+        String pin = "123456";
+        String newPassword = "NewPassword123";
+
+        com.founderlink.auth.entity.PasswordResetPin resetPin = com.founderlink.auth.entity.PasswordResetPin.builder()
+                .id(1L)
+                .email(email)
+                .pin(pin)
+                .expiryDate(java.time.LocalDateTime.now().plusMinutes(3))
+                .used(false)
+                .build();
+
+        when(passwordResetPinRepository.findByEmailAndPin(email, pin)).thenReturn(Optional.of(resetPin));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        BadCredentialsException exception = assertThrows(
+                BadCredentialsException.class,
+                () -> authService.resetPassword(email, pin, newPassword)
+        );
+
+        assertThat(exception.getMessage()).isEqualTo("User not found");
+        verify(passwordEncoder, never()).encode(any());
     }
 }

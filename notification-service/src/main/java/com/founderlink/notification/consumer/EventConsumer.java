@@ -1,5 +1,7 @@
 package com.founderlink.notification.consumer;
 
+import com.founderlink.notification.dto.PasswordResetEmailEvent;
+import com.founderlink.notification.service.EmailService;
 import com.founderlink.notification.service.NotificationService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -16,9 +18,11 @@ public class EventConsumer {
     private static final Logger logger = LoggerFactory.getLogger(EventConsumer.class);
 
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
-    public EventConsumer(NotificationService notificationService) {
+    public EventConsumer(NotificationService notificationService, EmailService emailService) {
         this.notificationService = notificationService;
+        this.emailService = emailService;
     }
 
     @RabbitListener(queues = "startup.queue")
@@ -125,5 +129,24 @@ public class EventConsumer {
     public void handleMessageSentFallback(Map<String, Object> event, Throwable throwable) {
         logger.error("Fallback: Failed to process MESSAGE_SENT event: {}. Reason: {}",
                 event, throwable.getMessage());
+    }
+
+    @RabbitListener(queues = "password-reset-queue")
+    @CircuitBreaker(name = "notificationService", fallbackMethod = "handlePasswordResetFallback")
+    @Retry(name = "notificationService")
+    public void handlePasswordResetEvent(PasswordResetEmailEvent event) {
+        logger.info("Received PASSWORD_RESET event for email: {}", event.getEmail());
+
+        try {
+            emailService.sendPasswordResetPinEmail(event.getEmail(), event.getUserName(), event.getPin());
+            logger.info("Password reset PIN email sent to: {}", event.getEmail());
+        } catch (Exception e) {
+            logger.error("Error processing password reset event for email {}: {}", event.getEmail(), e.getMessage());
+        }
+    }
+
+    public void handlePasswordResetFallback(PasswordResetEmailEvent event, Throwable throwable) {
+        logger.error("Fallback: Failed to send password reset email to {}. Reason: {}",
+                event.getEmail(), throwable.getMessage());
     }
 }

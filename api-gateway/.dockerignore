@@ -1,0 +1,35 @@
+# ───── Git ─────
+.git
+.gitignore
+
+# ───── Build output ─────
+target/
+build/
+
+# ───── Logs ─────
+*.log
+logs/
+
+# ───── OS / IDE junk ─────
+.DS_Store
+Thumbs.db
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# ───── Node (if frontend mixed in repo) ─────
+node_modules/
+dist/
+
+# ───── Env / secrets ─────
+.env
+*.env

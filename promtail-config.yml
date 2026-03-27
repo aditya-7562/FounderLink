@@ -65,3 +65,17 @@ scrape_configs:
         labels:
           service: notification-service
           __path__: /var/log/founderlink/notification-service.log
+
+  - job_name: payment-service
+    static_configs:
+      - targets: [ localhost ]
+        labels:
+          service: payment-service
+          __path__: /var/log/founderlink/payment-service.log
+
+  - job_name: wallet-service
+    static_configs:
+      - targets: [ localhost ]
+        labels:
+          service: wallet-service
+          __path__: /var/log/founderlink/wallet-service.log

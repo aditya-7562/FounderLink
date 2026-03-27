@@ -43,3 +43,13 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets: [ 'notification-service:8087' ]
+
+  - job_name: payment-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'payment-service:8088' ]
+
+  - job_name: wallet-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'wallet-service:8091' ]
