@@ -1,0 +1,887 @@
+﻿{
+  "info": {
+    "_postman_id": "founderlink-api-collection-2026",
+    "name": "FounderLink API Collection",
+    "description": "Complete API test collection for the FounderLink microservices platform. Covers Auth, Users, Startups, Investments, Payments, Wallet, Teams, Messages, and Notifications.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Attach JWT token to every request if available",
+          "const token = pm.environment.get('jwtToken');",
+          "if (token) {",
+          "    pm.request.headers.add({ key: 'Authorization', value: 'Bearer ' + token });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "https://backend.founderlink.online", "type": "string" },
+    { "key": "jwtToken", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "userRole", "value": "", "type": "string" },
+    { "key": "startupId", "value": "", "type": "string" },
+    { "key": "investmentId", "value": "", "type": "string" },
+    { "key": "paymentId", "value": "", "type": "string" },
+    { "key": "teamMemberId", "value": "", "type": "string" },
+    { "key": "invitationId", "value": "", "type": "string" },
+    { "key": "razorpayOrderId", "value": "", "type": "string" },
+    { "key": "razorpayPaymentId", "value": "", "type": "string" },
+    { "key": "razorpaySignature", "value": "", "type": "string" },
+    { "key": "founderToken", "value": "", "type": "string" },
+    { "key": "investorToken", "value": "", "type": "string" },
+    { "key": "cofounderToken", "value": "", "type": "string" },
+    { "key": "founderId", "value": "", "type": "string" },
+    { "key": "investorId", "value": "", "type": "string" },
+    { "key": "cofounderId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication & session management endpoints",
+      "item": [
+        {
+          "name": "Register Founder",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response has required fields', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('message');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Rahul Sharma\",\n  \"email\": \"rahul.founder@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"role\": \"FOUNDER\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Register Investor",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Priya Patel\",\n  \"email\": \"priya.investor@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"role\": \"INVESTOR\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Register CoFounder",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Amit Kumar\",\n  \"email\": \"amit.cofounder@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"role\": \"COFOUNDER\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login Founder",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has token', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('token');",
+            "  pm.expect(json.token).to.be.a('string').and.not.empty;",
+            "  pm.collectionVariables.set('jwtToken', json.token);",
+            "  pm.collectionVariables.set('founderToken', json.token);",
+            "  pm.collectionVariables.set('userId', json.userId);",
+            "  pm.collectionVariables.set('founderId', json.userId);",
+            "  pm.collectionVariables.set('userRole', 'ROLE_FOUNDER');",
+            "});",
+            "pm.test('Has email', () => pm.expect(pm.response.json().email).to.be.a('string'));",
+            "pm.test('Role is correct', () => pm.expect(pm.response.json().role).to.include('FOUNDER'));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"rahul.founder@example.com\",\n  \"password\": \"SecurePass123!\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Investor",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Store investor token', () => {",
+            "  const json = pm.response.json();",
+            "  pm.collectionVariables.set('investorToken', json.token);",
+            "  pm.collectionVariables.set('investorId', json.userId);",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"priya.investor@example.com\",\n  \"password\": \"SecurePass123!\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login CoFounder",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Store cofounder token', () => {",
+            "  const json = pm.response.json();",
+            "  pm.collectionVariables.set('cofounderToken', json.token);",
+            "  pm.collectionVariables.set('cofounderId', json.userId);",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"amit.cofounder@example.com\",\n  \"password\": \"SecurePass123!\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('New token received', () => {",
+            "  const json = pm.response.json();",
+            "  if (json.token) pm.collectionVariables.set('jwtToken', json.token);",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 204', () => pm.response.to.have.status(204));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"rahul.founder@example.com\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth", "forgot-password"] }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"rahul.founder@example.com\",\n  \"pin\": \"123456\",\n  \"newPassword\": \"NewSecurePass456!\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth", "reset-password"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "User management endpoints",
+      "item": [
+        {
+          "name": "Get All Users",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Get User By ID",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has user fields', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('name');",
+            "  pm.expect(json).to.have.property('email');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Update User",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Rahul Sharma Updated\",\n  \"skills\": \"Java, Spring Boot, Microservices\",\n  \"experience\": \"5 years in fintech\",\n  \"bio\": \"Serial entrepreneur building the future of startup funding.\",\n  \"portfolioLinks\": \"https://github.com/rahulsharma\"\n}" },
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Get Users By Role (FOUNDER)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/role/FOUNDER", "host": ["{{baseUrl}}"], "path": ["users", "role", "FOUNDER"] }
+          }
+        },
+        {
+          "name": "Get Users By Role (INVESTOR)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/role/INVESTOR", "host": ["{{baseUrl}}"], "path": ["users", "role", "INVESTOR"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Startups",
+      "description": "Startup management endpoints",
+      "item": [
+        {
+          "name": "Create Startup",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "pm.test('Startup created', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "  pm.expect(json.data).to.have.property('id');",
+            "  pm.collectionVariables.set('startupId', json.data.id);",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"FinFlow Technologies\",\n  \"description\": \"AI-powered financial management platform for SMEs\",\n  \"industry\": \"FinTech\",\n  \"problemStatement\": \"Small businesses struggle with cash flow management and financial forecasting\",\n  \"solution\": \"An AI-driven platform that automates invoicing, predicts cash flow, and provides actionable insights\",\n  \"fundingGoal\": 5000000.00,\n  \"stage\": \"MVP\"\n}" },
+            "url": { "raw": "{{baseUrl}}/startup", "host": ["{{baseUrl}}"], "path": ["startup"] }
+          }
+        },
+        {
+          "name": "Get All Startups",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has data array', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/startup", "host": ["{{baseUrl}}"], "path": ["startup"] }
+          }
+        },
+        {
+          "name": "Get Startup By ID",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has startup fields', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('name');",
+            "  pm.expect(json).to.have.property('industry');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/startup/{{startupId}}", "host": ["{{baseUrl}}"], "path": ["startup", "{{startupId}}"] }
+          }
+        },
+        {
+          "name": "Get Startup Details",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Wrapped in ApiResponse', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('message');",
+            "  pm.expect(json).to.have.property('data');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/startup/details/{{startupId}}", "host": ["{{baseUrl}}"], "path": ["startup", "details", "{{startupId}}"] }
+          }
+        },
+        {
+          "name": "Get Startups By Founder",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/startup/founder", "host": ["{{baseUrl}}"], "path": ["startup", "founder"] }
+          }
+        },
+        {
+          "name": "Update Startup",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Startup updated', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"FinFlow Technologies (Updated)\",\n  \"description\": \"AI-powered financial management and analytics platform for SMEs worldwide\",\n  \"industry\": \"FinTech\",\n  \"problemStatement\": \"Small businesses struggle with cash flow management and financial forecasting\",\n  \"solution\": \"An AI-driven platform that automates invoicing, predicts cash flow, and provides actionable insights in real-time\",\n  \"fundingGoal\": 7500000.00,\n  \"stage\": \"EARLY_TRACTION\"\n}" },
+            "url": { "raw": "{{baseUrl}}/startup/{{startupId}}", "host": ["{{baseUrl}}"], "path": ["startup", "{{startupId}}"] }
+          }
+        },
+        {
+          "name": "Search Startups",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/startup/search?industry=FinTech&stage=MVP&minFunding=1000&maxFunding=10000000",
+              "host": ["{{baseUrl}}"],
+              "path": ["startup", "search"],
+              "query": [
+                { "key": "industry", "value": "FinTech" },
+                { "key": "stage", "value": "MVP" },
+                { "key": "minFunding", "value": "1000" },
+                { "key": "maxFunding", "value": "10000000" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Startup",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/startup/{{startupId}}", "host": ["{{baseUrl}}"], "path": ["startup", "{{startupId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Investments",
+      "description": "Investment management endpoints",
+      "item": [
+        {
+          "name": "Create Investment",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "pm.test('Investment created', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "  pm.expect(json.data).to.have.property('id');",
+            "  pm.collectionVariables.set('investmentId', json.data.id);",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{investorToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"startupId\": {{startupId}},\n  \"amount\": 250000.00\n}" },
+            "url": { "raw": "{{baseUrl}}/investments", "host": ["{{baseUrl}}"], "path": ["investments"] }
+          }
+        },
+        {
+          "name": "Get Investment By ID",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has investment data', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "  pm.expect(json.data).to.have.property('amount');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{investorToken}}" }],
+            "url": { "raw": "{{baseUrl}}/investments/{{investmentId}}", "host": ["{{baseUrl}}"], "path": ["investments", "{{investmentId}}"] }
+          }
+        },
+        {
+          "name": "Get Investments By Startup",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/investments/startup/{{startupId}}", "host": ["{{baseUrl}}"], "path": ["investments", "startup", "{{startupId}}"] }
+          }
+        },
+        {
+          "name": "Get Investments By Investor",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response is array', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{investorToken}}" }],
+            "url": { "raw": "{{baseUrl}}/investments/investor", "host": ["{{baseUrl}}"], "path": ["investments", "investor"] }
+          }
+        },
+        {
+          "name": "Update Investment Status (Approve)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Status updated', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"APPROVED\"\n}" },
+            "url": { "raw": "{{baseUrl}}/investments/{{investmentId}}/status", "host": ["{{baseUrl}}"], "path": ["investments", "{{investmentId}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "description": "Payment (Razorpay) endpoints",
+      "item": [
+        {
+          "name": "Create Razorpay Order",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "pm.test('Order created', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "  if (json.data.razorpayOrderId) pm.collectionVariables.set('razorpayOrderId', json.data.razorpayOrderId);",
+            "  if (json.data.paymentId) pm.collectionVariables.set('paymentId', json.data.paymentId);",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{investorToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"investmentId\": {{investmentId}}\n}" },
+            "url": { "raw": "{{baseUrl}}/payments/create-order", "host": ["{{baseUrl}}"], "path": ["payments", "create-order"] }
+          }
+        },
+        {
+          "name": "Confirm Payment",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Payment confirmed', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{investorToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"razorpayOrderId\": \"{{razorpayOrderId}}\",\n  \"razorpayPaymentId\": \"{{razorpayPaymentId}}\",\n  \"razorpaySignature\": \"{{razorpaySignature}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/payments/confirm", "host": ["{{baseUrl}}"], "path": ["payments", "confirm"] }
+          }
+        },
+        {
+          "name": "Get Payment By ID",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has payment data', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{investorToken}}" }],
+            "url": { "raw": "{{baseUrl}}/payments/{{paymentId}}", "host": ["{{baseUrl}}"], "path": ["payments", "{{paymentId}}"] }
+          }
+        },
+        {
+          "name": "Get Payment By Investment",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{investorToken}}" }],
+            "url": { "raw": "{{baseUrl}}/payments/investment/{{investmentId}}", "host": ["{{baseUrl}}"], "path": ["payments", "investment", "{{investmentId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "description": "Wallet management endpoints",
+      "item": [
+        {
+          "name": "Create Wallet",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "pm.test('Wallet created', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "  pm.expect(json.data).to.have.property('balance');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/wallets/{{startupId}}", "host": ["{{baseUrl}}"], "path": ["wallets", "{{startupId}}"] }
+          }
+        },
+        {
+          "name": "Deposit Funds",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Deposit successful', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"referenceId\": 1001,\n  \"startupId\": {{startupId}},\n  \"amount\": 250000.00,\n  \"sourcePaymentId\": {{paymentId}},\n  \"idempotencyKey\": \"deposit-inv-{{investmentId}}-001\"\n}" },
+            "url": { "raw": "{{baseUrl}}/wallets/deposit", "host": ["{{baseUrl}}"], "path": ["wallets", "deposit"] }
+          }
+        },
+        {
+          "name": "Get Wallet Balance",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has balance', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "  pm.expect(json.data).to.have.property('balance');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/wallets/{{startupId}}", "host": ["{{baseUrl}}"], "path": ["wallets", "{{startupId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "description": "Team invitations and member management",
+      "item": [
+        {
+          "name": "Send Invitation",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "pm.test('Invitation sent', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "  pm.expect(json.data).to.have.property('id');",
+            "  pm.collectionVariables.set('invitationId', json.data.id);",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"startupId\": {{startupId}},\n  \"invitedUserId\": {{cofounderId}},\n  \"role\": \"CTO\"\n}" },
+            "url": { "raw": "{{baseUrl}}/teams/invite", "host": ["{{baseUrl}}"], "path": ["teams", "invite"] }
+          }
+        },
+        {
+          "name": "Get Invitations By User",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{cofounderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/teams/invitations/user", "host": ["{{baseUrl}}"], "path": ["teams", "invitations", "user"] }
+          }
+        },
+        {
+          "name": "Get Invitations By Startup",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/teams/invitations/startup/{{startupId}}", "host": ["{{baseUrl}}"], "path": ["teams", "invitations", "startup", "{{startupId}}"] }
+          }
+        },
+        {
+          "name": "Cancel Invitation",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/teams/invitations/{{invitationId}}/cancel", "host": ["{{baseUrl}}"], "path": ["teams", "invitations", "{{invitationId}}", "cancel"] }
+          }
+        },
+        {
+          "name": "Reject Invitation",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{cofounderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/teams/invitations/{{invitationId}}/reject", "host": ["{{baseUrl}}"], "path": ["teams", "invitations", "{{invitationId}}", "reject"] }
+          }
+        },
+        {
+          "name": "Join Team",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "pm.test('Joined team', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('data');",
+            "  if (json.data && json.data.id) pm.collectionVariables.set('teamMemberId', json.data.id);",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{cofounderToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"invitationId\": {{invitationId}}\n}" },
+            "url": { "raw": "{{baseUrl}}/teams/join", "host": ["{{baseUrl}}"], "path": ["teams", "join"] }
+          }
+        },
+        {
+          "name": "Get Team By Startup",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/teams/startup/{{startupId}}", "host": ["{{baseUrl}}"], "path": ["teams", "startup", "{{startupId}}"] }
+          }
+        },
+        {
+          "name": "Get Member History",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{cofounderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/teams/member/history", "host": ["{{baseUrl}}"], "path": ["teams", "member", "history"] }
+          }
+        },
+        {
+          "name": "Get Active Member Roles",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{cofounderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/teams/member/active", "host": ["{{baseUrl}}"], "path": ["teams", "member", "active"] }
+          }
+        },
+        {
+          "name": "Remove Team Member",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/teams/{{teamMemberId}}", "host": ["{{baseUrl}}"], "path": ["teams", "{{teamMemberId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "description": "Messaging endpoints",
+      "item": [
+        {
+          "name": "Send Message",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "pm.test('Message sent', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('id');",
+            "  pm.expect(json).to.have.property('content');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"senderId\": {{founderId}},\n  \"receiverId\": {{investorId}},\n  \"content\": \"Hi! Thank you for your interest in FinFlow Technologies. Would love to discuss the investment opportunity.\"\n}" },
+            "url": { "raw": "{{baseUrl}}/messages", "host": ["{{baseUrl}}"], "path": ["messages"] }
+          }
+        },
+        {
+          "name": "Get Message By ID",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has message fields', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('content');",
+            "});"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/messages/1", "host": ["{{baseUrl}}"], "path": ["messages", "1"] }
+          }
+        },
+        {
+          "name": "Get Conversation",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/messages/conversation/{{founderId}}/{{investorId}}", "host": ["{{baseUrl}}"], "path": ["messages", "conversation", "{{founderId}}", "{{investorId}}"] }
+          }
+        },
+        {
+          "name": "Get Conversation Partners",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/messages/partners/{{founderId}}", "host": ["{{baseUrl}}"], "path": ["messages", "partners", "{{founderId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "Notification management endpoints",
+      "item": [
+        {
+          "name": "Get All Notifications",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/{{userId}}", "host": ["{{baseUrl}}"], "path": ["notifications", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Get Unread Notifications",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/{{userId}}/unread", "host": ["{{baseUrl}}"], "path": ["notifications", "{{userId}}", "unread"] }
+          }
+        },
+        {
+          "name": "Mark Notification As Read",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/1/read", "host": ["{{baseUrl}}"], "path": ["notifications", "1", "read"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Workflows",
+      "description": "End-to-end workflow test sequences",
+      "item": [
+        {
+          "name": "E2E: Register â†’ Login â†’ Get Profile",
+          "event": [{ "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+            "// This is a documentation folder showing the recommended test flow:",
+            "// 1. Run 'Register Founder' from Auth folder",
+            "// 2. Run 'Login Founder' from Auth folder (stores jwtToken & userId)",
+            "// 3. Run 'Get User By ID' from Users folder",
+            "// 4. Run 'Update User' from Users folder",
+            "// 5. Run 'Get User By ID' again to verify update"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "E2E: Create Startup â†’ Fetch â†’ Update",
+          "event": [{ "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+            "// Recommended flow:",
+            "// 1. Login as Founder (stores founderToken)",
+            "// 2. Run 'Create Startup' (stores startupId)",
+            "// 3. Run 'Get Startup By ID'",
+            "// 4. Run 'Update Startup'",
+            "// 5. Run 'Get Startups By Founder'"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/startup/founder", "host": ["{{baseUrl}}"], "path": ["startup", "founder"] }
+          }
+        },
+        {
+          "name": "E2E: Investment â†’ Payment â†’ Wallet",
+          "event": [{ "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+            "// Full investment lifecycle:",
+            "// 1. Login Founder â†’ Create Startup â†’ Create Wallet",
+            "// 2. Login Investor â†’ Create Investment",
+            "// 3. Login Founder â†’ Approve Investment (Update Status)",
+            "// 4. Login Investor â†’ Create Razorpay Order â†’ Confirm Payment",
+            "// 5. Check Wallet Balance (auto-credited via RabbitMQ event)"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{founderToken}}" }],
+            "url": { "raw": "{{baseUrl}}/wallets/{{startupId}}", "host": ["{{baseUrl}}"], "path": ["wallets", "{{startupId}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}
+

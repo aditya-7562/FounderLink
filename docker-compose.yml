@@ -44,6 +44,7 @@ services:
 
   auth-db:
     image: mysql:8.0
+    init: true
     container_name: auth-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -64,6 +65,7 @@ services:
 
   user-db:
     image: mysql:8.0
+    init: true
     container_name: user-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -84,6 +86,7 @@ services:
 
   startup-db:
     image: mysql:8.0
+    init: true
     container_name: startup-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -104,6 +107,7 @@ services:
 
   investment-db:
     image: mysql:8.0
+    init: true
     container_name: investment-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -124,6 +128,7 @@ services:
 
   team-db:
     image: mysql:8.0
+    init: true
     container_name: team-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -144,6 +149,7 @@ services:
 
   messaging-db:
     image: mysql:8.0
+    init: true
     container_name: messaging-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -164,6 +170,7 @@ services:
 
   notification-db:
     image: mysql:8.0
+    init: true
     container_name: notification-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -184,6 +191,7 @@ services:
 
   payment-db:
     image: mysql:8.0
+    init: true
     container_name: payment-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -204,6 +212,7 @@ services:
 
   wallet-db:
     image: mysql:8.0
+    init: true
     container_name: wallet-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}

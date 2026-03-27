@@ -57,6 +57,20 @@ spring:
            filters:
              - RewritePath=/notifications/(?<remaining>.*), /${remaining}
 
+         - id: payment-service-swagger
+           uri: lb://payment-service
+           predicates:
+             - Path=/payments/v3/api-docs/**
+           filters:
+             - RewritePath=/payments/(?<remaining>.*), /${remaining}
+
+         - id: wallet-service-swagger
+           uri: lb://wallet-service
+           predicates:
+             - Path=/wallets/v3/api-docs/**
+           filters:
+             - RewritePath=/wallets/(?<remaining>.*), /${remaining}
+
          # ── Service routes (no StripPrefix — controllers own the full path) ──
          - id: auth-service
            uri: lb://auth-service
@@ -92,6 +106,16 @@ spring:
            uri: lb://notification-service
            predicates:
              - Path=/notifications/**
+
+         - id: payment-service
+           uri: lb://payment-service
+           predicates:
+             - Path=/payments/**
+
+         - id: wallet-service
+           uri: lb://wallet-service
+           predicates:
+             - Path=/wallets/**
 
       globalcors:
         cors-configurations:
@@ -157,6 +181,16 @@ gateway:
       - /notifications/swagger-ui/**
       - /notifications/swagger-resources/**
       - /notifications/webjars/**
+      - /payments/v3/api-docs
+      - /payments/v3/api-docs/**
+      - /payments/swagger-ui/**
+      - /payments/swagger-resources/**
+      - /payments/webjars/**
+      - /wallets/v3/api-docs
+      - /wallets/v3/api-docs/**
+      - /wallets/swagger-ui/**
+      - /wallets/swagger-resources/**
+      - /wallets/webjars/**
 
 rbac:
   default-policy: DENY
@@ -298,6 +332,34 @@ rbac:
       path: /notifications/*/read
       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
+    - method: POST
+      path: /payments/create-order
+      roles: [INVESTOR]
+
+    - method: POST
+      path: /payments/confirm
+      roles: [INVESTOR]
+
+    - method: GET
+      path: /payments/*
+      roles: [INVESTOR, ADMIN]
+
+    - method: GET
+      path: /payments/investment/*
+      roles: [INVESTOR, ADMIN]
+
+    - method: POST
+      path: /wallets/*
+      roles: [FOUNDER, ADMIN]
+
+    - method: POST
+      path: /wallets/deposit
+      roles: [FOUNDER, INVESTOR, ADMIN]
+
+    - method: GET
+      path: /wallets/*
+      roles: [FOUNDER, INVESTOR, ADMIN]
+
 jwt:
   secret: ${JWT_SECRET}
 
@@ -328,3 +390,7 @@ springdoc:
         url: /messages/v3/api-docs
       - name: notification-service
         url: /notifications/v3/api-docs
+      - name: payment-service
+        url: /payments/v3/api-docs
+      - name: wallet-service
+        url: /wallets/v3/api-docs

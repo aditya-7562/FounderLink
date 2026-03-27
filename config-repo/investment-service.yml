@@ -58,10 +58,24 @@ logging:
 
 # RabbitMQ queues and routing keys
 rabbitmq:
+  exchange: founderlink.exchange
   investment:
     queue: investment.queue
     routing-key: investment.created
+    approved:
+      queue: investment.approved.queue
+      routing-key: investment.approved
+    rejected:
+      queue: investment.rejected.queue
+      routing-key: investment.rejected
   startup:
     deleted:
       queue: investment.startup.deleted.queue
       routing-key: startup.deleted
+  payment:
+    completed:
+      queue: investment.payment.completed.queue
+      routing-key: payment.completed
+    failed:
+      queue: investment.payment.failed.queue
+      routing-key: payment.failed
