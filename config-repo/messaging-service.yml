@@ -5,7 +5,7 @@ spring:
   application:
     name: messaging-service
   datasource:
-    url: jdbc:mysql://mysql:3306/messaging_db?createDatabaseIfNotExist=true
+    url: jdbc:mysql://messaging-db:3306/messaging_db?createDatabaseIfNotExist=true
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   cloud:

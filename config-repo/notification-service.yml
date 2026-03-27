@@ -5,7 +5,7 @@ spring:
   application:
     name: notification-service
   datasource:
-    url: jdbc:mysql://mysql:3306/notification_db?createDatabaseIfNotExist=true
+    url: jdbc:mysql://notification-db:3306/notification_db?createDatabaseIfNotExist=true
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   mail:

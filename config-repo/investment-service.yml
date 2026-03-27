@@ -5,7 +5,7 @@ spring:
   application:
     name: investment-service
   datasource:
-    url: jdbc:mysql://mysql:3306/investment_db?createDatabaseIfNotExist=true
+    url: jdbc:mysql://investment-db:3306/investment_db?createDatabaseIfNotExist=true
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:

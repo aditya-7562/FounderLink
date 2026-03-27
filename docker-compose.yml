@@ -1,31 +1,239 @@
+# =============================================================================
+# FounderLink — Production Docker Compose
+# =============================================================================
+# Startup order: infrastructure → eureka → config-server → services → gateway → observability
+# NOTE: depends_on does NOT wait for readiness. Use spring.config.import=optional:configserver
+#       and Spring retry / resilience4j to handle transient startup failures.
+# =============================================================================
+# PREREQUISITE: Create the external proxy network before first run:
+#   docker network create proxy-net
+# =============================================================================
+
+networks:
+  founderlink-internal:
+    driver: bridge
+  proxy-net:
+    external: true
+
+volumes:
+  auth-db-data:
+  user-db-data:
+  startup-db-data:
+  investment-db-data:
+  team-db-data:
+  messaging-db-data:
+  notification-db-data:
+  payment-db-data:
+  wallet-db-data:
+  redis-data:
+  rabbitmq-data:
+  grafana-data:
+  loki-data:
+  prometheus-data:
+  service-logs:
+
+# =============================================================================
+# SERVICES
+# =============================================================================
 services:
 
-  # ── Infrastructure ──────────────────────────────────────────
+  # ===========================================================================
+  # DATABASES — One MySQL container per service
+  # Each container creates both root (admin) and application user (DB_USERNAME)
+  # ===========================================================================
 
-  mysql:
+  auth-db:
     image: mysql:8.0
-    container_name: mysql
+    container_name: auth-db
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: auth_service_db
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - mysql-data:/var/lib/mysql
+      - auth-db-data:/var/lib/mysql
     networks:
       - founderlink-internal
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
+
+  user-db:
+    image: mysql:8.0
+    container_name: user-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: user_db
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - user-db-data:/var/lib/mysql
+    networks:
+      - founderlink-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  startup-db:
+    image: mysql:8.0
+    container_name: startup-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: startup_db
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - startup-db-data:/var/lib/mysql
+    networks:
+      - founderlink-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  investment-db:
+    image: mysql:8.0
+    container_name: investment-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: investment_db
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - investment-db-data:/var/lib/mysql
+    networks:
+      - founderlink-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  team-db:
+    image: mysql:8.0
+    container_name: team-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: team_db
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - team-db-data:/var/lib/mysql
+    networks:
+      - founderlink-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  messaging-db:
+    image: mysql:8.0
+    container_name: messaging-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: messaging_db
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - messaging-db-data:/var/lib/mysql
+    networks:
+      - founderlink-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  notification-db:
+    image: mysql:8.0
+    container_name: notification-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: notification_db
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - notification-db-data:/var/lib/mysql
+    networks:
+      - founderlink-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  payment-db:
+    image: mysql:8.0
+    container_name: payment-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: payment_db
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - payment-db-data:/var/lib/mysql
+    networks:
+      - founderlink-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  wallet-db:
+    image: mysql:8.0
+    container_name: wallet-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: wallet_db
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - wallet-db-data:/var/lib/mysql
+    networks:
+      - founderlink-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ===========================================================================
+  # INFRASTRUCTURE — Redis, RabbitMQ, Zipkin
+  # ===========================================================================
 
   redis:
-    image: redis:7.2
+    image: redis:7-alpine
     container_name: redis
     volumes:
       - redis-data:/data
     networks:
       - founderlink-internal
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -33,7 +241,7 @@ services:
       retries: 5
 
   rabbitmq:
-    image: rabbitmq:3.13-management
+    image: rabbitmq:3-management-alpine
     container_name: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
@@ -42,294 +250,403 @@ services:
       - rabbitmq-data:/var/lib/rabbitmq
     networks:
       - founderlink-internal
-    ports:
-      - "15672:15672"
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
-      retries: 5
-
-  # ── Platform ────────────────────────────────────────────────
-
-  eureka-server:
-    build: ./Service-Registry
-    container_name: eureka-server
-    networks:
-      - founderlink-internal
-      - founderlink-public
-    ports:
-      - "8761:8761"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  config-server:
-    build: ./Config-Server
-    container_name: config-server
-    networks:
-      - founderlink-internal
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # ── Observability ───────────────────────────────────────────
+      retries: 10
+      start_period: 30s
 
   zipkin:
-    image: openzipkin/zipkin:3
+    image: openzipkin/zipkin:latest
     container_name: zipkin
     networks:
       - founderlink-internal
-      - founderlink-public
+      - proxy-net
     ports:
       - "9411:9411"
+    restart: unless-stopped
+
+  # ===========================================================================
+  # SERVICE REGISTRY (Eureka) — Exposed for debugging / dashboard access
+  # ===========================================================================
+
+  eureka-server:
+    build:
+      context: ./Service-Registry
+    image: founderlink/service-registry:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - founderlink-internal
+      - proxy-net
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # ===========================================================================
+  # CONFIG SERVER
+  # ===========================================================================
+
+  config-server:
+    build:
+      context: ./Config-Server
+    image: founderlink/config-server:latest
+    container_name: config-server
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka
+    networks:
+      - founderlink-internal
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  # ===========================================================================
+  # BUSINESS SERVICES
+  # Log path: each service writes to /var/log/founderlink/<service-name>.log
+  # via LOGGING_FILE_NAME override. Shared volume with Promtail.
+  # ===========================================================================
+
+  auth-service:
+    build:
+      context: ./auth-service
+    image: founderlink/auth-service:latest
+    container_name: auth-service
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      LOGGING_FILE_NAME: /var/log/founderlink/auth-service.log
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SECRET: ${INTERNAL_SECRET}
+      SEED_ADMIN_ENABLED: ${SEED_ADMIN_ENABLED}
+      SEED_ADMIN_NAME: ${SEED_ADMIN_NAME}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks:
+      - founderlink-internal
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  user-service:
+    build:
+      context: ./User-Service
+    image: founderlink/user-service:latest
+    container_name: user-service
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      LOGGING_FILE_NAME: /var/log/founderlink/user-service.log
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      INTERNAL_SECRET: ${INTERNAL_SECRET}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks:
+      - founderlink-internal
+    depends_on:
+      user-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  startup-service:
+    build:
+      context: ./Startup-Service
+    image: founderlink/startup-service:latest
+    container_name: startup-service
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      LOGGING_FILE_NAME: /var/log/founderlink/startup-service.log
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks:
+      - founderlink-internal
+    depends_on:
+      startup-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  investment-service:
+    build:
+      context: ./investment-service
+    image: founderlink/investment-service:latest
+    container_name: investment-service
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      LOGGING_FILE_NAME: /var/log/founderlink/investment-service.log
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks:
+      - founderlink-internal
+    depends_on:
+      investment-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  team-service:
+    build:
+      context: ./team-service
+    image: founderlink/team-service:latest
+    container_name: team-service
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      LOGGING_FILE_NAME: /var/log/founderlink/team-service.log
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks:
+      - founderlink-internal
+    depends_on:
+      team-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  messaging-service:
+    build:
+      context: ./messaging-service
+    image: founderlink/messaging-service:latest
+    container_name: messaging-service
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      LOGGING_FILE_NAME: /var/log/founderlink/messaging-service.log
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks:
+      - founderlink-internal
+    depends_on:
+      messaging-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ./notification-service
+    image: founderlink/notification-service:latest
+    container_name: notification-service
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      LOGGING_FILE_NAME: /var/log/founderlink/notification-service.log
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks:
+      - founderlink-internal
+    depends_on:
+      notification-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  payment-service:
+    build:
+      context: ./payment-service
+    image: founderlink/payment-service:latest
+    container_name: payment-service
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      LOGGING_FILE_NAME: /var/log/founderlink/payment-service.log
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks:
+      - founderlink-internal
+    depends_on:
+      payment-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  wallet-service:
+    build:
+      context: ./wallet-service
+    image: founderlink/wallet-service:latest
+    container_name: wallet-service
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      LOGGING_FILE_NAME: /var/log/founderlink/wallet-service.log
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks:
+      - founderlink-internal
+    depends_on:
+      wallet-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  # ===========================================================================
+  # API GATEWAY — Exposed to external traffic via proxy-net
+  # ===========================================================================
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    image: founderlink/api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      LOGGING_FILE_NAME: /var/log/founderlink/api-gateway.log
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks:
+      - founderlink-internal
+      - proxy-net
+    depends_on:
+      config-server:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  # ===========================================================================
+  # OBSERVABILITY STACK
+  # ===========================================================================
 
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:2.9.0
     container_name: loki
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - loki-data:/loki
     networks:
       - founderlink-internal
+    restart: unless-stopped
 
   promtail:
-    image: grafana/promtail:latest
+    image: grafana/promtail:2.9.0
     container_name: promtail
     volumes:
-      - logs:/var/log/founderlink
-      - ./promtail-config.yml:/etc/promtail/config.yml
+      - ./promtail-config.yml:/etc/promtail/config.yml:ro
+      - service-logs:/var/log/founderlink:ro
     command: -config.file=/etc/promtail/config.yml
     networks:
       - founderlink-internal
     depends_on:
       - loki
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
+    ports:
+      - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     networks:
       - founderlink-internal
-      - founderlink-public
-    ports:
-      - "9090:9090"
+      - proxy-net
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
-    volumes:
-      - grafana-data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
-    networks:
-      - founderlink-internal
-      - founderlink-public
     ports:
       - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - founderlink-internal
+      - proxy-net
     depends_on:
-      - loki
       - prometheus
-      - zipkin
-
-  # ── Application Services ────────────────────────────────────
-
-  api-gateway:
-    build: ./api-gateway
-    container_name: api-gateway
-    networks:
-      - founderlink-internal
-      - founderlink-public
-    ports:
-      - "8090:8090"
-    volumes:
-      - logs:/app/logs
-    depends_on:
-      config-server:
-        condition: service_healthy
-    environment:
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
-      - JWT_SECRET=${JWT_SECRET}
-
-  auth-service:
-    build: ./auth-service
-    container_name: auth-service
-    networks:
-      - founderlink-internal
-    volumes:
-      - logs:/app/logs
-    depends_on:
-      config-server:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-    environment:
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
-      - INTERNAL_SECRET=${INTERNAL_SECRET}
-
-  user-service:
-    build: ./User-Service
-    container_name: user-service
-    networks:
-      - founderlink-internal
-    volumes:
-      - logs:/app/logs
-    depends_on:
-      config-server:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-    environment:
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - INTERNAL_SECRET=${INTERNAL_SECRET}
-
-  startup-service:
-    build: ./Startup-Service
-    container_name: startup-service
-    networks:
-      - founderlink-internal
-    volumes:
-      - logs:/app/logs
-    depends_on:
-      config-server:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
-
-  investment-service:
-    build: ./investment-service
-    container_name: investment-service
-    networks:
-      - founderlink-internal
-    volumes:
-      - logs:/app/logs
-    depends_on:
-      config-server:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
-
-  team-service:
-    build: ./team-service
-    container_name: team-service
-    networks:
-      - founderlink-internal
-    volumes:
-      - logs:/app/logs
-    depends_on:
-      config-server:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
-
-  messaging-service:
-    build: ./messaging-service
-    container_name: messaging-service
-    networks:
-      - founderlink-internal
-    volumes:
-      - logs:/app/logs
-    depends_on:
-      config-server:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
-
-  notification-service:
-    build: ./notification-service
-    container_name: notification-service
-    networks:
-      - founderlink-internal
-    volumes:
-      - logs:/app/logs
-    depends_on:
-      config-server:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
-      - MAIL_HOST=${MAIL_HOST}
-      - MAIL_PORT=${MAIL_PORT}
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
-
-# ── Networks ─────────────────────────────────────────────────
-
-networks:
-  founderlink-public:
-    driver: bridge
-  founderlink-internal:
-    driver: bridge
-
-# ── Volumes ──────────────────────────────────────────────────
-
-volumes:
-  mysql-data:
-  redis-data:
-  rabbitmq-data:
-  grafana-data:
-  loki-data:
-  prometheus-data:
-  logs:
+      - loki
+    restart: unless-stopped

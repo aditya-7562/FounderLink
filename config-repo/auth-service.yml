@@ -13,12 +13,12 @@ spring:
             readTimeout: 5000
             loggerLevel: basic
   datasource:
-    url: jdbc:mysql://mysql:3306/auth_service_db?createDatabaseIfNotExist=true
+    url: jdbc:mysql://auth-db:3306/auth_service_db?createDatabaseIfNotExist=true
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
 
 jwt:
   secret: ${JWT_SECRET}
