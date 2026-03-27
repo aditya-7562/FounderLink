@@ -1,10 +1,7 @@
 package com.founderlink.auth.controller;
 
 import com.founderlink.auth.config.RefreshTokenProperties;
-import com.founderlink.auth.dto.AuthResponse;
-import com.founderlink.auth.dto.LoginRequest;
-import com.founderlink.auth.dto.RegisterRequest;
-import com.founderlink.auth.dto.RegisterResponse;
+import com.founderlink.auth.dto.*;
 import com.founderlink.auth.exception.InvalidRefreshTokenException;
 import com.founderlink.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
@@ -144,5 +141,33 @@ public class AuthController {
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Request password reset", description = "Sends a 6-digit PIN to the user's email for password reset.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "PIN sent successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid email format"),
+        @ApiResponse(responseCode = "401", description = "Email not found")
+    })
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        ForgotPasswordResponse response = authService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset password with PIN", description = "Resets the user's password using the PIN sent to their email.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid PIN, expired PIN, or validation error"),
+        @ApiResponse(responseCode = "401", description = "User not found")
+    })
+    public ResponseEntity<ResetPasswordResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        ResetPasswordResponse response = authService.resetPassword(
+                request.getEmail(),
+                request.getPin(),
+                request.getNewPassword()
+        );
+        return ResponseEntity.ok(response);
     }
 }
