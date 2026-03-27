@@ -1,12 +1,12 @@
 package com.founderlink.auth.service;
 
 import com.founderlink.auth.dto.*;
+import com.founderlink.auth.entity.PasswordResetPin;
 import com.founderlink.auth.entity.Role;
 import com.founderlink.auth.entity.User;
-import com.founderlink.auth.exception.EmailAlreadyExistsException;
-import com.founderlink.auth.exception.ExpiredRefreshTokenException;
-import com.founderlink.auth.exception.InvalidRefreshTokenException;
-import com.founderlink.auth.exception.RevokedRefreshTokenException;
+import com.founderlink.auth.exception.*;
+import com.founderlink.auth.publisher.PasswordResetEventPublisher;
+import com.founderlink.auth.repository.PasswordResetPinRepository;
 import com.founderlink.auth.repository.UserRepository;
 import com.founderlink.auth.security.JwtService;
 import lombok.NonNull;
@@ -21,6 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Random;
 import java.util.Set;
 
 @Service
@@ -30,14 +32,13 @@ public class AuthService {
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
-
+    private final PasswordResetPinRepository passwordResetPinRepository;
     private final PasswordEncoder passwordEncoder;
-
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
-
     private final AuthenticationManager authenticationManager;
     private final SyncService syncService;
+    private final PasswordResetEventPublisher passwordResetEventPublisher;
 
     private static final Set<Role> ALLOWED_SELF_ROLES = Set.of(
             Role.FOUNDER,
@@ -142,5 +143,72 @@ public class AuthService {
                 .role(user.getRole().name())
                 .userId(user.getId())
                 .build();
+    }
+
+    @Transactional
+    public ForgotPasswordResponse forgotPassword(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("Email not found"));
+
+        passwordResetPinRepository.deleteByEmail(email);
+
+        String pin = generateSixDigitPin();
+        
+        PasswordResetPin resetPin = PasswordResetPin.builder()
+                .email(email)
+                .pin(pin)
+                .expiryDate(LocalDateTime.now().plusMinutes(5))
+                .used(false)
+                .build();
+        
+        passwordResetPinRepository.save(resetPin);
+        log.debug("Generated password reset PIN for email: {}", email);
+
+        PasswordResetEmailEvent event = PasswordResetEmailEvent.builder()
+                .email(email)
+                .pin(pin)
+                .userName(user.getName())
+                .build();
+        
+        passwordResetEventPublisher.publishPasswordResetEvent(event);
+
+        return ForgotPasswordResponse.builder()
+                .message("Password reset PIN has been sent to your email")
+                .build();
+    }
+
+    @Transactional
+    public ResetPasswordResponse resetPassword(String email, String pin, String newPassword) {
+        PasswordResetPin resetPin = passwordResetPinRepository.findByEmailAndPin(email, pin)
+                .orElseThrow(() -> new InvalidPasswordResetPinException("Invalid PIN or email"));
+
+        if (resetPin.isUsed()) {
+            throw new UsedPasswordResetPinException("PIN has already been used");
+        }
+
+        if (LocalDateTime.now().isAfter(resetPin.getExpiryDate())) {
+            throw new ExpiredPasswordResetPinException("PIN has expired");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        resetPin.setUsed(true);
+        passwordResetPinRepository.save(resetPin);
+
+        log.info("Password reset successful for email: {}", email);
+
+        return ResetPasswordResponse.builder()
+                .message("Password has been reset successfully")
+                .build();
+    }
+
+    private String generateSixDigitPin() {
+        Random random = new Random();
+        int pin = 100000 + random.nextInt(900000);
+        return String.valueOf(pin);
     }
 }

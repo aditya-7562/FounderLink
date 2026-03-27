@@ -38,4 +38,19 @@ public class EmailService {
             sendEmail(email, subject, body);
         }
     }
+
+    public void sendPasswordResetPinEmail(String to, String userName, String pin) {
+        String subject = "Password Reset Request - FounderLink";
+        String body = String.format(
+                "Hello %s,\n\n" +
+                "You have requested to reset your password.\n\n" +
+                "Your 6-digit PIN is: %s\n\n" +
+                "This PIN will expire in 5 minutes.\n\n" +
+                "If you did not request this, please ignore this email.\n\n" +
+                "Best regards,\n" +
+                "FounderLink Team",
+                userName, pin
+        );
+        sendEmail(to, subject, body);
+    }
 }

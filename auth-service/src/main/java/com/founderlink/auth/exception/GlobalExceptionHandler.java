@@ -64,6 +64,16 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.FORBIDDEN, "Refresh token has been revoked", request.getRequestURI());
     }
 
+    @ExceptionHandler({InvalidPasswordResetPinException.class, ExpiredPasswordResetPinException.class})
+    public ResponseEntity<ApiError> handleInvalidOrExpiredPin(Exception ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(UsedPasswordResetPinException.class)
+    public ResponseEntity<ApiError> handleUsedPin(UsedPasswordResetPinException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
     @ExceptionHandler(UserServiceBadRequestException.class)
     public ResponseEntity<ApiError> handleUserServiceBadRequest(UserServiceBadRequestException ex, HttpServletRequest request) {
         log.warn("User-service bad request. path={} reason={}", request.getRequestURI(), ex.getMessage());
