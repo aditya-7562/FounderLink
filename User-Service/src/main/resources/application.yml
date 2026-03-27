@@ -1,11 +1,11 @@
 server:
-  port: 8081
+  port: 8082
 
 spring:
   application:
     name: user-service
   config:
-    import: configserver:http://config-server:8888
+    import: optional:configserver:http://config-server:8888
   # data:
   #   redis:
   #     host: localhost
