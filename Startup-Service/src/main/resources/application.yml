@@ -8,86 +8,86 @@ spring:
   config:
     import: optional:configserver:http://config-server:8888
 
-  # ✅ ENABLE Redis
-  data:
-    redis:
-      host: localhost
-      port: 6379
+#   # ✅ ENABLE Redis
+#   data:
+#     redis:
+#       host: localhost
+#       port: 6379
 
-  cache:
-    type: redis
-    redis:
-      time-to-live: 600000
+#   cache:
+#     type: redis
+#     redis:
+#       time-to-live: 600000
 
-  # ✅ ENABLE RabbitMQ
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+#   # ✅ ENABLE RabbitMQ
+#   rabbitmq:
+#     host: localhost
+#     port: 5672
+#     username: guest
+#     password: guest
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/startup_db
-    username: root
-    password: Anim@4748
-    driver-class-name: com.mysql.cj.jdbc.Driver
+#   datasource:
+#     url: jdbc:mysql://localhost:3306/startup_db
+#     username: root
+#     password: Anim@4748
+#     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
+#   jpa:
+#     hibernate:
+#       ddl-auto: update
+#     show-sql: true
+#     properties:
+#       hibernate:
+#         format_sql: true
+#         dialect: org.hibernate.dialect.MySQLDialect
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
+# eureka:
+#   client:
+#     service-url:
+#       defaultZone: http://localhost:8761/eureka/
+#     register-with-eureka: true
+#     fetch-registry: true
 
-  instance:
-    prefer-ip-address: true
+#   instance:
+#     prefer-ip-address: true
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
+# management:
+#   endpoints:
+#     web:
+#       exposure:
+#         include: health,info
 
-  endpoint:
-    health:
-      show-details: always
+#   endpoint:
+#     health:
+#       show-details: always
 
-  # ✅ ENABLE Zipkin
-  tracing:
-    sampling:
-      probability: 1.0
+#   # ✅ ENABLE Zipkin
+#   tracing:
+#     sampling:
+#       probability: 1.0
 
-  zipkin:
-    tracing:
-      endpoint: http://localhost:9411/api/v2/spans
+#   zipkin:
+#     tracing:
+#       endpoint: http://localhost:9411/api/v2/spans
 
-logging:
-  level:
-    root: INFO
-    com.founderlink.startup: DEBUG
+# logging:
+#   level:
+#     root: INFO
+#     com.founderlink.startup: DEBUG
 
-  file:
-    name: logs/startup-service.log
+#   file:
+#     name: logs/startup-service.log
 
-rabbitmq:
-  exchange: founderlink.exchange
-  startup:
-    queue: startup.queue
-    routing-key: startup.created
-    deleted:
-      routing-key: startup.deleted
-  investment:
-    deleted:
-      queue: investment.startup.deleted.queue
-  team:
-    deleted:
-      queue: team.startup.deleted.queue
+# rabbitmq:
+#   exchange: founderlink.exchange
+#   startup:
+#     queue: startup.queue
+#     routing-key: startup.created
+#     deleted:
+#       routing-key: startup.deleted
+#   investment:
+#     deleted:
+#       queue: investment.startup.deleted.queue
+#   team:
+#     deleted:
+#       queue: team.startup.deleted.queue
