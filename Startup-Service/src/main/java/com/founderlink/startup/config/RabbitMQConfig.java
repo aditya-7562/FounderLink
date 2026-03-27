@@ -11,6 +11,7 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import io.micrometer.observation.ObservationRegistry;
 
 @Configuration
 public class RabbitMQConfig {
@@ -33,17 +34,11 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.team.deleted.queue}")
     private String teamDeletedQueue;
 
-    // ─────────────────────────────────────────
-    // SINGLE EXCHANGE
-    // ─────────────────────────────────────────
     @Bean
     public DirectExchange founderLinkExchange() {
         return new DirectExchange(exchange);
     }
 
-    // ─────────────────────────────────────────
-    // QUEUES
-    // ─────────────────────────────────────────
     @Bean
     public Queue startupQueue() {
         return new Queue(startupQueue, true);
@@ -51,8 +46,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue investmentDeletedQueue() {
-        return new Queue(
-                investmentDeletedQueue, true);
+        return new Queue(investmentDeletedQueue, true);
     }
 
     @Bean
@@ -60,51 +54,33 @@ public class RabbitMQConfig {
         return new Queue(teamDeletedQueue, true);
     }
 
-    // ─────────────────────────────────────────
-    // BINDINGS
-    // ─────────────────────────────────────────
     @Bean
     public Binding startupCreatedBinding() {
-        return BindingBuilder
-                .bind(startupQueue())
-                .to(founderLinkExchange())
-                .with(startupRoutingKey);
+        return BindingBuilder.bind(startupQueue()).to(founderLinkExchange()).with(startupRoutingKey);
     }
 
     @Bean
     public Binding investmentDeletedBinding() {
-        return BindingBuilder
-                .bind(investmentDeletedQueue())
-                .to(founderLinkExchange())
-                .with(startupDeletedRoutingKey);
+        return BindingBuilder.bind(investmentDeletedQueue()).to(founderLinkExchange()).with(startupDeletedRoutingKey);
     }
 
     @Bean
     public Binding teamDeletedBinding() {
-        return BindingBuilder
-                .bind(teamDeletedQueue())
-                .to(founderLinkExchange())
-                .with(startupDeletedRoutingKey);
+        return BindingBuilder.bind(teamDeletedQueue()).to(founderLinkExchange()).with(startupDeletedRoutingKey);
     }
 
-    // ─────────────────────────────────────────
-    // MESSAGE CONVERTER
-    // ─────────────────────────────────────────
     @Bean
     public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
-    // ─────────────────────────────────────────
-    // RABBIT TEMPLATE
-    // ─────────────────────────────────────────
+    // ── Trace propagation: injects TraceId into outgoing RabbitMQ messages ──
     @Bean
-    public RabbitTemplate rabbitTemplate(
-            ConnectionFactory connectionFactory) {
-        RabbitTemplate rabbitTemplate =
-                new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(
-                messageConverter());
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
+                                          ObservationRegistry observationRegistry) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(messageConverter());
+        rabbitTemplate.setObservationEnabled(true);
         return rabbitTemplate;
     }
 }

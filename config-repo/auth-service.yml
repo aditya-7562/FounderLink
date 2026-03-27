@@ -1,0 +1,84 @@
+server:
+  port: 8089
+
+spring:
+  application:
+    name: auth-service
+  cloud:
+    openfeign:
+      client:
+        config:
+          user-service:
+            connectTimeout: 2000
+            readTimeout: 5000
+            loggerLevel: basic
+  datasource:
+    url: jdbc:mysql://mysql:3306/auth_service_db?createDatabaseIfNotExist=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 15m
+
+security:
+  refresh-token:
+    expiration: 30d
+    cookie-name: refresh_token
+    cookie-path: /auth
+    cookie-same-site: Strict
+    cookie-secure: true
+
+seed:
+  admin:
+    enabled: false
+    name: Super Admin
+    email: admin@founderlink.com
+    password: ""
+
+user-service:
+  client:
+    connect-timeout-ms: 2000
+    read-timeout-ms: 5000
+    internal-secret: ${INTERNAL_SECRET}
+
+resilience4j:
+  retry:
+    instances:
+      userServiceSync:
+        max-attempts: 3
+        wait-duration: 1s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - feign.RetryableException
+          - com.founderlink.auth.exception.UserServiceServerException
+          - com.founderlink.auth.exception.UserServiceUnavailableException
+  circuitbreaker:
+    instances:
+      userServiceSync:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 3s
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - feign.RetryableException
+          - com.founderlink.auth.exception.UserServiceServerException
+          - com.founderlink.auth.exception.UserServiceUnavailableException
+        ignore-exceptions:
+          - com.founderlink.auth.exception.UserServiceBadRequestException
+          - com.founderlink.auth.exception.UserServiceNotFoundException
+
+logging:
+  level:
+    com:
+      founderlink:
+        auth: DEBUG

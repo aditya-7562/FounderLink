@@ -1,0 +1,67 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: team-service
+  datasource:
+    url: jdbc:mysql://mysql:3306/team_db?createDatabaseIfNotExist=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
+resilience4j:
+  retry:
+    instances:
+      startupService:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - feign.RetryableException
+          - com.founderlink.team.exception.StartupServiceServerException
+          - com.founderlink.team.exception.StartupServiceUnavailableException
+        ignore-exceptions:
+          - com.founderlink.team.exception.StartupNotFoundException
+          - com.founderlink.team.exception.ForbiddenAccessException
+  circuitbreaker:
+    instances:
+      startupService:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 3s
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - feign.RetryableException
+          - com.founderlink.team.exception.StartupServiceServerException
+          - com.founderlink.team.exception.StartupServiceUnavailableException
+        ignore-exceptions:
+          - com.founderlink.team.exception.StartupNotFoundException
+          - com.founderlink.team.exception.ForbiddenAccessException
+
+logging:
+  level:
+    com.founderlink.team: DEBUG
+
+# RabbitMQ queues and routing keys
+rabbitmq:
+  team:
+    queue: team.queue
+    routing-key: team.invite.sent
+  startup:
+    deleted:
+      queue: team.startup.deleted.queue
+      routing-key: startup.deleted

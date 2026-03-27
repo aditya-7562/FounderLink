@@ -8,6 +8,7 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import io.micrometer.observation.ObservationRegistry;
 
 @Configuration
 public class RabbitMQConfig {
@@ -77,10 +78,13 @@ public class RabbitMQConfig {
         return new Jackson2JsonMessageConverter();
     }
 
+    // ── Trace propagation: extracts TraceId from incoming RabbitMQ messages ──
     @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
+                                          ObservationRegistry observationRegistry) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(messageConverter());
+        template.setObservationEnabled(true);
         return template;
     }
 }
