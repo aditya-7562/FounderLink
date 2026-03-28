@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<!-- <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -28,4 +28,4 @@
         <appender-ref ref="FILE"/>
     </logger>
 
-</configuration>
+</configuration> -->

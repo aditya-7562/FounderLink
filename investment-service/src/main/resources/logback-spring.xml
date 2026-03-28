@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<!-- <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
     <!-- ── Console Appender (plain text for development) ── -->
@@ -32,4 +32,4 @@
         <appender-ref ref="FILE"/>
     </logger>
 
-</configuration>
+</configuration> -->
