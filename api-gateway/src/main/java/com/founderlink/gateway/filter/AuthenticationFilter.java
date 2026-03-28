@@ -55,6 +55,11 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         String path = request.getPath().value();
         String method = request.getMethod() != null ? request.getMethod().name() : "UNKNOWN";
         
+        // Allow OPTIONS requests globally for CORS preflight
+        if ("OPTIONS".equals(method)) {
+            return chain.filter(exchange);
+        }
+        
         log.info("=== AUTHENTICATION DEBUG ===");
         log.info("Request: {} {}", method, path);
         log.info("Request Headers: {}", request.getHeaders());
