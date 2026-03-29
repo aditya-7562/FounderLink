@@ -11,8 +11,6 @@ pipeline {
         timestamps()
     }
 
-    triggers { }
-
     environment {
         DOCKERHUB_CREDENTIALS = 'dockerhub-creds'
         DOCKER_REPO = 'founderlink'
