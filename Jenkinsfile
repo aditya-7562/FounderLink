@@ -14,13 +14,30 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = 'dockerhub-creds'
         DOCKER_REPO = 'founderlink'
-        BRANCH_NAME = "${env.GIT_BRANCH}"
-        COMMIT_TAG = "${env.GIT_COMMIT.take(7)}"
-        SERVICES = ""
-        INFRA_SERVICES = ""
+        COMMIT_TAG = ''
+        SERVICES = ''
+        INFRA_SERVICES = ''
     }
 
     stages {
+
+        stage('Cleanup') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        // Always checkout — docker-compose files are needed even during rollback
+        stage('Checkout') {
+            steps {
+                checkout scm
+                script {
+                    // Set COMMIT_TAG after checkout when GIT_COMMIT is available
+                    env.COMMIT_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    echo "Build commit tag: ${env.COMMIT_TAG}"
+                }
+            }
+        }
 
         stage('Rollback Mode') {
             when {
@@ -31,31 +48,23 @@ pipeline {
                     if (!params.ROLLBACK_TAG) {
                         error("ROLLBACK_TAG parameter is required when ROLLBACK=true")
                     }
-                    
+
                     echo "🔄 ROLLBACK MODE ENABLED"
                     echo "Target tag: ${params.ROLLBACK_TAG}"
-                    
-                    def allAppServices = ['auth-service', 'user-service', 'startup-service', 'investment-service', 
-                                          'team-service', 'messaging-service', 'notification-service', 
+
+                    def allAppServices = ['auth-service', 'user-service', 'startup-service', 'investment-service',
+                                          'team-service', 'messaging-service', 'notification-service',
                                           'payment-service', 'wallet-service', 'api-gateway']
                     def allInfraServices = ['config-server', 'eureka-server']
-                    
+
                     env.SERVICES = allAppServices.join(",")
                     env.INFRA_SERVICES = allInfraServices.join(",")
+                    // Override COMMIT_TAG with the rollback tag
                     env.COMMIT_TAG = params.ROLLBACK_TAG
-                    
+
                     echo "Rolling back application services: ${env.SERVICES}"
                     echo "Rolling back infrastructure services: ${env.INFRA_SERVICES}"
                 }
-            }
-        }
-
-        stage('Checkout') {
-            when {
-                expression { !params.ROLLBACK }
-            }
-            steps {
-                checkout scm
             }
         }
 
@@ -126,7 +135,6 @@ pipeline {
                     allServices.each { svc ->
                         parallelStages["Test ${svc}"] = {
                             echo "Testing ${svc}"
-
                             sh """
                             if [ -f "./${svc}/mvnw" ]; then
                                 cd ${svc}
@@ -167,14 +175,13 @@ pipeline {
                     allServices.each { svc ->
                         parallelStages["Build ${svc}"] = {
                             echo "Building ${svc}"
-
                             sh """
                             echo "Pulling cache image for ${svc}..."
                             docker pull ${DOCKER_REPO}/${svc}:cache || true
-                            
+
                             docker build \
                               --cache-from ${DOCKER_REPO}/${svc}:cache \
-                              -t ${DOCKER_REPO}/${svc}:${COMMIT_TAG} \
+                              -t ${DOCKER_REPO}/${svc}:${env.COMMIT_TAG} \
                               -t ${DOCKER_REPO}/${svc}:cache \
                               ./${svc}
                             """
@@ -190,8 +197,6 @@ pipeline {
             }
         }
 
-
-
         stage('Push Images') {
             when {
                 expression { !params.ROLLBACK }
@@ -202,7 +207,6 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-
                     sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
 
                     script {
@@ -214,7 +218,7 @@ pipeline {
                         allServices.each { svc ->
                             parallelStages["Push ${svc}"] = {
                                 sh """
-                                docker push ${DOCKER_REPO}/${svc}:${COMMIT_TAG}
+                                docker push ${DOCKER_REPO}/${svc}:${env.COMMIT_TAG}
                                 docker push ${DOCKER_REPO}/${svc}:cache
                                 """
                             }
@@ -256,7 +260,7 @@ pipeline {
                     env.INFRA_SERVICES.split(",").each { svc ->
                         echo "Deploying infrastructure service: ${svc}"
                         sh """
-                        export TAG=${COMMIT_TAG}
+                        export TAG=${env.COMMIT_TAG}
                         docker compose -f docker-compose.infra.yml pull ${svc} || true
                         docker compose -f docker-compose.infra.yml up -d --no-deps ${svc}
                         """
@@ -274,7 +278,7 @@ pipeline {
                     env.SERVICES.split(",").each { svc ->
                         echo "Deploying application service: ${svc}"
                         sh """
-                        export TAG=${COMMIT_TAG}
+                        export TAG=${env.COMMIT_TAG}
                         docker compose -f docker-compose.services.yml pull ${svc} || true
                         docker compose -f docker-compose.services.yml up -d --no-deps ${svc}
                         """
@@ -293,7 +297,7 @@ pipeline {
                     allServices.each { svc ->
                         echo "Checking health of ${svc}"
                         sh """
-                        for i in {1..30}; do
+                        for i in \$(seq 1 30); do
                             if docker ps --filter "name=${svc}" --filter "status=running" | grep -q ${svc}; then
                                 echo "${svc} is running"
                                 exit 0
@@ -313,13 +317,12 @@ pipeline {
                 expression { !params.ROLLBACK }
             }
             steps {
-                sh """
-                docker image prune -f --filter "until=72h"
-                """
+                sh "docker image prune -f --filter 'until=72h'"
             }
         }
     }
 
+    // Single merged post block
     post {
         success {
             script {
@@ -330,7 +333,7 @@ pipeline {
                     if (env.SERVICES) deployed.add("App: ${env.SERVICES}")
                     if (env.INFRA_SERVICES) deployed.add("Infra: ${env.INFRA_SERVICES}")
                     echo "✅ Deployment successful for ${deployed.join(' | ')}"
-                    echo "Tag: ${COMMIT_TAG}"
+                    echo "Tag: ${env.COMMIT_TAG}"
                 }
             }
         }
@@ -340,12 +343,13 @@ pipeline {
                     echo "❌ Rollback failed. Check logs."
                 } else {
                     echo "❌ Pipeline failed. Check logs and consider rollback."
-                    echo "To rollback, manually set TAG to previous commit and redeploy."
+                    echo "To rollback, manually set ROLLBACK=true and ROLLBACK_TAG to a previous commit tag."
                 }
             }
         }
         always {
             sh "docker logout || true"
+            cleanWs()
         }
     }
 }
