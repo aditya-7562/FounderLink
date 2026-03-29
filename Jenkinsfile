@@ -22,21 +22,6 @@ pipeline {
 
     stages {
 
-        stage('Run Only on Main') {
-            when {
-                allOf {
-                    not { branch 'main' }
-                    expression { !params.ROLLBACK }
-                }
-            }
-            steps {
-                script {
-                    currentBuild.result = 'NOT_BUILT'
-                    error("Skipping: not main branch")
-                }
-            }
-        }
-
         stage('Rollback Mode') {
             when {
                 expression { params.ROLLBACK }
