@@ -18,15 +18,6 @@ services:
     volumes:
       - service-logs:/var/log/founderlink
     networks: [founderlink-internal]
-    depends_on:
-      auth-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      config-server:
-        condition: service_started
     restart: unless-stopped
 
   user-service:
@@ -37,15 +28,6 @@ services:
     volumes:
       - service-logs:/var/log/founderlink
     networks: [founderlink-internal]
-    depends_on:
-      user-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      config-server:
-        condition: service_started
     restart: unless-stopped
 
   startup-service:
@@ -56,15 +38,6 @@ services:
     volumes:
       - service-logs:/var/log/founderlink
     networks: [founderlink-internal]
-    depends_on:
-      startup-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      config-server:
-        condition: service_started
     restart: unless-stopped
 
   investment-service:
@@ -75,15 +48,6 @@ services:
     volumes:
       - service-logs:/var/log/founderlink
     networks: [founderlink-internal]
-    depends_on:
-      investment-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      config-server:
-        condition: service_started
     restart: unless-stopped
 
   team-service:
@@ -94,15 +58,6 @@ services:
     volumes:
       - service-logs:/var/log/founderlink
     networks: [founderlink-internal]
-    depends_on:
-      team-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      config-server:
-        condition: service_started
     restart: unless-stopped
 
   messaging-service:
@@ -113,15 +68,6 @@ services:
     volumes:
       - service-logs:/var/log/founderlink
     networks: [founderlink-internal]
-    depends_on:
-      messaging-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      config-server:
-        condition: service_started
     restart: unless-stopped
 
   notification-service:
@@ -132,15 +78,6 @@ services:
     volumes:
       - service-logs:/var/log/founderlink
     networks: [founderlink-internal]
-    depends_on:
-      notification-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      config-server:
-        condition: service_started
     restart: unless-stopped
 
   payment-service:
@@ -151,15 +88,6 @@ services:
     volumes:
       - service-logs:/var/log/founderlink
     networks: [founderlink-internal]
-    depends_on:
-      payment-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      config-server:
-        condition: service_started
     restart: unless-stopped
 
   wallet-service:
@@ -170,15 +98,6 @@ services:
     volumes:
       - service-logs:/var/log/founderlink
     networks: [founderlink-internal]
-    depends_on:
-      wallet-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      config-server:
-        condition: service_started
     restart: unless-stopped
 
   api-gateway:
@@ -193,7 +112,4 @@ services:
     networks:
       - founderlink-internal
       - proxy-net
-    depends_on:
-      config-server:
-        condition: service_started
     restart: unless-stopped

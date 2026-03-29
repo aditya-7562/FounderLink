@@ -266,7 +266,7 @@ services:
     restart: unless-stopped
 
   config-server:
-    image: founderlink/config-server:latest
+    image: founderlink/config-server:${tag}
     container_name: config-server
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka
