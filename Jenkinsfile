@@ -14,7 +14,6 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = 'dockerhub-creds'
         DOCKER_REPO = 'founderlink'
-        COMMIT_TAG = ''
         SERVICES = ''
         INFRA_SERVICES = ''
     }
