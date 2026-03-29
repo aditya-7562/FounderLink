@@ -42,25 +42,14 @@ pipeline {
             }
         }
 
-        stage('Debug Docker') {
-            steps {
-                sh """
-                which docker
-                docker --version
-                docker compose version
-                echo "PATH: $PATH"
-                """
-            }
-}
-
         stage('Deploy Monitoring Stack') {
             steps {
                 script {
                     sh """
                     docker network create proxy-net 2>/dev/null || true
 
-                    docker compose -f docker-compose.monitoring.yml pull || true
-                    docker compose -f docker-compose.monitoring.yml up -d
+                    docker compose -p founderlink -f docker-compose.monitoring.yml pull || true
+                    docker compose -p founderlink -f docker-compose.monitoring.yml up -d
                     """
                 }
             }
