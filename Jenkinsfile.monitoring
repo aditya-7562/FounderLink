@@ -33,7 +33,8 @@ pipeline {
 
                     if (!changedFiles) {
                         currentBuild.result = 'NOT_BUILT'
-                        error("No monitoring-related changes detected. Skipping pipeline.")
+                        echo("No monitoring-related changes detected. Skipping pipeline.")
+                        return
                     }
 
                     echo "Monitoring changes detected: ${changedFiles}"
