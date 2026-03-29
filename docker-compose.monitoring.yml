@@ -1,0 +1,68 @@
+version: "3.9"
+
+networks:
+  founderlink-internal:
+  proxy-net:
+    external: true
+
+volumes:
+  grafana-data:
+  loki-data:
+  prometheus-data:
+  service-logs:
+
+services:
+
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki-data:/loki
+    networks: [founderlink-internal]
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml:ro
+      - service-logs:/var/log/founderlink:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - founderlink-internal
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - founderlink-internal
+      - proxy-net
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - founderlink-internal
+      - proxy-net
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped

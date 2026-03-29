@@ -1,0 +1,74 @@
+pipeline {
+    agent any
+
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Check Monitoring Changes') {
+            steps {
+                script {
+                    def changedFiles
+                    try {
+                        changedFiles = sh(
+                            script: "git diff --name-only HEAD~1 HEAD || git diff --name-only HEAD",
+                            returnStdout: true
+                        ).trim()
+                    } catch (Exception e) {
+                        echo "First commit detected. Checking all monitoring files."
+                        changedFiles = sh(
+                            script: "git ls-files | grep -E 'docker-compose.monitoring.yml|prometheus.yml|promtail-config.yml|grafana/'",
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    if (!changedFiles) {
+                        currentBuild.result = 'NOT_BUILT'
+                        error("No monitoring-related changes detected. Skipping pipeline.")
+                    }
+
+                    echo "Monitoring changes detected: ${changedFiles}"
+                }
+            }
+        }
+
+        stage('Deploy Monitoring Stack') {
+            steps {
+                script {
+                    sh """
+                    docker network create proxy-net 2>/dev/null || true
+
+                    docker compose -f docker-compose.monitoring.yml pull || true
+                    docker compose -f docker-compose.monitoring.yml up -d
+                    """
+                }
+            }
+        }
+
+        stage('Verify Monitoring') {
+            steps {
+                sh """
+                docker ps | grep -E 'grafana|prometheus|loki|promtail' || true
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Monitoring stack deployed successfully"
+        }
+        failure {
+            echo "❌ Monitoring deployment failed"
+        }
+    }
+}

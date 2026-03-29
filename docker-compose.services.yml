@@ -1,0 +1,199 @@
+version: "3.9"
+
+networks:
+  founderlink-internal:
+  proxy-net:
+    external: true
+
+volumes:
+  service-logs:
+
+services:
+
+  auth-service:
+    image: founderlink/auth-service:${TAG}
+    container_name: auth-service
+    environment:
+      LOGGING_FILE_NAME: /var/log/founderlink/auth-service.log
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks: [founderlink-internal]
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  user-service:
+    image: founderlink/user-service:${TAG}
+    container_name: user-service
+    environment:
+      LOGGING_FILE_NAME: /var/log/founderlink/user-service.log
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks: [founderlink-internal]
+    depends_on:
+      user-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  startup-service:
+    image: founderlink/startup-service:${TAG}
+    container_name: startup-service
+    environment:
+      LOGGING_FILE_NAME: /var/log/founderlink/startup-service.log
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks: [founderlink-internal]
+    depends_on:
+      startup-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  investment-service:
+    image: founderlink/investment-service:${TAG}
+    container_name: investment-service
+    environment:
+      LOGGING_FILE_NAME: /var/log/founderlink/investment-service.log
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks: [founderlink-internal]
+    depends_on:
+      investment-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  team-service:
+    image: founderlink/team-service:${TAG}
+    container_name: team-service
+    environment:
+      LOGGING_FILE_NAME: /var/log/founderlink/team-service.log
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks: [founderlink-internal]
+    depends_on:
+      team-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  messaging-service:
+    image: founderlink/messaging-service:${TAG}
+    container_name: messaging-service
+    environment:
+      LOGGING_FILE_NAME: /var/log/founderlink/messaging-service.log
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks: [founderlink-internal]
+    depends_on:
+      messaging-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  notification-service:
+    image: founderlink/notification-service:${TAG}
+    container_name: notification-service
+    environment:
+      LOGGING_FILE_NAME: /var/log/founderlink/notification-service.log
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks: [founderlink-internal]
+    depends_on:
+      notification-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  payment-service:
+    image: founderlink/payment-service:${TAG}
+    container_name: payment-service
+    environment:
+      LOGGING_FILE_NAME: /var/log/founderlink/payment-service.log
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks: [founderlink-internal]
+    depends_on:
+      payment-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  wallet-service:
+    image: founderlink/wallet-service:${TAG}
+    container_name: wallet-service
+    environment:
+      LOGGING_FILE_NAME: /var/log/founderlink/wallet-service.log
+    volumes:
+      - service-logs:/var/log/founderlink
+    networks: [founderlink-internal]
+    depends_on:
+      wallet-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+    restart: unless-stopped
+
+  api-gateway:
+    image: founderlink/api-gateway:${TAG}
+    container_name: api-gateway
+    environment:
+      LOGGING_FILE_NAME: /var/log/founderlink/api-gateway.log
+    volumes:
+      - service-logs:/var/log/founderlink
+    ports:
+      - "8090:8090"
+    networks:
+      - founderlink-internal
+      - proxy-net
+    depends_on:
+      config-server:
+        condition: service_started
+    restart: unless-stopped
