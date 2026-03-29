@@ -103,7 +103,7 @@ pipeline {
                     if (!env.SERVICES && !env.INFRA_SERVICES) {
                         echo "No service changes detected. Skipping build."
                         currentBuild.result = 'SUCCESS'
-                        error("No changes to build")
+                        return
                     }
 
                     echo "Changed application services: ${env.SERVICES}"
