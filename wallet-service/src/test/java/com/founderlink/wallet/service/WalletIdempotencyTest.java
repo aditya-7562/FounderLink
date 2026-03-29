@@ -1,5 +1,6 @@
 package com.founderlink.wallet.service;
 
+import com.founderlink.wallet.command.WalletCommandService;
 import com.founderlink.wallet.dto.request.WalletDepositRequestDto;
 import com.founderlink.wallet.dto.response.WalletResponseDto;
 import com.founderlink.wallet.entity.Wallet;
@@ -18,9 +19,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class WalletIdempotencyTest {
@@ -35,7 +34,7 @@ class WalletIdempotencyTest {
     private WalletMapper walletMapper;
 
     @InjectMocks
-    private WalletServiceImpl walletService;
+    private WalletCommandService walletCommandService;
 
     @Test
     void duplicateDepositCreditsOnlyOnceByReferenceId() {
@@ -45,11 +44,7 @@ class WalletIdempotencyTest {
         wallet.setBalance(new BigDecimal("100.00"));
 
         WalletDepositRequestDto request = new WalletDepositRequestDto(
-                777L,
-                500L,
-                new BigDecimal("25.00"),
-                999L,
-                "wallet-deposit-777");
+                777L, 500L, new BigDecimal("25.00"), 999L, "wallet-deposit-777");
 
         WalletTransaction existingTx = new WalletTransaction();
         existingTx.setReferenceId(777L);
@@ -65,9 +60,9 @@ class WalletIdempotencyTest {
             return new WalletResponseDto(saved.getId(), saved.getStartupId(), saved.getBalance(), null, null);
         });
 
-        WalletResponseDto first = walletService.depositFunds(request);
+        WalletResponseDto first = walletCommandService.depositFunds(request);
         existingTx.setWallet(wallet);
-        WalletResponseDto second = walletService.depositFunds(request);
+        WalletResponseDto second = walletCommandService.depositFunds(request);
 
         assertEquals(new BigDecimal("125.00"), first.getBalance());
         assertEquals(new BigDecimal("125.00"), second.getBalance());

@@ -3,7 +3,6 @@ package com.founderlink.wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.founderlink.wallet.dto.request.WalletDepositRequestDto;
 import com.founderlink.wallet.entity.Wallet;
-import com.founderlink.wallet.entity.WalletTransaction;
 import com.founderlink.wallet.repository.WalletRepository;
 import com.founderlink.wallet.repository.WalletTransactionRepository;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -25,6 +26,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(properties = {
+        "spring.data.redis.host=localhost",
+        "spring.data.redis.port=6379",
+        "spring.cache.type=none",
+        "spring.datasource.url=jdbc:h2:mem:testdb",
+        "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "eureka.client.enabled=false",
+        "spring.cloud.config.enabled=false"
+})
 class WalletIntegrationTest {
 
     @Autowired
@@ -38,6 +49,9 @@ class WalletIntegrationTest {
 
     @MockBean
     private WalletTransactionRepository walletTransactionRepository;
+
+    @MockBean
+    private CacheManager cacheManager;
 
     @Test
     void createWalletE2E() throws Exception {

@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.founderlink.investment.command.InvestmentCommandService;
 import com.founderlink.investment.client.StartupServiceClient;
 import com.founderlink.investment.dto.request.InvestmentStatusUpdateDto;
 import com.founderlink.investment.dto.response.InvestmentResponseDto;
@@ -51,7 +52,7 @@ class UpdateInvestmentStatusEventPublishingTest {
     private StartupServiceClient startupServiceClient;
 
     @InjectMocks
-    private InvestmentServiceImpl investmentService;
+    private InvestmentCommandService investmentService;
 
     private Investment investment;
     private StartupResponseDto startup;

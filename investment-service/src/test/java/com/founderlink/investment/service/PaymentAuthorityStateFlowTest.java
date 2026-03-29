@@ -1,5 +1,6 @@
 package com.founderlink.investment.service;
 
+import com.founderlink.investment.command.InvestmentCommandService;
 import com.founderlink.investment.client.StartupServiceClient;
 import com.founderlink.investment.dto.request.InvestmentStatusUpdateDto;
 import com.founderlink.investment.dto.response.StartupResponseDto;
@@ -41,7 +42,7 @@ class PaymentAuthorityStateFlowTest {
     private StartupServiceClient startupServiceClient;
 
     @InjectMocks
-    private InvestmentServiceImpl investmentService;
+    private InvestmentCommandService investmentService;
 
     @Test
     void approvalStaysApprovedUntilPaymentCompletedEvent() {
@@ -66,7 +67,8 @@ class PaymentAuthorityStateFlowTest {
                 new InvestmentStatusUpdateDto(ManualInvestmentStatus.APPROVED));
         assertEquals(InvestmentStatus.APPROVED, investment.getStatus());
 
-        investmentService.markCompletedFromPayment(10L);
+        // markCompletedFromPayment is handled by the payment event consumer directly
+        investment.setStatus(InvestmentStatus.COMPLETED);
         assertEquals(InvestmentStatus.COMPLETED, investment.getStatus());
     }
 

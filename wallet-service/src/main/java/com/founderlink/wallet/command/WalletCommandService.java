@@ -1,4 +1,4 @@
-package com.founderlink.wallet.service;
+package com.founderlink.wallet.command;
 
 import com.founderlink.wallet.dto.request.WalletDepositRequestDto;
 import com.founderlink.wallet.dto.response.WalletResponseDto;
@@ -10,42 +10,42 @@ import com.founderlink.wallet.repository.WalletRepository;
 import com.founderlink.wallet.repository.WalletTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
-@Slf4j
-public class WalletServiceImpl implements WalletService {
+public class WalletCommandService {
 
     private final WalletRepository walletRepository;
     private final WalletTransactionRepository walletTransactionRepository;
     private final WalletMapper walletMapper;
 
-    @Override
     public WalletResponseDto createWallet(Long startupId) {
-        log.info("Creating wallet for startup ID: {}", startupId);
-
+        log.info("COMMAND - createWallet: startupId={}", startupId);
         if (walletRepository.findByStartupId(startupId).isPresent()) {
             Wallet existing = walletRepository.findByStartupId(startupId).get();
             return walletMapper.toResponseDto(existing);
         }
-
         Wallet wallet = new Wallet();
         wallet.setStartupId(startupId);
         wallet.setBalance(BigDecimal.ZERO);
-
-        Wallet savedWallet = walletRepository.save(wallet);
-        return walletMapper.toResponseDto(savedWallet);
+        return walletMapper.toResponseDto(walletRepository.save(wallet));
     }
 
-    @Override
+    @Caching(evict = {
+        @CacheEvict(value = "walletByStartup", key = "#depositRequest.startupId"),
+        @CacheEvict(value = "walletBalance", key = "#depositRequest.startupId")
+    })
     public WalletResponseDto depositFunds(WalletDepositRequestDto depositRequest) {
-        log.info("Depositing funds for startupId={} referenceId={}",
+        log.info("COMMAND - depositFunds: startupId={}, referenceId={}",
                 depositRequest.getStartupId(), depositRequest.getReferenceId());
 
         var existingTransaction = walletTransactionRepository.findByReferenceId(depositRequest.getReferenceId());
@@ -70,23 +70,5 @@ public class WalletServiceImpl implements WalletService {
         walletTransactionRepository.save(transaction);
 
         return walletMapper.toResponseDto(updatedWallet);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public WalletResponseDto getWalletByStartupId(Long startupId) {
-        Wallet wallet = walletRepository.findByStartupId(startupId)
-                .orElseThrow(() -> new WalletNotFoundException(
-                        "Wallet not found for startup ID: " + startupId));
-        return walletMapper.toResponseDto(wallet);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public BigDecimal getBalance(Long startupId) {
-        return walletRepository.findByStartupId(startupId)
-                .map(Wallet::getBalance)
-                .orElseThrow(() -> new WalletNotFoundException(
-                        "Wallet not found for startup ID: " + startupId));
     }
 }

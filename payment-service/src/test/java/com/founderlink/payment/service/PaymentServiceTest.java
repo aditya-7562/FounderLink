@@ -1,10 +1,12 @@
 package com.founderlink.payment.service;
 
+import com.founderlink.payment.command.PaymentCommandService;
 import com.founderlink.payment.dto.response.PaymentResponseDto;
 import com.founderlink.payment.entity.Payment;
 import com.founderlink.payment.entity.PaymentStatus;
 import com.founderlink.payment.exception.PaymentNotFoundException;
 import com.founderlink.payment.mapper.PaymentMapper;
+import com.founderlink.payment.query.PaymentQueryService;
 import com.founderlink.payment.repository.PaymentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +18,6 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,15 +29,21 @@ class PaymentServiceTest {
     @Mock
     private PaymentMapper paymentMapper;
 
+    @Mock
+    private RazorpayService razorpayService;
+
     @InjectMocks
-    private PaymentServiceImpl paymentService;
+    private PaymentQueryService paymentQueryService;
+
+    @InjectMocks
+    private PaymentCommandService paymentCommandService;
 
     @Test
     void getPaymentById_Success() {
         Long paymentId = 1L;
         Payment payment = new Payment();
         payment.setId(paymentId);
-        
+
         PaymentResponseDto responseDto = new PaymentResponseDto();
         responseDto.setId(paymentId);
         responseDto.setInvestmentId(200L);
@@ -49,7 +56,7 @@ class PaymentServiceTest {
         when(paymentRepository.findById(paymentId)).thenReturn(Optional.of(payment));
         when(paymentMapper.toResponseDto(payment)).thenReturn(responseDto);
 
-        PaymentResponseDto result = paymentService.getPaymentById(paymentId);
+        PaymentResponseDto result = paymentQueryService.getPaymentById(paymentId);
 
         assertNotNull(result);
         assertEquals(paymentId, result.getId());
@@ -59,7 +66,7 @@ class PaymentServiceTest {
     void getPaymentById_NotFound() {
         when(paymentRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(PaymentNotFoundException.class, () -> paymentService.getPaymentById(1L));
+        assertThrows(PaymentNotFoundException.class, () -> paymentQueryService.getPaymentById(1L));
     }
 
     @Test
@@ -80,7 +87,7 @@ class PaymentServiceTest {
         when(paymentRepository.findByInvestmentId(investmentId)).thenReturn(Optional.of(payment));
         when(paymentMapper.toResponseDto(payment)).thenReturn(responseDto);
 
-        PaymentResponseDto result = paymentService.getPaymentByInvestmentId(investmentId);
+        PaymentResponseDto result = paymentQueryService.getPaymentByInvestmentId(investmentId);
 
         assertNotNull(result);
         assertEquals(investmentId, result.getInvestmentId());
@@ -95,7 +102,7 @@ class PaymentServiceTest {
 
         when(paymentRepository.findById(paymentId)).thenReturn(Optional.of(payment));
 
-        PaymentStatus status = paymentService.getPaymentStatus(paymentId);
+        PaymentStatus status = paymentQueryService.getPaymentStatus(paymentId);
 
         assertEquals(PaymentStatus.SUCCESS, status);
     }

@@ -1,11 +1,12 @@
 package com.founderlink.wallet.service;
 
+import com.founderlink.wallet.command.WalletCommandService;
 import com.founderlink.wallet.dto.request.WalletDepositRequestDto;
 import com.founderlink.wallet.dto.response.WalletResponseDto;
 import com.founderlink.wallet.entity.Wallet;
-import com.founderlink.wallet.entity.WalletTransaction;
 import com.founderlink.wallet.exception.WalletNotFoundException;
 import com.founderlink.wallet.mapper.WalletMapper;
+import com.founderlink.wallet.query.WalletQueryService;
 import com.founderlink.wallet.repository.WalletRepository;
 import com.founderlink.wallet.repository.WalletTransactionRepository;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class WalletServiceTest {
 
+    // ── WalletCommandService tests ────────────────────────────────────────
+
     @Mock
     private WalletRepository walletRepository;
 
@@ -34,7 +37,10 @@ class WalletServiceTest {
     private WalletMapper walletMapper;
 
     @InjectMocks
-    private WalletServiceImpl walletService;
+    private WalletCommandService walletCommandService;
+
+    @InjectMocks
+    private WalletQueryService walletQueryService;
 
     @Test
     void createWallet_Success() {
@@ -49,7 +55,7 @@ class WalletServiceTest {
         when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
         when(walletMapper.toResponseDto(any(Wallet.class))).thenReturn(responseDto);
 
-        WalletResponseDto result = walletService.createWallet(startupId);
+        WalletResponseDto result = walletCommandService.createWallet(startupId);
 
         assertNotNull(result);
         assertEquals(startupId, result.getStartupId());
@@ -68,7 +74,7 @@ class WalletServiceTest {
         when(walletRepository.findByStartupId(startupId)).thenReturn(Optional.of(wallet));
         when(walletMapper.toResponseDto(any(Wallet.class))).thenReturn(responseDto);
 
-        WalletResponseDto result = walletService.createWallet(startupId);
+        WalletResponseDto result = walletCommandService.createWallet(startupId);
 
         assertNotNull(result);
         assertEquals(startupId, result.getStartupId());
@@ -83,7 +89,7 @@ class WalletServiceTest {
         when(walletTransactionRepository.findByReferenceId(123L)).thenReturn(Optional.empty());
         when(walletRepository.findByStartupId(1L)).thenReturn(Optional.empty());
 
-        assertThrows(WalletNotFoundException.class, () -> walletService.depositFunds(request));
+        assertThrows(WalletNotFoundException.class, () -> walletCommandService.depositFunds(request));
         verify(walletRepository, never()).save(any(Wallet.class));
     }
 
@@ -98,7 +104,7 @@ class WalletServiceTest {
         when(walletRepository.findByStartupId(startupId)).thenReturn(Optional.of(wallet));
         when(walletMapper.toResponseDto(any(Wallet.class))).thenReturn(responseDto);
 
-        WalletResponseDto result = walletService.getWalletByStartupId(startupId);
+        WalletResponseDto result = walletQueryService.getWalletByStartupId(startupId);
 
         assertNotNull(result);
         assertEquals(startupId, result.getStartupId());
@@ -108,7 +114,7 @@ class WalletServiceTest {
     void getWalletByStartupId_NotFound() {
         when(walletRepository.findByStartupId(1L)).thenReturn(Optional.empty());
 
-        assertThrows(WalletNotFoundException.class, () -> walletService.getWalletByStartupId(1L));
+        assertThrows(WalletNotFoundException.class, () -> walletQueryService.getWalletByStartupId(1L));
     }
 
     @Test
@@ -120,7 +126,7 @@ class WalletServiceTest {
 
         when(walletRepository.findByStartupId(startupId)).thenReturn(Optional.of(wallet));
 
-        BigDecimal balance = walletService.getBalance(startupId);
+        BigDecimal balance = walletQueryService.getBalance(startupId);
 
         assertEquals(BigDecimal.valueOf(500), balance);
     }
