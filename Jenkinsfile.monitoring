@@ -47,8 +47,8 @@ pipeline {
                     sh """
                     docker network create proxy-net 2>/dev/null || true
 
-                    docker compose -f docker-compose.monitoring.yml pull || true
-                    docker compose -f docker-compose.monitoring.yml up -d
+                    docker-compose -f docker-compose.monitoring.yml pull || true
+                    docker-compose -f docker-compose.monitoring.yml up -d
                     """
                 }
             }
