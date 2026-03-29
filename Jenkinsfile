@@ -33,7 +33,11 @@ pipeline {
                 checkout scm
                 script {
                     // Set COMMIT_TAG after checkout when GIT_COMMIT is available
-                    env.COMMIT_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    def tag = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    if (!tag) {
+                        error("Failed to determine commit tag — git rev-parse returned empty")
+                    }
+                    env.COMMIT_TAG = tag
                     echo "Build commit tag: ${env.COMMIT_TAG}"
                 }
             }
@@ -207,7 +211,7 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
 
                     script {
                         def allServices = []
@@ -237,7 +241,7 @@ pipeline {
         stage('Prepare Environment') {
             steps {
                 withCredentials([file(credentialsId: 'env-file', variable: 'ENV_FILE')]) {
-                    sh """
+                    sh '''
                     cp $ENV_FILE .env
 
                     if [ ! -f .env ]; then
@@ -246,14 +250,14 @@ pipeline {
                     fi
 
                     docker network create proxy-net 2>/dev/null || true
-                    """
+                    '''
                 }
             }
         }
 
         stage('Deploy Infrastructure Services') {
             when {
-                expression { env.INFRA_SERVICES != "" }
+                expression { env.INFRA_SERVICES != null && env.INFRA_SERVICES != "" }
             }
             steps {
                 script {
@@ -271,7 +275,7 @@ pipeline {
 
         stage('Deploy Application Services') {
             when {
-                expression { env.SERVICES != "" }
+                expression { env.SERVICES != null && env.SERVICES != "" }
             }
             steps {
                 script {
