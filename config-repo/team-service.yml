@@ -58,9 +58,14 @@ logging:
 
 # RabbitMQ queues and routing keys
 rabbitmq:
+  exchange: founderlink.exchange
   team:
-    queue: team.queue
-    routing-key: team.invite.sent
+    invite:
+      routing-key: team.invite.sent
+    accepted:
+      routing-key: team.member.accepted
+    rejected:
+      routing-key: team.member.rejected
   startup:
     deleted:
       queue: team.startup.deleted.queue

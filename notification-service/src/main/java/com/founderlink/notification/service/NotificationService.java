@@ -194,4 +194,127 @@ public class NotificationService {
             log.error("Error sending team invite email: {}", e.getMessage());
         }
     }
+
+    public void sendTeamMemberAcceptedNotification(Long startupId, Long founderId, Long acceptedUserId, String role) {
+        try {
+            UserDTO founder = userServiceClient.getUserById(founderId);
+            UserDTO acceptedUser = userServiceClient.getUserById(acceptedUserId);
+
+            if (founder == null || founder.getEmail() == null) {
+                log.warn("Founder {} has no email", founderId);
+                return;
+            }
+
+            String memberName = acceptedUser != null ? acceptedUser.getName() : "A team member";
+            String founderName = founder.getName() != null ? founder.getName() : "Founder";
+
+            createNotification(founderId, "TEAM_MEMBER_ACCEPTED",
+                    String.format("%s accepted your invitation to join startup #%d as %s", memberName, startupId, role));
+
+            emailService.sendTeamMemberAcceptedEmail(founder.getEmail(), founderName, memberName, role, startupId);
+        } catch (Exception e) {
+            log.error("Error sending team member accepted notification: {}", e.getMessage());
+        }
+    }
+
+    public void sendTeamMemberRejectedNotification(Long startupId, Long founderId, Long rejectedUserId, String role) {
+        try {
+            UserDTO founder = userServiceClient.getUserById(founderId);
+            UserDTO rejectedUser = userServiceClient.getUserById(rejectedUserId);
+
+            if (founder == null || founder.getEmail() == null) {
+                log.warn("Founder {} has no email", founderId);
+                return;
+            }
+
+            String memberName = rejectedUser != null ? rejectedUser.getName() : "A team member";
+            String founderName = founder.getName() != null ? founder.getName() : "Founder";
+
+            createNotification(founderId, "TEAM_MEMBER_REJECTED",
+                    String.format("%s rejected your invitation to join startup #%d as %s", memberName, startupId, role));
+
+            emailService.sendTeamMemberRejectedEmail(founder.getEmail(), founderName, memberName, role, startupId);
+        } catch (Exception e) {
+            log.error("Error sending team member rejected notification: {}", e.getMessage());
+        }
+    }
+
+    public void sendPaymentCompletedNotification(Long investmentId, Long investorId, Long founderId) {
+        try {
+            UserDTO investor = userServiceClient.getUserById(investorId);
+            UserDTO founder = userServiceClient.getUserById(founderId);
+
+            if (investor != null && investor.getEmail() != null) {
+                String investorName = investor.getName() != null ? investor.getName() : "Investor";
+                createNotification(investorId, "PAYMENT_COMPLETED",
+                        String.format("Your payment for investment #%d has been successfully processed", investmentId));
+                emailService.sendPaymentCompletedEmail(investor.getEmail(), investorName, investmentId, "Amount processed");
+            }
+
+            if (founder != null && founder.getEmail() != null) {
+                String founderName = founder.getName() != null ? founder.getName() : "Founder";
+                createNotification(founderId, "PAYMENT_COMPLETED",
+                        String.format("Payment completed for investment #%d in your startup", investmentId));
+            }
+        } catch (Exception e) {
+            log.error("Error sending payment completed notification: {}", e.getMessage());
+        }
+    }
+
+    public void sendPaymentFailedNotification(Long investmentId, Long investorId, String reason) {
+        try {
+            UserDTO investor = userServiceClient.getUserById(investorId);
+
+            if (investor == null || investor.getEmail() == null) {
+                log.warn("Investor {} has no email", investorId);
+                return;
+            }
+
+            String investorName = investor.getName() != null ? investor.getName() : "Investor";
+            createNotification(investorId, "PAYMENT_FAILED",
+                    String.format("Payment failed for investment #%d. Reason: %s", investmentId, reason));
+
+            emailService.sendPaymentFailedEmail(investor.getEmail(), investorName, investmentId, reason);
+        } catch (Exception e) {
+            log.error("Error sending payment failed notification: {}", e.getMessage());
+        }
+    }
+
+    public void sendInvestmentApprovedNotification(Long investmentId, Long investorId, Long startupId, String amount) {
+        try {
+            UserDTO investor = userServiceClient.getUserById(investorId);
+
+            if (investor == null || investor.getEmail() == null) {
+                log.warn("Investor {} has no email", investorId);
+                return;
+            }
+
+            String investorName = investor.getName() != null ? investor.getName() : "Investor";
+            createNotification(investorId, "INVESTMENT_APPROVED",
+                    String.format("Your investment #%d in startup #%d has been approved", investmentId, startupId));
+
+            emailService.sendInvestmentApprovedEmail(investor.getEmail(), investorName, startupId, amount);
+        } catch (Exception e) {
+            log.error("Error sending investment approved notification: {}", e.getMessage());
+        }
+    }
+
+    public void sendInvestmentRejectedNotification(Long investmentId, Long investorId, Long startupId, String amount, String reason) {
+        try {
+            UserDTO investor = userServiceClient.getUserById(investorId);
+
+            if (investor == null || investor.getEmail() == null) {
+                log.warn("Investor {} has no email", investorId);
+                return;
+            }
+
+            String investorName = investor.getName() != null ? investor.getName() : "Investor";
+            createNotification(investorId, "INVESTMENT_REJECTED",
+                    String.format("Your investment #%d in startup #%d has been rejected", investmentId, startupId));
+
+            emailService.sendInvestmentRejectedEmail(investor.getEmail(), investorName, startupId, amount, reason);
+        } catch (Exception e) {
+            log.error("Error sending investment rejected notification: {}", e.getMessage());
+        }
+    }
 }

@@ -17,8 +17,14 @@ public class TeamEventPublisher {
     @Value("${rabbitmq.exchange}")
     private String exchange;
 
-    @Value("${rabbitmq.team.routing-key}")
-    private String teamRoutingKey;
+    @Value("${rabbitmq.team.invite.routing-key}")
+    private String teamInviteRoutingKey;
+
+    @Value("${rabbitmq.team.accepted.routing-key}")
+    private String teamAcceptedRoutingKey;
+
+    @Value("${rabbitmq.team.rejected.routing-key}")
+    private String teamRejectedRoutingKey;
 
     public void publishTeamInviteEvent(
             TeamInviteEvent event) {
@@ -29,7 +35,7 @@ public class TeamEventPublisher {
 
             rabbitTemplate.convertAndSend(
                     exchange,
-                    teamRoutingKey,
+                    teamInviteRoutingKey,
                     event);
 
             log.info("TEAM_INVITE_SENT published!!!");
@@ -37,6 +43,48 @@ public class TeamEventPublisher {
         } catch (Exception e) {
             log.error("Failed to publish " +
                     "TEAM_INVITE_SENT: {}",
+                    e.getMessage());
+        }
+    }
+
+    public void publishTeamMemberAcceptedEvent(
+            TeamMemberAcceptedEvent event) {
+        try {
+            log.info("Publishing TEAM_MEMBER_ACCEPTED " +
+                    "event for startupId: {}",
+                    event.getStartupId());
+
+            rabbitTemplate.convertAndSend(
+                    exchange,
+                    teamAcceptedRoutingKey,
+                    event);
+
+            log.info("TEAM_MEMBER_ACCEPTED published!!!");
+
+        } catch (Exception e) {
+            log.error("Failed to publish " +
+                    "TEAM_MEMBER_ACCEPTED: {}",
+                    e.getMessage());
+        }
+    }
+
+    public void publishTeamMemberRejectedEvent(
+            TeamMemberRejectedEvent event) {
+        try {
+            log.info("Publishing TEAM_MEMBER_REJECTED " +
+                    "event for startupId: {}",
+                    event.getStartupId());
+
+            rabbitTemplate.convertAndSend(
+                    exchange,
+                    teamRejectedRoutingKey,
+                    event);
+
+            log.info("TEAM_MEMBER_REJECTED published!!!");
+
+        } catch (Exception e) {
+            log.error("Failed to publish " +
+                    "TEAM_MEMBER_REJECTED: {}",
                     e.getMessage());
         }
     }

@@ -182,7 +182,14 @@ public class RazorpayService {
 
         // 📢 Publish event AFTER state update
         paymentResultEventPublisher.publishPaymentCompleted(
-                new PaymentCompletedEvent(payment.getInvestmentId(), payment.getId()));
+                new PaymentCompletedEvent(
+                        payment.getInvestmentId(),
+                        payment.getId(),
+                        payment.getInvestorId(),
+                        payment.getFounderId(),
+                        payment.getStartupId(),
+                        payment.getAmount()
+                ));
 
         return new ConfirmPaymentResponse("SUCCESS", payment.getInvestmentId());
     }
@@ -194,7 +201,15 @@ public class RazorpayService {
         paymentRepository.save(payment);
 
         paymentResultEventPublisher.publishPaymentFailed(
-                new PaymentFailedEvent(payment.getInvestmentId(), payment.getId(), reason));
+                new PaymentFailedEvent(
+                        payment.getInvestmentId(),
+                        payment.getId(),
+                        payment.getInvestorId(),
+                        payment.getFounderId(),
+                        payment.getStartupId(),
+                        payment.getAmount(),
+                        reason
+                ));
 
         log.info("Payment marked FAILED for investment: {}, reason: {}",
                 payment.getInvestmentId(), reason);

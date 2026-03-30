@@ -22,6 +22,8 @@ import com.founderlink.team.entity.Invitation;
 import com.founderlink.team.entity.InvitationStatus;
 import com.founderlink.team.entity.TeamRole;
 import com.founderlink.team.command.InvitationCommandService;
+import com.founderlink.team.events.TeamEventPublisher;
+import com.founderlink.team.events.TeamMemberRejectedEvent;
 import com.founderlink.team.exception.InvalidInvitationStatusException;
 import com.founderlink.team.exception.InvitationNotFoundException;
 import com.founderlink.team.exception.UnauthorizedAccessException;
@@ -36,6 +38,12 @@ class RejectInvitationTest {
 
     @Mock
     private InvitationMapper invitationMapper;
+
+    @Mock
+    private TeamEventPublisher teamEventPublisher;
+
+    @Mock
+    private com.founderlink.team.client.StartupServiceClient startupServiceClient;
 
     @InjectMocks
     private InvitationCommandService invitationService;
@@ -84,6 +92,8 @@ class RejectInvitationTest {
 
         verify(invitationRepository, times(1))
                 .save(any(Invitation.class));
+        verify(teamEventPublisher, times(1))
+                .publishTeamMemberRejectedEvent(any(TeamMemberRejectedEvent.class));
     }
 
     // INVITATION NOT FOUND

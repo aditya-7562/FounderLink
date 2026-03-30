@@ -46,8 +46,15 @@ logging:
 
 # RabbitMQ queues
 rabbitmq:
+  exchange: founderlink.exchange
   queue:
     startup: startup.queue
     investment: investment.queue
     team: team.queue
     messaging: messaging.queue
+    team-accepted: team.accepted.queue
+    team-rejected: team.rejected.queue
+    payment-completed: payment.completed.queue
+    payment-failed: payment.failed.queue
+    investment-approved: investment.approved.queue
+    investment-rejected: investment.rejected.queue
