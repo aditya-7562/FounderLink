@@ -13,6 +13,8 @@ services:
   auth-service:
     image: founderlink/auth-service:${TAG}
     container_name: auth-service
+    env_file:
+      - .env  
     environment:
       LOGGING_FILE_NAME: /var/log/founderlink/auth-service.log
     volumes:
@@ -23,6 +25,8 @@ services:
   user-service:
     image: founderlink/user-service:${TAG}
     container_name: user-service
+    env_file:
+      - .env
     environment:
       LOGGING_FILE_NAME: /var/log/founderlink/user-service.log
     volumes:
@@ -33,6 +37,8 @@ services:
   startup-service:
     image: founderlink/startup-service:${TAG}
     container_name: startup-service
+    env_file:
+      - .env
     environment:
       LOGGING_FILE_NAME: /var/log/founderlink/startup-service.log
     volumes:
@@ -43,6 +49,8 @@ services:
   investment-service:
     image: founderlink/investment-service:${TAG}
     container_name: investment-service
+    env_file:
+      - .env
     environment:
       LOGGING_FILE_NAME: /var/log/founderlink/investment-service.log
     volumes:
@@ -53,6 +61,8 @@ services:
   team-service:
     image: founderlink/team-service:${TAG}
     container_name: team-service
+    env_file:
+      - .env
     environment:
       LOGGING_FILE_NAME: /var/log/founderlink/team-service.log
     volumes:
@@ -63,6 +73,8 @@ services:
   messaging-service:
     image: founderlink/messaging-service:${TAG}
     container_name: messaging-service
+    env_file:
+      - .env
     environment:
       LOGGING_FILE_NAME: /var/log/founderlink/messaging-service.log
     volumes:
@@ -73,6 +85,8 @@ services:
   notification-service:
     image: founderlink/notification-service:${TAG}
     container_name: notification-service
+    env_file:
+      - .env
     environment:
       LOGGING_FILE_NAME: /var/log/founderlink/notification-service.log
     volumes:
@@ -83,6 +97,8 @@ services:
   payment-service:
     image: founderlink/payment-service:${TAG}
     container_name: payment-service
+    env_file:
+      - .env
     environment:
       LOGGING_FILE_NAME: /var/log/founderlink/payment-service.log
     volumes:
@@ -93,6 +109,8 @@ services:
   wallet-service:
     image: founderlink/wallet-service:${TAG}
     container_name: wallet-service
+    env_file:
+      - .env
     environment:
       LOGGING_FILE_NAME: /var/log/founderlink/wallet-service.log
     volumes:
@@ -103,6 +121,8 @@ services:
   api-gateway:
     image: founderlink/api-gateway:${TAG}
     container_name: api-gateway
+    env_file:
+      - .env
     environment:
       LOGGING_FILE_NAME: /var/log/founderlink/api-gateway.log
     volumes:
