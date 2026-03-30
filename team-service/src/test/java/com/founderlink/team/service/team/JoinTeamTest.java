@@ -24,6 +24,8 @@ import com.founderlink.team.entity.Invitation;
 import com.founderlink.team.entity.InvitationStatus;
 import com.founderlink.team.entity.TeamMember;
 import com.founderlink.team.entity.TeamRole;
+import com.founderlink.team.events.TeamEventPublisher;
+import com.founderlink.team.events.TeamMemberAcceptedEvent;
 import com.founderlink.team.exception.AlreadyTeamMemberException;
 import com.founderlink.team.exception.InvalidInvitationStatusException;
 import com.founderlink.team.exception.InvitationNotFoundException;
@@ -39,6 +41,7 @@ class JoinTeamTest {
     @Mock private InvitationRepository invitationRepository;
     @Mock private TeamMemberMapper teamMemberMapper;
     @Mock private StartupServiceClient startupServiceClient;
+    @Mock private TeamEventPublisher teamEventPublisher;
 
     @InjectMocks
     private TeamMemberCommandService teamMemberCommandService;
@@ -90,6 +93,7 @@ class JoinTeamTest {
         assertThat(result.getUserId()).isEqualTo(300L);
         verify(teamMemberRepository, times(1)).save(any(TeamMember.class));
         verify(invitationRepository, times(1)).save(any(Invitation.class));
+        verify(teamEventPublisher, times(1)).publishTeamMemberAcceptedEvent(any(TeamMemberAcceptedEvent.class));
     }
 
     @Test

@@ -14,6 +14,7 @@ import com.founderlink.team.entity.Invitation;
 import com.founderlink.team.entity.InvitationStatus;
 import com.founderlink.team.events.TeamEventPublisher;
 import com.founderlink.team.events.TeamInviteEvent;
+import com.founderlink.team.events.TeamMemberRejectedEvent;
 import com.founderlink.team.exception.DuplicateInvitationException;
 import com.founderlink.team.exception.ForbiddenAccessException;
 import com.founderlink.team.exception.InvalidInvitationStatusException;
@@ -134,7 +135,19 @@ public class InvitationCommandService {
         }
 
         invitation.setStatus(InvitationStatus.REJECTED);
-        return invitationMapper.toResponseDto(invitationRepository.save(invitation));
+        Invitation saved = invitationRepository.save(invitation);
+
+        // Publish team member rejected event
+        eventPublisher.publishTeamMemberRejectedEvent(
+                new TeamMemberRejectedEvent(
+                        saved.getId(),
+                        saved.getStartupId(),
+                        saved.getFounderId(),
+                        userId,
+                        saved.getRole().name()
+                ));
+
+        return invitationMapper.toResponseDto(saved);
     }
 
     // ── Private helper ───────────────────────────────────────────────────────

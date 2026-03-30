@@ -1,4 +1,4 @@
-package com.founderlink.payment.event;
+package com.founderlink.notification.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

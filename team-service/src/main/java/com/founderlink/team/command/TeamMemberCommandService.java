@@ -41,6 +41,7 @@ public class TeamMemberCommandService {
     private final InvitationRepository invitationRepository;
     private final TeamMemberMapper teamMemberMapper;
     private final StartupServiceClient startupServiceClient;
+    private final com.founderlink.team.events.TeamEventPublisher teamEventPublisher;
 
     // ── joinTeam — no Feign call, no retry needed ────────────────────────────
 
@@ -83,6 +84,16 @@ public class TeamMemberCommandService {
 
         invitation.setStatus(InvitationStatus.ACCEPTED);
         invitationRepository.save(invitation);
+
+        // Publish team member accepted event
+        teamEventPublisher.publishTeamMemberAcceptedEvent(
+                new com.founderlink.team.events.TeamMemberAcceptedEvent(
+                        invitation.getId(),
+                        invitation.getStartupId(),
+                        invitation.getFounderId(),
+                        userId,
+                        invitation.getRole().name()
+                ));
 
         return teamMemberMapper.toResponseDto(saved);
     }
