@@ -60,11 +60,15 @@ logging:
 rabbitmq:
   exchange: founderlink.exchange
   team:
+    queue: notification.team.queue
+    routing-key: team.invite.sent
     invite:
       routing-key: team.invite.sent
     accepted:
+      queue: notification.team.accepted.queue
       routing-key: team.member.accepted
     rejected:
+      queue: notification.team.rejected.queue
       routing-key: team.member.rejected
   startup:
     deleted:

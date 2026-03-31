@@ -20,6 +20,9 @@ spring:
           starttls:
             enable: true
             required: true
+          ssl:
+            enable: ${MAIL_SSL_ENABLE:true}
+          auth: ${MAIL_SMTP_AUTH:true}
 
 resilience4j:
   circuitbreaker:

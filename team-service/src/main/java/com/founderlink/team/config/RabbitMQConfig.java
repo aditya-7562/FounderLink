@@ -25,6 +25,18 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.team.routing-key}")
     private String teamRoutingKey;
 
+    @Value("${rabbitmq.team.accepted.routing-key}")
+    private String teamAcceptedRoutingKey;
+
+    @Value("${rabbitmq.team.rejected.routing-key}")
+    private String teamRejectedRoutingKey;
+
+    @Value("${rabbitmq.team.accepted.queue}")
+    private String teamAcceptedQueue;
+
+    @Value("${rabbitmq.team.rejected.queue}")
+    private String teamRejectedQueue;
+
     @Value("${rabbitmq.startup.deleted.queue}")
     private String startupDeletedQueue;
 
@@ -47,8 +59,28 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue teamAcceptedQueue() {
+        return new Queue(teamAcceptedQueue, true);
+    }
+
+    @Bean
+    public Queue teamRejectedQueue() {
+        return new Queue(teamRejectedQueue, true);
+    }
+
+    @Bean
     public Binding teamInviteBinding() {
         return BindingBuilder.bind(teamQueue()).to(founderLinkExchange()).with(teamRoutingKey);
+    }
+
+    @Bean
+    public Binding teamAcceptedBinding() {
+        return BindingBuilder.bind(teamAcceptedQueue()).to(founderLinkExchange()).with(teamAcceptedRoutingKey);
+    }
+
+    @Bean
+    public Binding teamRejectedBinding() {
+        return BindingBuilder.bind(teamRejectedQueue()).to(founderLinkExchange()).with(teamRejectedRoutingKey);
     }
 
     @Bean

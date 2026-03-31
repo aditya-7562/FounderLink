@@ -88,7 +88,7 @@ class TeamEventPublisherTest {
         doThrow(new RuntimeException("RabbitMQ connection failed"))
                 .when(rabbitTemplate).convertAndSend(eq(EXCHANGE), eq(INVITE_ROUTING_KEY), eq(event));
 
-        teamEventPublisher.publishTeamInviteEvent(event);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () -> teamEventPublisher.publishTeamInviteEvent(event));
 
         verify(rabbitTemplate, times(1)).convertAndSend(eq(EXCHANGE), eq(INVITE_ROUTING_KEY), eq(event));
     }
@@ -102,7 +102,7 @@ class TeamEventPublisherTest {
         doThrow(new RuntimeException("RabbitMQ connection failed"))
                 .when(rabbitTemplate).convertAndSend(eq(EXCHANGE), eq(ACCEPTED_ROUTING_KEY), eq(event));
 
-        teamEventPublisher.publishTeamMemberAcceptedEvent(event);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () -> teamEventPublisher.publishTeamMemberAcceptedEvent(event));
 
         verify(rabbitTemplate, times(1)).convertAndSend(eq(EXCHANGE), eq(ACCEPTED_ROUTING_KEY), eq(event));
     }
@@ -116,7 +116,7 @@ class TeamEventPublisherTest {
         doThrow(new RuntimeException("RabbitMQ connection failed"))
                 .when(rabbitTemplate).convertAndSend(eq(EXCHANGE), eq(REJECTED_ROUTING_KEY), eq(event));
 
-        teamEventPublisher.publishTeamMemberRejectedEvent(event);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () -> teamEventPublisher.publishTeamMemberRejectedEvent(event));
 
         verify(rabbitTemplate, times(1)).convertAndSend(eq(EXCHANGE), eq(REJECTED_ROUTING_KEY), eq(event));
     }
