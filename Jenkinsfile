@@ -413,7 +413,13 @@ pipeline {
                 }
             }
             steps {
-                sh "docker image prune -f --filter 'until=72h'"
+                sh '''
+                echo "🧹 Cleaning up Docker build artifacts..."
+                docker builder prune -f --filter "until=72h"
+                docker container prune -f
+                docker image prune -f --filter 'until=72h'
+                echo "✅ Cleanup complete"
+                '''
             }
         }
     }

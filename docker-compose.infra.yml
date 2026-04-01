@@ -23,7 +23,6 @@ services:
   auth-db:
     image: mysql:8.0
     init: true
-    container_name: auth-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: auth_service_db
@@ -44,7 +43,6 @@ services:
   user-db:
     image: mysql:8.0
     init: true
-    container_name: user-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: user_db
@@ -65,7 +63,6 @@ services:
   startup-db:
     image: mysql:8.0
     init: true
-    container_name: startup-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: startup_db
@@ -86,7 +83,6 @@ services:
   investment-db:
     image: mysql:8.0
     init: true
-    container_name: investment-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: investment_db
@@ -107,7 +103,6 @@ services:
   team-db:
     image: mysql:8.0
     init: true
-    container_name: team-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: team_db
@@ -128,7 +123,6 @@ services:
   messaging-db:
     image: mysql:8.0
     init: true
-    container_name: messaging-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: messaging_db
@@ -149,7 +143,6 @@ services:
   notification-db:
     image: mysql:8.0
     init: true
-    container_name: notification-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: notification_db
@@ -170,7 +163,6 @@ services:
   payment-db:
     image: mysql:8.0
     init: true
-    container_name: payment-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: payment_db
@@ -191,7 +183,6 @@ services:
   wallet-db:
     image: mysql:8.0
     init: true
-    container_name: wallet-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: wallet_db
@@ -211,7 +202,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis
     volumes:
       - redis-data:/data
     networks:
@@ -225,7 +215,6 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
@@ -245,7 +234,6 @@ services:
     image: openzipkin/zipkin:latest
     healthcheck:
       disable: true 
-    container_name: zipkin
     networks:
       - founderlink-internal
       - proxy-net
@@ -255,7 +243,6 @@ services:
 
   eureka-server:
     image: founderlink/eureka-server:${TAG}
-    container_name: eureka-server
     ports:
       - "8761:8761"
     networks:
@@ -267,7 +254,6 @@ services:
 
   config-server:
     image: founderlink/config-server:${TAG}
-    container_name: config-server
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka
     networks:

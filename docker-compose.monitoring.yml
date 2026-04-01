@@ -15,7 +15,6 @@ services:
 
   loki:
     image: grafana/loki:2.9.0
-    container_name: loki
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - loki-data:/loki
@@ -24,7 +23,6 @@ services:
 
   promtail:
     image: grafana/promtail:2.9.0
-    container_name: promtail
     volumes:
       - ./promtail-config.yml:/etc/promtail/config.yml:ro
       - service-logs:/var/log/founderlink:ro
@@ -37,7 +35,6 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
     ports:
       - "9090:9090"
     volumes:
@@ -50,7 +47,6 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
     ports:
       - "3000:3000"
     environment:
