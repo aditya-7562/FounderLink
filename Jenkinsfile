@@ -4,6 +4,7 @@ pipeline {
     parameters {
         booleanParam(name: 'ROLLBACK', defaultValue: false, description: 'Enable rollback mode')
         string(name: 'ROLLBACK_TAG', defaultValue: '', description: 'Docker image tag to rollback to (only used when ROLLBACK=true)')
+        booleanParam(name: 'FORCE_BUILD', defaultValue: false, description: 'Force rebuild and redeploy ALL services regardless of what changed')
     }
 
     options {
@@ -60,6 +61,14 @@ pipeline {
                 script {
 
                     def changedFiles = ""
+                    if (params.FORCE_BUILD) {
+                        echo "⚡ FORCE_BUILD enabled — rebuilding all services"
+                        env.SERVICES       = ['auth-service','user-service','startup-service','investment-service',
+                                              'team-service','messaging-service','notification-service',
+                                              'payment-service','wallet-service','api-gateway'].join(",")
+                        env.INFRA_SERVICES = ['config-server','eureka-server'].join(",")
+                        return
+                    }
                     def prevCommit = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT?.trim() \
                                   ?: env.GIT_PREVIOUS_COMMIT?.trim()
 
@@ -109,7 +118,6 @@ pipeline {
                         def restartServices = [] as Set
 
                         fileList.each { rawFile ->
-                            String file = rawFile.toString()
                             if (file.startsWith("frontend/"))              return
 
                             if (file.startsWith("auth-service/"))         services.add("auth-service")
