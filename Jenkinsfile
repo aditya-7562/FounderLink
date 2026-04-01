@@ -110,6 +110,8 @@ pipeline {
 
                         fileList.each { rawFile ->
                             String file = rawFile.toString()
+                            if (file.startsWith("frontend/"))              return
+
                             if (file.startsWith("auth-service/"))         services.add("auth-service")
                             if (file.startsWith("user-service/"))         services.add("user-service")
                             if (file.startsWith("startup-service/"))      services.add("startup-service")
@@ -130,7 +132,23 @@ pipeline {
                         env.RESTART_SERVICES = restartServices.join(",")
 
                         if (!env.SERVICES && !env.INFRA_SERVICES && !env.RESTART_SERVICES) {
-                            echo "No service-related files changed. Skipping build."
+                            def nonServiceFiles = fileList.findAll { f ->
+                                !f.startsWith("auth-service/") &&
+                                !f.startsWith("user-service/") &&
+                                !f.startsWith("startup-service/") &&
+                                !f.startsWith("investment-service/") &&
+                                !f.startsWith("team-service/") &&
+                                !f.startsWith("messaging-service/") &&
+                                !f.startsWith("notification-service/") &&
+                                !f.startsWith("payment-service/") &&
+                                !f.startsWith("wallet-service/") &&
+                                !f.startsWith("api-gateway/") &&
+                                !f.startsWith("config-server/") &&
+                                !f.startsWith("eureka-server/") &&
+                                !f.startsWith("config-repo/")
+                            }
+                            echo "No backend service changes detected. Skipping build."
+                            echo "Non-service files changed (${nonServiceFiles.size()}): ${nonServiceFiles.take(5).join(', ')}${nonServiceFiles.size() > 5 ? ' ...' : ''}"
                             env.SKIP_BUILD = 'true'
                         } else {
                             if (env.SERVICES)         echo "Changed application services:    ${env.SERVICES}"
@@ -371,7 +389,7 @@ pipeline {
                 if (params.ROLLBACK) {
                     echo "✅ Rollback successful to tag: ${params.ROLLBACK_TAG}"
                 } else if (env.SKIP_BUILD == 'true') {
-                    echo "✅ Pipeline complete — no service changes detected, nothing deployed."
+                    echo "✅ Pipeline complete — no backend service changes, nothing deployed."
                 } else {
                     def deployed = []
                     if (env.SERVICES)         deployed.add("App: ${env.SERVICES}")
