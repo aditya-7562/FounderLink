@@ -178,7 +178,7 @@ pipeline {
 
         stage('Run Tests') {
             when {
-                expression { !params.ROLLBACK && env.SKIP_BUILD != 'true' && (env.SERVICES || env.INFRA_SERVICES) }
+                expression { !params.ROLLBACK && env.SKIP_BUILD != 'true' && (params.FORCE_BUILD || env.SERVICES || env.INFRA_SERVICES) }
             }
             steps {
                 script {
@@ -216,7 +216,7 @@ pipeline {
 
         stage('Build Images') {
             when {
-                expression { !params.ROLLBACK && env.SKIP_BUILD != 'true' && (env.SERVICES || env.INFRA_SERVICES) }
+                expression { !params.ROLLBACK && env.SKIP_BUILD != 'true' && (params.FORCE_BUILD || env.SERVICES || env.INFRA_SERVICES) }
             }
             steps {
                 script {
@@ -255,7 +255,7 @@ pipeline {
                 expression {
                     !params.ROLLBACK &&
                     env.SKIP_BUILD != 'true' &&
-                    (env.SERVICES || env.INFRA_SERVICES)
+                    (params.FORCE_BUILD || env.SERVICES || env.INFRA_SERVICES)
                 }
             }
             steps {
@@ -308,7 +308,7 @@ pipeline {
 
         stage('Deploy Infrastructure Services') {
             when {
-                expression { env.INFRA_SERVICES != null && env.INFRA_SERVICES != "" }
+                expression { params.FORCE_BUILD || (env.INFRA_SERVICES != null && env.INFRA_SERVICES != "") }
             }
             steps {
                 script {
@@ -326,7 +326,7 @@ pipeline {
 
         stage('Deploy Application Services') {
             when {
-                expression { env.SERVICES != null && env.SERVICES != "" }
+                expression { params.FORCE_BUILD || (env.SERVICES != null && env.SERVICES != "") }
             }
             steps {
                 script {
