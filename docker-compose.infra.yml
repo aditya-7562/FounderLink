@@ -8,16 +8,48 @@ networks:
 
 volumes:
   auth-db-data:
+    external: true
+    name: founderlink_auth-db-data
+
   user-db-data:
+    external: true
+    name: founderlink_user-db-data
+
   startup-db-data:
+    external: true
+    name: founderlink_startup-db-data
+
   investment-db-data:
+    external: true
+    name: founderlink_investment-db-data
+
   team-db-data:
+    external: true
+    name: founderlink_team-db-data
+
   messaging-db-data:
+    external: true
+    name: founderlink_messaging-db-data
+
   notification-db-data:
+    external: true
+    name: founderlink_notification-db-data
+
   payment-db-data:
+    external: true
+    name: founderlink_payment-db-data
+
   wallet-db-data:
+    external: true
+    name: founderlink_wallet-db-data
+
   redis-data:
+    external: true
+    name: founderlink_redis-data
+
   rabbitmq-data:
+    external: true
+    name: founderlink_rabbitmq-data
 
 services:
 
