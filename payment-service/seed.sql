@@ -1,0 +1,236 @@
+-- =============================================================================
+-- payment-service/seed.sql
+-- Tables: payments, payment_transaction_logs
+-- Cross-service references (NO subqueries):
+--   investmentId → 3001–3050 (COMPLETED investments from investment-service)
+--   investorId   → 1061–1120 (INVESTOR users)
+--   startupId    → 2001–2050
+--   founderId    → 1001–1050 (corresponding startup founders)
+-- Payment IDs: 5001–5060 (deterministic for wallet-service cross-reference)
+-- Statuses: PENDING, INITIATED, SUCCESS, FAILED
+-- Idempotency keys: format "seed-pay-XXXXX" (unique, deterministic)
+-- Idempotent: INSERT IGNORE
+-- =============================================================================
+
+SET NAMES utf8mb4;
+SET foreign_key_checks = 0;
+
+-- ---------------------------------------------------------------------------
+-- TABLE: payments
+-- 50 SUCCESS payments (linked to investments 3001–3050 which are COMPLETED)
+-- 10 FAILED payments
+-- ---------------------------------------------------------------------------
+
+INSERT IGNORE INTO payments
+  (id, investmentId, investorId, startupId, founderId, amount, status,
+   idempotencyKey, razorpayOrderId, razorpayPaymentId, razorpaySignature,
+   walletCredited, failureReason, createdAt, updatedAt)
+VALUES
+-- SUCCESS payments (payment IDs 5001–5050, investments 3001–3050)
+(5001,3001,1061,2001,1001,500000.00,'SUCCESS','seed-pay-10001','order_seed001','pay_seed001','sig_seed001hash001',1,NULL,'2024-04-02 10:00:00','2024-04-02 11:00:00'),
+(5002,3002,1062,2002,1002,200000.00,'SUCCESS','seed-pay-10002','order_seed002','pay_seed002','sig_seed002hash002',1,NULL,'2024-04-04 10:00:00','2024-04-04 11:00:00'),
+(5003,3003,1063,2003,1003,750000.00,'SUCCESS','seed-pay-10003','order_seed003','pay_seed003','sig_seed003hash003',1,NULL,'2024-04-06 10:00:00','2024-04-06 11:00:00'),
+(5004,3004,1064,2004,1004,300000.00,'SUCCESS','seed-pay-10004','order_seed004','pay_seed004','sig_seed004hash004',1,NULL,'2024-04-08 10:00:00','2024-04-08 11:00:00'),
+(5005,3005,1065,2005,1005,400000.00,'SUCCESS','seed-pay-10005','order_seed005','pay_seed005','sig_seed005hash005',1,NULL,'2024-04-10 10:00:00','2024-04-10 11:00:00'),
+(5006,3006,1066,2006,1006,250000.00,'SUCCESS','seed-pay-10006','order_seed006','pay_seed006','sig_seed006hash006',1,NULL,'2024-04-12 10:00:00','2024-04-12 11:00:00'),
+(5007,3007,1067,2007,1007,600000.00,'SUCCESS','seed-pay-10007','order_seed007','pay_seed007','sig_seed007hash007',1,NULL,'2024-04-14 10:00:00','2024-04-14 11:00:00'),
+(5008,3008,1068,2008,1008,150000.00,'SUCCESS','seed-pay-10008','order_seed008','pay_seed008','sig_seed008hash008',1,NULL,'2024-04-16 10:00:00','2024-04-16 11:00:00'),
+(5009,3009,1069,2009,1009,900000.00,'SUCCESS','seed-pay-10009','order_seed009','pay_seed009','sig_seed009hash009',1,NULL,'2024-04-18 10:00:00','2024-04-18 11:00:00'),
+(5010,3010,1070,2010,1010,350000.00,'SUCCESS','seed-pay-10010','order_seed010','pay_seed010','sig_seed010hash010',1,NULL,'2024-04-20 10:00:00','2024-04-20 11:00:00'),
+(5011,3011,1071,2011,1011,1000000.00,'SUCCESS','seed-pay-10011','order_seed011','pay_seed011','sig_seed011hash011',1,NULL,'2024-04-22 10:00:00','2024-04-22 11:00:00'),
+(5012,3012,1072,2012,1012,450000.00,'SUCCESS','seed-pay-10012','order_seed012','pay_seed012','sig_seed012hash012',1,NULL,'2024-04-24 10:00:00','2024-04-24 11:00:00'),
+(5013,3013,1073,2013,1013,800000.00,'SUCCESS','seed-pay-10013','order_seed013','pay_seed013','sig_seed013hash013',1,NULL,'2024-04-26 10:00:00','2024-04-26 11:00:00'),
+(5014,3014,1074,2014,1014,275000.00,'SUCCESS','seed-pay-10014','order_seed014','pay_seed014','sig_seed014hash014',1,NULL,'2024-04-28 10:00:00','2024-04-28 11:00:00'),
+(5015,3015,1075,2015,1015,625000.00,'SUCCESS','seed-pay-10015','order_seed015','pay_seed015','sig_seed015hash015',1,NULL,'2024-04-30 10:00:00','2024-04-30 11:00:00'),
+(5016,3016,1076,2016,1016,325000.00,'SUCCESS','seed-pay-10016','order_seed016','pay_seed016','sig_seed016hash016',1,NULL,'2024-05-02 10:00:00','2024-05-02 11:00:00'),
+(5017,3017,1077,2017,1017,550000.00,'SUCCESS','seed-pay-10017','order_seed017','pay_seed017','sig_seed017hash017',1,NULL,'2024-05-04 10:00:00','2024-05-04 11:00:00'),
+(5018,3018,1078,2018,1018,175000.00,'SUCCESS','seed-pay-10018','order_seed018','pay_seed018','sig_seed018hash018',1,NULL,'2024-05-06 10:00:00','2024-05-06 11:00:00'),
+(5019,3019,1079,2019,1019,1200000.00,'SUCCESS','seed-pay-10019','order_seed019','pay_seed019','sig_seed019hash019',1,NULL,'2024-05-08 10:00:00','2024-05-08 11:00:00'),
+(5020,3020,1080,2020,1020,225000.00,'SUCCESS','seed-pay-10020','order_seed020','pay_seed020','sig_seed020hash020',1,NULL,'2024-05-10 10:00:00','2024-05-10 11:00:00'),
+(5021,3021,1081,2021,1021,700000.00,'SUCCESS','seed-pay-10021','order_seed021','pay_seed021','sig_seed021hash021',1,NULL,'2024-05-12 10:00:00','2024-05-12 11:00:00'),
+(5022,3022,1082,2022,1022,375000.00,'SUCCESS','seed-pay-10022','order_seed022','pay_seed022','sig_seed022hash022',1,NULL,'2024-05-14 10:00:00','2024-05-14 11:00:00'),
+(5023,3023,1083,2023,1023,475000.00,'SUCCESS','seed-pay-10023','order_seed023','pay_seed023','sig_seed023hash023',1,NULL,'2024-05-16 10:00:00','2024-05-16 11:00:00'),
+(5024,3024,1084,2024,1024,850000.00,'SUCCESS','seed-pay-10024','order_seed024','pay_seed024','sig_seed024hash024',1,NULL,'2024-05-18 10:00:00','2024-05-18 11:00:00'),
+(5025,3025,1085,2025,1025,525000.00,'SUCCESS','seed-pay-10025','order_seed025','pay_seed025','sig_seed025hash025',1,NULL,'2024-05-20 10:00:00','2024-05-20 11:00:00'),
+(5026,3026,1086,2026,1026,425000.00,'SUCCESS','seed-pay-10026','order_seed026','pay_seed026','sig_seed026hash026',1,NULL,'2024-05-22 10:00:00','2024-05-22 11:00:00'),
+(5027,3027,1087,2027,1027,675000.00,'SUCCESS','seed-pay-10027','order_seed027','pay_seed027','sig_seed027hash027',1,NULL,'2024-05-24 10:00:00','2024-05-24 11:00:00'),
+(5028,3028,1088,2028,1028,200000.00,'SUCCESS','seed-pay-10028','order_seed028','pay_seed028','sig_seed028hash028',1,NULL,'2024-05-26 10:00:00','2024-05-26 11:00:00'),
+(5029,3029,1089,2029,1029,150000.00,'SUCCESS','seed-pay-10029','order_seed029','pay_seed029','sig_seed029hash029',1,NULL,'2024-05-28 10:00:00','2024-05-28 11:00:00'),
+(5030,3030,1090,2030,1030,300000.00,'SUCCESS','seed-pay-10030','order_seed030','pay_seed030','sig_seed030hash030',1,NULL,'2024-05-30 10:00:00','2024-05-30 11:00:00'),
+(5031,3031,1091,2031,1031,250000.00,'SUCCESS','seed-pay-10031','order_seed031','pay_seed031','sig_seed031hash031',1,NULL,'2024-06-01 10:00:00','2024-06-01 11:00:00'),
+(5032,3032,1092,2032,1032,575000.00,'SUCCESS','seed-pay-10032','order_seed032','pay_seed032','sig_seed032hash032',1,NULL,'2024-06-03 10:00:00','2024-06-03 11:00:00'),
+(5033,3033,1093,2033,1033,450000.00,'SUCCESS','seed-pay-10033','order_seed033','pay_seed033','sig_seed033hash033',1,NULL,'2024-06-05 10:00:00','2024-06-05 11:00:00'),
+(5034,3034,1094,2034,1034,350000.00,'SUCCESS','seed-pay-10034','order_seed034','pay_seed034','sig_seed034hash034',1,NULL,'2024-06-07 10:00:00','2024-06-07 11:00:00'),
+(5035,3035,1095,2035,1035,625000.00,'SUCCESS','seed-pay-10035','order_seed035','pay_seed035','sig_seed035hash035',1,NULL,'2024-06-09 10:00:00','2024-06-09 11:00:00'),
+(5036,3036,1096,2036,1036,275000.00,'SUCCESS','seed-pay-10036','order_seed036','pay_seed036','sig_seed036hash036',1,NULL,'2024-06-11 10:00:00','2024-06-11 11:00:00'),
+(5037,3037,1097,2037,1037,750000.00,'SUCCESS','seed-pay-10037','order_seed037','pay_seed037','sig_seed037hash037',1,NULL,'2024-06-13 10:00:00','2024-06-13 11:00:00'),
+(5038,3038,1098,2038,1038,500000.00,'SUCCESS','seed-pay-10038','order_seed038','pay_seed038','sig_seed038hash038',1,NULL,'2024-06-15 10:00:00','2024-06-15 11:00:00'),
+(5039,3039,1099,2039,1039,900000.00,'SUCCESS','seed-pay-10039','order_seed039','pay_seed039','sig_seed039hash039',1,NULL,'2024-06-17 10:00:00','2024-06-17 11:00:00'),
+(5040,3040,1100,2040,1040,400000.00,'SUCCESS','seed-pay-10040','order_seed040','pay_seed040','sig_seed040hash040',1,NULL,'2024-06-19 10:00:00','2024-06-19 11:00:00'),
+(5041,3041,1101,2041,1041,600000.00,'SUCCESS','seed-pay-10041','order_seed041','pay_seed041','sig_seed041hash041',1,NULL,'2024-06-21 10:00:00','2024-06-21 11:00:00'),
+(5042,3042,1102,2042,1042,325000.00,'SUCCESS','seed-pay-10042','order_seed042','pay_seed042','sig_seed042hash042',1,NULL,'2024-06-23 10:00:00','2024-06-23 11:00:00'),
+(5043,3043,1103,2043,1043,1500000.00,'SUCCESS','seed-pay-10043','order_seed043','pay_seed043','sig_seed043hash043',1,NULL,'2024-06-25 10:00:00','2024-06-25 11:00:00'),
+(5044,3044,1104,2044,1044,1100000.00,'SUCCESS','seed-pay-10044','order_seed044','pay_seed044','sig_seed044hash044',1,NULL,'2024-06-27 10:00:00','2024-06-27 11:00:00'),
+(5045,3045,1105,2045,1045,700000.00,'SUCCESS','seed-pay-10045','order_seed045','pay_seed045','sig_seed045hash045',1,NULL,'2024-06-29 10:00:00','2024-06-29 11:00:00'),
+(5046,3046,1106,2046,1046,375000.00,'SUCCESS','seed-pay-10046','order_seed046','pay_seed046','sig_seed046hash046',1,NULL,'2024-07-01 10:00:00','2024-07-01 11:00:00'),
+(5047,3047,1107,2047,1047,475000.00,'SUCCESS','seed-pay-10047','order_seed047','pay_seed047','sig_seed047hash047',1,NULL,'2024-07-03 10:00:00','2024-07-03 11:00:00'),
+(5048,3048,1108,2048,1048,1300000.00,'SUCCESS','seed-pay-10048','order_seed048','pay_seed048','sig_seed048hash048',1,NULL,'2024-07-05 10:00:00','2024-07-05 11:00:00'),
+(5049,3049,1109,2049,1049,525000.00,'SUCCESS','seed-pay-10049','order_seed049','pay_seed049','sig_seed049hash049',1,NULL,'2024-07-07 10:00:00','2024-07-07 11:00:00'),
+(5050,3050,1110,2050,1050,850000.00,'SUCCESS','seed-pay-10050','order_seed050','pay_seed050','sig_seed050hash050',1,NULL,'2024-07-09 10:00:00','2024-07-09 11:00:00'),
+-- FAILED payments (no wallet credit, investments 3141–3150 which are PAYMENT_FAILED)
+(5051,3141,1081,2004,1004,325000.00,'FAILED','seed-pay-10051','order_seed051',NULL,NULL,0,'Payment declined by card issuer','2025-01-07 10:00:00','2025-01-07 10:30:00'),
+(5052,3142,1082,2009,1009,450000.00,'FAILED','seed-pay-10052','order_seed052',NULL,NULL,0,'Insufficient funds in investor account','2025-01-09 10:00:00','2025-01-09 10:30:00'),
+(5053,3143,1083,2014,1014,275000.00,'FAILED','seed-pay-10053','order_seed053',NULL,NULL,0,'Payment gateway timeout','2025-01-11 10:00:00','2025-01-11 10:30:00'),
+(5054,3144,1084,2019,1019,1050000.00,'FAILED','seed-pay-10054','order_seed054',NULL,NULL,0,'VPA not registered for UPI','2025-01-13 10:00:00','2025-01-13 10:30:00'),
+(5055,3145,1085,2024,1024,875000.00,'FAILED','seed-pay-10055','order_seed055',NULL,NULL,0,'Bank server under maintenance','2025-01-15 10:00:00','2025-01-15 10:30:00'),
+(5056,3146,1086,2029,1029,125000.00,'FAILED','seed-pay-10056','order_seed056',NULL,NULL,0,'Daily transaction limit exceeded','2025-01-17 10:00:00','2025-01-17 10:30:00'),
+(5057,3147,1087,2034,1034,350000.00,'FAILED','seed-pay-10057','order_seed057',NULL,NULL,0,'NEFT transfer failed: invalid IFSC','2025-01-19 10:00:00','2025-01-19 10:30:00'),
+(5058,3148,1088,2039,1039,950000.00,'FAILED','seed-pay-10058','order_seed058',NULL,NULL,0,'Payment signature verification failed','2025-01-21 10:00:00','2025-01-21 10:30:00'),
+(5059,3149,1089,2044,1044,1250000.00,'FAILED','seed-pay-10059','order_seed059',NULL,NULL,0,'Beneficiary account frozen','2025-01-23 10:00:00','2025-01-23 10:30:00'),
+(5060,3150,1090,2049,1049,550000.00,'FAILED','seed-pay-10060','order_seed060',NULL,NULL,0,'3D Secure authentication failed','2025-01-25 10:00:00','2025-01-25 10:30:00');
+
+-- ---------------------------------------------------------------------------
+-- TABLE: payment_transaction_logs
+-- Audit log entries for each payment (2–3 entries per payment)
+-- Payments 5001–5050 (SUCCESS): HOLD_SUCCESS → CAPTURE_SUCCESS → CREDIT_SUCCESS
+-- Payments 5051–5060 (FAILED): HOLD_SUCCESS → CAPTURE_FAILED
+-- ---------------------------------------------------------------------------
+
+INSERT IGNORE INTO payment_transaction_logs (payment_id, action, details, timestamp) VALUES
+-- Sample logs for payments 5001–5010 (SUCCESS flow: 3 steps each = 30 rows)
+(5001,'HOLD_SUCCESS','{"msg":"funds held for investment 3001","amount":500000}','2024-04-02 10:05:00'),
+(5001,'CAPTURE_SUCCESS','{"msg":"payment captured via Razorpay","paymentId":"pay_seed001"}','2024-04-02 10:10:00'),
+(5001,'CREDIT_SUCCESS','{"msg":"wallet credited for startup 2001","walletId":6001}','2024-04-02 10:15:00'),
+(5002,'HOLD_SUCCESS','{"msg":"funds held for investment 3002","amount":200000}','2024-04-04 10:05:00'),
+(5002,'CAPTURE_SUCCESS','{"msg":"payment captured via Razorpay","paymentId":"pay_seed002"}','2024-04-04 10:10:00'),
+(5002,'CREDIT_SUCCESS','{"msg":"wallet credited for startup 2002","walletId":6002}','2024-04-04 10:15:00'),
+(5003,'HOLD_SUCCESS','{"msg":"funds held for investment 3003","amount":750000}','2024-04-06 10:05:00'),
+(5003,'CAPTURE_SUCCESS','{"msg":"payment captured via Razorpay","paymentId":"pay_seed003"}','2024-04-06 10:10:00'),
+(5003,'CREDIT_SUCCESS','{"msg":"wallet credited for startup 2003","walletId":6003}','2024-04-06 10:15:00'),
+(5004,'HOLD_SUCCESS','{"msg":"funds held for investment 3004","amount":300000}','2024-04-08 10:05:00'),
+(5004,'CAPTURE_SUCCESS','{"msg":"payment captured via Razorpay","paymentId":"pay_seed004"}','2024-04-08 10:10:00'),
+(5004,'CREDIT_SUCCESS','{"msg":"wallet credited for startup 2004","walletId":6004}','2024-04-08 10:15:00'),
+(5005,'HOLD_SUCCESS','{"msg":"funds held for investment 3005","amount":400000}','2024-04-10 10:05:00'),
+(5005,'CAPTURE_SUCCESS','{"msg":"payment captured via Razorpay","paymentId":"pay_seed005"}','2024-04-10 10:10:00'),
+(5005,'CREDIT_SUCCESS','{"msg":"wallet credited for startup 2005","walletId":6005}','2024-04-10 10:15:00'),
+(5006,'HOLD_SUCCESS','{"msg":"funds held for investment 3006","amount":250000}','2024-04-12 10:05:00'),
+(5006,'CAPTURE_SUCCESS','{"msg":"payment captured via Razorpay","paymentId":"pay_seed006"}','2024-04-12 10:10:00'),
+(5006,'CREDIT_SUCCESS','{"msg":"wallet credited for startup 2006","walletId":6006}','2024-04-12 10:15:00'),
+(5007,'HOLD_SUCCESS','{"msg":"funds held for investment 3007","amount":600000}','2024-04-14 10:05:00'),
+(5007,'CAPTURE_SUCCESS','{"msg":"payment captured via Razorpay","paymentId":"pay_seed007"}','2024-04-14 10:10:00'),
+(5007,'CREDIT_SUCCESS','{"msg":"wallet credited for startup 2007","walletId":6007}','2024-04-14 10:15:00'),
+(5008,'HOLD_SUCCESS','{"msg":"funds held for investment 3008","amount":150000}','2024-04-16 10:05:00'),
+(5008,'CAPTURE_SUCCESS','{"msg":"payment captured via Razorpay","paymentId":"pay_seed008"}','2024-04-16 10:10:00'),
+(5008,'CREDIT_SUCCESS','{"msg":"wallet credited for startup 2008","walletId":6008}','2024-04-16 10:15:00'),
+(5009,'HOLD_SUCCESS','{"msg":"funds held for investment 3009","amount":900000}','2024-04-18 10:05:00'),
+(5009,'CAPTURE_SUCCESS','{"msg":"payment captured via Razorpay","paymentId":"pay_seed009"}','2024-04-18 10:10:00'),
+(5009,'CREDIT_SUCCESS','{"msg":"wallet credited for startup 2009","walletId":6009}','2024-04-18 10:15:00'),
+(5010,'HOLD_SUCCESS','{"msg":"funds held for investment 3010","amount":350000}','2024-04-20 10:05:00'),
+(5010,'CAPTURE_SUCCESS','{"msg":"payment captured via Razorpay","paymentId":"pay_seed010"}','2024-04-20 10:10:00'),
+(5010,'CREDIT_SUCCESS','{"msg":"wallet credited for startup 2010","walletId":6010}','2024-04-20 10:15:00'),
+-- Abbreviated logs for payments 5011–5050 (2 steps each = 80 rows)
+(5011,'HOLD_SUCCESS','{"msg":"funds held","amount":1000000}','2024-04-22 10:05:00'),
+(5011,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed011"}','2024-04-22 10:10:00'),
+(5012,'HOLD_SUCCESS','{"msg":"funds held","amount":450000}','2024-04-24 10:05:00'),
+(5012,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed012"}','2024-04-24 10:10:00'),
+(5013,'HOLD_SUCCESS','{"msg":"funds held","amount":800000}','2024-04-26 10:05:00'),
+(5013,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed013"}','2024-04-26 10:10:00'),
+(5014,'HOLD_SUCCESS','{"msg":"funds held","amount":275000}','2024-04-28 10:05:00'),
+(5014,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed014"}','2024-04-28 10:10:00'),
+(5015,'HOLD_SUCCESS','{"msg":"funds held","amount":625000}','2024-04-30 10:05:00'),
+(5015,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed015"}','2024-04-30 10:10:00'),
+(5016,'HOLD_SUCCESS','{"msg":"funds held","amount":325000}','2024-05-02 10:05:00'),
+(5016,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed016"}','2024-05-02 10:10:00'),
+(5017,'HOLD_SUCCESS','{"msg":"funds held","amount":550000}','2024-05-04 10:05:00'),
+(5017,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed017"}','2024-05-04 10:10:00'),
+(5018,'HOLD_SUCCESS','{"msg":"funds held","amount":175000}','2024-05-06 10:05:00'),
+(5018,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed018"}','2024-05-06 10:10:00'),
+(5019,'HOLD_SUCCESS','{"msg":"funds held","amount":1200000}','2024-05-08 10:05:00'),
+(5019,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed019"}','2024-05-08 10:10:00'),
+(5020,'HOLD_SUCCESS','{"msg":"funds held","amount":225000}','2024-05-10 10:05:00'),
+(5020,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed020"}','2024-05-10 10:10:00'),
+(5021,'HOLD_SUCCESS','{"msg":"funds held","amount":700000}','2024-05-12 10:05:00'),
+(5021,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed021"}','2024-05-12 10:10:00'),
+(5022,'HOLD_SUCCESS','{"msg":"funds held","amount":375000}','2024-05-14 10:05:00'),
+(5022,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed022"}','2024-05-14 10:10:00'),
+(5023,'HOLD_SUCCESS','{"msg":"funds held","amount":475000}','2024-05-16 10:05:00'),
+(5023,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed023"}','2024-05-16 10:10:00'),
+(5024,'HOLD_SUCCESS','{"msg":"funds held","amount":850000}','2024-05-18 10:05:00'),
+(5024,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed024"}','2024-05-18 10:10:00'),
+(5025,'HOLD_SUCCESS','{"msg":"funds held","amount":525000}','2024-05-20 10:05:00'),
+(5025,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed025"}','2024-05-20 10:10:00'),
+(5026,'HOLD_SUCCESS','{"msg":"funds held","amount":425000}','2024-05-22 10:05:00'),
+(5026,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed026"}','2024-05-22 10:10:00'),
+(5027,'HOLD_SUCCESS','{"msg":"funds held","amount":675000}','2024-05-24 10:05:00'),
+(5027,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed027"}','2024-05-24 10:10:00'),
+(5028,'HOLD_SUCCESS','{"msg":"funds held","amount":200000}','2024-05-26 10:05:00'),
+(5028,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed028"}','2024-05-26 10:10:00'),
+(5029,'HOLD_SUCCESS','{"msg":"funds held","amount":150000}','2024-05-28 10:05:00'),
+(5029,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed029"}','2024-05-28 10:10:00'),
+(5030,'HOLD_SUCCESS','{"msg":"funds held","amount":300000}','2024-05-30 10:05:00'),
+(5030,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed030"}','2024-05-30 10:10:00'),
+(5031,'HOLD_SUCCESS','{"msg":"funds held","amount":250000}','2024-06-01 10:05:00'),
+(5031,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed031"}','2024-06-01 10:10:00'),
+(5032,'HOLD_SUCCESS','{"msg":"funds held","amount":575000}','2024-06-03 10:05:00'),
+(5032,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed032"}','2024-06-03 10:10:00'),
+(5033,'HOLD_SUCCESS','{"msg":"funds held","amount":450000}','2024-06-05 10:05:00'),
+(5033,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed033"}','2024-06-05 10:10:00'),
+(5034,'HOLD_SUCCESS','{"msg":"funds held","amount":350000}','2024-06-07 10:05:00'),
+(5034,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed034"}','2024-06-07 10:10:00'),
+(5035,'HOLD_SUCCESS','{"msg":"funds held","amount":625000}','2024-06-09 10:05:00'),
+(5035,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed035"}','2024-06-09 10:10:00'),
+(5036,'HOLD_SUCCESS','{"msg":"funds held","amount":275000}','2024-06-11 10:05:00'),
+(5036,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed036"}','2024-06-11 10:10:00'),
+(5037,'HOLD_SUCCESS','{"msg":"funds held","amount":750000}','2024-06-13 10:05:00'),
+(5037,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed037"}','2024-06-13 10:10:00'),
+(5038,'HOLD_SUCCESS','{"msg":"funds held","amount":500000}','2024-06-15 10:05:00'),
+(5038,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed038"}','2024-06-15 10:10:00'),
+(5039,'HOLD_SUCCESS','{"msg":"funds held","amount":900000}','2024-06-17 10:05:00'),
+(5039,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed039"}','2024-06-17 10:10:00'),
+(5040,'HOLD_SUCCESS','{"msg":"funds held","amount":400000}','2024-06-19 10:05:00'),
+(5040,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed040"}','2024-06-19 10:10:00'),
+(5041,'HOLD_SUCCESS','{"msg":"funds held","amount":600000}','2024-06-21 10:05:00'),
+(5041,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed041"}','2024-06-21 10:10:00'),
+(5042,'HOLD_SUCCESS','{"msg":"funds held","amount":325000}','2024-06-23 10:05:00'),
+(5042,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed042"}','2024-06-23 10:10:00'),
+(5043,'HOLD_SUCCESS','{"msg":"funds held","amount":1500000}','2024-06-25 10:05:00'),
+(5043,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed043"}','2024-06-25 10:10:00'),
+(5044,'HOLD_SUCCESS','{"msg":"funds held","amount":1100000}','2024-06-27 10:05:00'),
+(5044,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed044"}','2024-06-27 10:10:00'),
+(5045,'HOLD_SUCCESS','{"msg":"funds held","amount":700000}','2024-06-29 10:05:00'),
+(5045,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed045"}','2024-06-29 10:10:00'),
+(5046,'HOLD_SUCCESS','{"msg":"funds held","amount":375000}','2024-07-01 10:05:00'),
+(5046,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed046"}','2024-07-01 10:10:00'),
+(5047,'HOLD_SUCCESS','{"msg":"funds held","amount":475000}','2024-07-03 10:05:00'),
+(5047,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed047"}','2024-07-03 10:10:00'),
+(5048,'HOLD_SUCCESS','{"msg":"funds held","amount":1300000}','2024-07-05 10:05:00'),
+(5048,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed048"}','2024-07-05 10:10:00'),
+(5049,'HOLD_SUCCESS','{"msg":"funds held","amount":525000}','2024-07-07 10:05:00'),
+(5049,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed049"}','2024-07-07 10:10:00'),
+(5050,'HOLD_SUCCESS','{"msg":"funds held","amount":850000}','2024-07-09 10:05:00'),
+(5050,'CAPTURE_SUCCESS','{"msg":"captured","paymentId":"pay_seed050"}','2024-07-09 10:10:00'),
+-- FAILED payment logs (2 steps: hold then failure = 20 rows)
+(5051,'HOLD_INITIATED','{"msg":"initiating payment hold","amount":325000}','2025-01-07 10:05:00'),
+(5051,'CAPTURE_FAILED','{"msg":"Payment declined by card issuer","gateway":"razorpay","code":"CARD_DECLINED"}','2025-01-07 10:20:00'),
+(5052,'HOLD_INITIATED','{"msg":"initiating payment hold","amount":450000}','2025-01-09 10:05:00'),
+(5052,'CAPTURE_FAILED','{"msg":"Insufficient funds in investor account","gateway":"razorpay","code":"INSUFFICIENT_FUNDS"}','2025-01-09 10:20:00'),
+(5053,'HOLD_INITIATED','{"msg":"initiating payment hold","amount":275000}','2025-01-11 10:05:00'),
+(5053,'CAPTURE_FAILED','{"msg":"Payment gateway timeout","gateway":"razorpay","code":"GATEWAY_TIMEOUT"}','2025-01-11 10:20:00'),
+(5054,'HOLD_INITIATED','{"msg":"initiating payment hold","amount":1050000}','2025-01-13 10:05:00'),
+(5054,'CAPTURE_FAILED','{"msg":"VPA not registered for UPI","gateway":"razorpay","code":"UPI_VPA_NOT_FOUND"}','2025-01-13 10:20:00'),
+(5055,'HOLD_INITIATED','{"msg":"initiating payment hold","amount":875000}','2025-01-15 10:05:00'),
+(5055,'CAPTURE_FAILED','{"msg":"Bank server under maintenance","gateway":"razorpay","code":"BANK_UNAVAILABLE"}','2025-01-15 10:20:00'),
+(5056,'HOLD_INITIATED','{"msg":"initiating payment hold","amount":125000}','2025-01-17 10:05:00'),
+(5056,'CAPTURE_FAILED','{"msg":"Daily transaction limit exceeded","gateway":"razorpay","code":"LIMIT_EXCEEDED"}','2025-01-17 10:20:00'),
+(5057,'HOLD_INITIATED','{"msg":"initiating payment hold","amount":350000}','2025-01-19 10:05:00'),
+(5057,'CAPTURE_FAILED','{"msg":"NEFT transfer failed: invalid IFSC","gateway":"razorpay","code":"INVALID_IFSC"}','2025-01-19 10:20:00'),
+(5058,'HOLD_INITIATED','{"msg":"initiating payment hold","amount":950000}','2025-01-21 10:05:00'),
+(5058,'CAPTURE_FAILED','{"msg":"Payment signature verification failed","gateway":"razorpay","code":"SIGNATURE_MISMATCH"}','2025-01-21 10:20:00'),
+(5059,'HOLD_INITIATED','{"msg":"initiating payment hold","amount":1250000}','2025-01-23 10:05:00'),
+(5059,'CAPTURE_FAILED','{"msg":"Beneficiary account frozen","gateway":"razorpay","code":"ACCOUNT_FROZEN"}','2025-01-23 10:20:00'),
+(5060,'HOLD_INITIATED','{"msg":"initiating payment hold","amount":550000}','2025-01-25 10:05:00'),
+(5060,'CAPTURE_FAILED','{"msg":"3D Secure authentication failed","gateway":"razorpay","code":"3DS_FAILED"}','2025-01-25 10:20:00');
+
+SET foreign_key_checks = 1;
+-- END payment-service/seed.sql
+-- Total rows: payments=60, payment_transaction_logs=150 → 210 rows

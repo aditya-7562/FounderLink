@@ -1,5 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, DestroyRef, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
@@ -53,8 +54,10 @@ export class RegisterComponent implements OnInit {
     });
   }
 
+  private destroyRef = inject(DestroyRef);
+
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const qRole = params['role'];
       if (qRole && ['FOUNDER', 'INVESTOR', 'COFOUNDER'].includes(qRole)) {
         this.form.patchValue({ role: qRole });
@@ -89,5 +92,9 @@ export class RegisterComponent implements OnInit {
         this.errorMsg.set(err.error?.message || 'Registration failed. Please try again.');
       }
     });
+  }
+
+  isDirty(): boolean {
+    return this.form.dirty && !this.successMsg();
   }
 }

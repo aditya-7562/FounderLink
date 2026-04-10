@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.founderlink.investment.command.InvestmentCommandService;
@@ -53,8 +55,18 @@ public class InvestmentServiceImpl implements InvestmentService {
     }
 
     @Override
+    public Page<InvestmentResponseDto> getInvestmentsByStartupId(Long startupId, Long founderId, Pageable pageable) {
+        return queryService.getInvestmentsByStartupId(startupId, founderId, pageable);
+    }
+
+    @Override
     public List<InvestmentResponseDto> getInvestmentsByInvestorId(Long investorId) {
         return queryService.getInvestmentsByInvestorId(investorId);
+    }
+
+    @Override
+    public Page<InvestmentResponseDto> getInvestmentsByInvestorId(Long investorId, Pageable pageable) {
+        return queryService.getInvestmentsByInvestorId(investorId, pageable);
     }
 
     @Override

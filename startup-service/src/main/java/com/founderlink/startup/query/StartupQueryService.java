@@ -2,9 +2,10 @@ package com.founderlink.startup.query;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.founderlink.startup.dto.response.StartupResponseDto;
@@ -46,10 +47,13 @@ public class StartupQueryService {
     @Cacheable(value = "allStartups", key = "'all'")
     public List<StartupResponseDto> getAllStartups() {
         log.info("QUERY - getAllStartups (cache miss, hitting DB)");
-        return startupRepository.findByIsDeletedFalse()
-                .stream()
-                .map(startupMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return getAllStartups(Pageable.unpaged()).getContent();
+    }
+
+    public Page<StartupResponseDto> getAllStartups(Pageable pageable) {
+        log.info("QUERY - getAllStartups: pageable={}", pageable);
+        return startupRepository.findByIsDeletedFalse(pageable)
+                .map(startupMapper::toResponseDto);
     }
 
     /**
@@ -59,10 +63,13 @@ public class StartupQueryService {
     @Cacheable(value = "startupsByFounder", key = "#founderId")
     public List<StartupResponseDto> getStartupsByFounderId(Long founderId) {
         log.info("QUERY - getStartupsByFounderId: founderId={} (cache miss, hitting DB)", founderId);
-        return startupRepository.findByFounderIdAndIsDeletedFalse(founderId)
-                .stream()
-                .map(startupMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return getStartupsByFounderId(founderId, Pageable.unpaged()).getContent();
+    }
+
+    public Page<StartupResponseDto> getStartupsByFounderId(Long founderId, Pageable pageable) {
+        log.info("QUERY - getStartupsByFounderId: founderId={}, pageable={}", founderId, pageable);
+        return startupRepository.findByFounderIdAndIsDeletedFalse(founderId, pageable)
+                .map(startupMapper::toResponseDto);
     }
 
     /**
@@ -73,8 +80,14 @@ public class StartupQueryService {
                key = "(#industry ?: 'null') + '_' + (#stage ?: 'null') + '_' + (#minFunding ?: 'null') + '_' + (#maxFunding ?: 'null')")
     public List<StartupResponseDto> searchStartups(String industry, StartupStage stage,
                                                     BigDecimal minFunding, BigDecimal maxFunding) {
-        log.info("QUERY - searchStartups: industry={}, stage={}, min={}, max={} (cache miss, hitting DB)",
-                industry, stage, minFunding, maxFunding);
+        return searchStartups(industry, stage, minFunding, maxFunding, Pageable.unpaged()).getContent();
+    }
+
+    public Page<StartupResponseDto> searchStartups(String industry, StartupStage stage,
+                                                   BigDecimal minFunding, BigDecimal maxFunding,
+                                                   Pageable pageable) {
+        log.info("QUERY - searchStartups: industry={}, stage={}, min={}, max={}, pageable={}",
+                industry, stage, minFunding, maxFunding, pageable);
 
         if (minFunding != null && maxFunding != null) {
             if (minFunding.compareTo(BigDecimal.ZERO) < 0 || maxFunding.compareTo(BigDecimal.ZERO) < 0) {
@@ -91,30 +104,7 @@ public class StartupQueryService {
             throw new InvalidSearchException("Maximum funding cannot be negative");
         }
 
-        List<Startup> startups;
-
-        if (industry != null && stage != null && minFunding != null && maxFunding != null) {
-            startups = startupRepository.findByIndustryAndStageAndIsDeletedFalse(industry, stage)
-                    .stream()
-                    .filter(s -> s.getFundingGoal().compareTo(minFunding) >= 0
-                              && s.getFundingGoal().compareTo(maxFunding) <= 0)
-                    .collect(Collectors.toList());
-        } else if (industry != null && stage != null) {
-            startups = startupRepository.findByIndustryAndStageAndIsDeletedFalse(industry, stage);
-        } else if (industry != null && minFunding != null && maxFunding != null) {
-            startups = startupRepository.findByIndustryAndFundingGoalBetweenAndIsDeletedFalse(industry, minFunding, maxFunding);
-        } else if (minFunding != null && maxFunding != null) {
-            startups = startupRepository.findByFundingGoalBetweenAndIsDeletedFalse(minFunding, maxFunding);
-        } else if (industry != null) {
-            startups = startupRepository.findByIndustryAndIsDeletedFalse(industry);
-        } else if (stage != null) {
-            startups = startupRepository.findByStageAndIsDeletedFalse(stage);
-        } else {
-            startups = startupRepository.findByIsDeletedFalse();
-        }
-
-        return startups.stream()
-                .map(startupMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return startupRepository.searchActiveStartups(industry, stage, minFunding, maxFunding, pageable)
+                .map(startupMapper::toResponseDto);
     }
 }

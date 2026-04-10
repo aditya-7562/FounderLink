@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError, timer, switchMap, take, catchError, of } from 'rxjs';
 import { map, retry } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { ApiEnvelope, ApiResponse, InvestmentRequest, InvestmentResponse, InvestmentStatusUpdate } from '../../models';
-import { normalizeWrapped, normalizeError } from './api-normalizer';
+import { ApiEnvelope, ApiResponse, InvestmentRequest, InvestmentResponse, InvestmentStatusUpdate, PaginatedData, PaginationQuery } from '../../models';
+import { normalizeCollection, normalizeWrapped, normalizeError } from './api-normalizer';
 
 @Injectable({ providedIn: 'root' })
 export class InvestmentService {
@@ -21,17 +21,17 @@ export class InvestmentService {
   }
 
   /** Investor / Admin: get own investment portfolio */
-  getMyPortfolio(): Observable<ApiEnvelope<InvestmentResponse[]>> {
-    return this.http.get<ApiResponse<InvestmentResponse[]>>(`${this.api}/investments/investor`).pipe(
-      map(normalizeWrapped),
+  getMyPortfolio(query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<InvestmentResponse>>> {
+    return this.http.get<unknown>(`${this.api}/investments/investor`, { params: this.withPagination(query) }).pipe(
+      map(normalizeCollection<InvestmentResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
   }
 
   /** Founder / Admin: get investments for a startup */
-  getStartupInvestments(startupId: number): Observable<ApiEnvelope<InvestmentResponse[]>> {
-    return this.http.get<ApiResponse<InvestmentResponse[]>>(`${this.api}/investments/startup/${startupId}`).pipe(
-      map(normalizeWrapped),
+  getStartupInvestments(startupId: number, query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<InvestmentResponse>>> {
+    return this.http.get<unknown>(`${this.api}/investments/startup/${startupId}`, { params: this.withPagination(query) }).pipe(
+      map(normalizeCollection<InvestmentResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
   }
@@ -50,5 +50,12 @@ export class InvestmentService {
       map(normalizeWrapped),
       catchError(err => throwError(() => normalizeError(err)))
     );
+  }
+
+  private withPagination(query: PaginationQuery): HttpParams {
+    return new HttpParams()
+      .set('page', query.page ?? 0)
+      .set('size', query.size ?? 10)
+      .set('sort', query.sort ?? 'createdAt,desc');
   }
 }

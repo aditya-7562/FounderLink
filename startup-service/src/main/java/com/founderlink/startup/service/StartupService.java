@@ -3,6 +3,9 @@ package com.founderlink.startup.service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.founderlink.startup.dto.request.StartupRequestDto;
 import com.founderlink.startup.dto.response.StartupResponseDto;
 import com.founderlink.startup.entity.StartupStage;
@@ -39,6 +42,8 @@ public interface StartupService {
     // ─────────────────────────────────────────
     List<StartupResponseDto> getAllStartups();
 
+    Page<StartupResponseDto> getAllStartups(Pageable pageable);
+
     // ─────────────────────────────────────────
     // GET STARTUPS BY FOUNDER
     // Called by → Founder
@@ -49,6 +54,10 @@ public interface StartupService {
     // ─────────────────────────────────────────
     List<StartupResponseDto> getStartupsByFounderId(
             Long founderId);
+
+    Page<StartupResponseDto> getStartupsByFounderId(
+            Long founderId,
+            Pageable pageable);
 
     // ─────────────────────────────────────────
     // UPDATE STARTUP
@@ -90,4 +99,11 @@ public interface StartupService {
             StartupStage stage,
             BigDecimal minFunding,
             BigDecimal maxFunding);
+
+    Page<StartupResponseDto> searchStartups(
+            String industry,
+            StartupStage stage,
+            BigDecimal minFunding,
+            BigDecimal maxFunding,
+            Pageable pageable);
 }

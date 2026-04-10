@@ -1,6 +1,7 @@
 package com.founderlink.messaging.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.founderlink.messaging.dto.CursorPageDTO;
 import com.founderlink.messaging.dto.MessageRequestDTO;
 import com.founderlink.messaging.dto.MessageResponseDTO;
 import com.founderlink.messaging.exception.GlobalExceptionHandler;
@@ -173,5 +174,68 @@ class MessageControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0]").value(200))
                 .andExpect(jsonPath("$[1]").value(300));
+    }
+
+    // --- GET /messages/conversation/{user1}/{user2}/cursor ---
+
+    @Test
+    @DisplayName("GET /cursor - none -> initial load works")
+    void getConversationCursor_WithoutParams_Works() throws Exception {
+        CursorPageDTO<MessageResponseDTO> pageDto = CursorPageDTO.<MessageResponseDTO>builder()
+                .content(List.of(responseDTO))
+                .nextCursor(1L)
+                .prevCursor(1L)
+                .build();
+        when(messageService.getConversationCursor(100L, 200L, null, null, 20))
+                .thenReturn(pageDto);
+
+        mockMvc.perform(get("/messages/conversation/100/200/cursor"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.nextCursor").value(1));
+    }
+
+    @Test
+    @DisplayName("GET /cursor - before only -> works")
+    void getConversationCursor_WithBefore_Works() throws Exception {
+        CursorPageDTO<MessageResponseDTO> pageDto = CursorPageDTO.<MessageResponseDTO>builder()
+                .content(List.of(responseDTO))
+                .nextCursor(0L)
+                .prevCursor(1L)
+                .build();
+        when(messageService.getConversationCursor(100L, 200L, 5L, null, 20))
+                .thenReturn(pageDto);
+
+        mockMvc.perform(get("/messages/conversation/100/200/cursor")
+                        .param("before", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1));
+    }
+
+    @Test
+    @DisplayName("GET /cursor - after only -> works")
+    void getConversationCursor_WithAfter_Works() throws Exception {
+         CursorPageDTO<MessageResponseDTO> pageDto = CursorPageDTO.<MessageResponseDTO>builder()
+                .content(List.of(responseDTO))
+                .nextCursor(1L)
+                .prevCursor(2L)
+                .build();
+        when(messageService.getConversationCursor(100L, 200L, null, 1L, 20))
+                .thenReturn(pageDto);
+
+        mockMvc.perform(get("/messages/conversation/100/200/cursor")
+                        .param("after", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1));
+    }
+
+    @Test
+    @DisplayName("GET /cursor - both -> 400 error")
+    void getConversationCursor_WithBoth_Returns400() throws Exception {
+        mockMvc.perform(get("/messages/conversation/100/200/cursor")
+                        .param("before", "5")
+                        .param("after", "1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Cannot use both 'before' and 'after' cursors simultaneously"));
     }
 }

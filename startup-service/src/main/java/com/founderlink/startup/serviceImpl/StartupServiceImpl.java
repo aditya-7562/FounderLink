@@ -3,6 +3,8 @@ package com.founderlink.startup.serviceImpl;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.founderlink.startup.command.StartupCommandService;
@@ -52,13 +54,30 @@ public class StartupServiceImpl implements StartupService {
     }
 
     @Override
+    public Page<StartupResponseDto> getAllStartups(Pageable pageable) {
+        return queryService.getAllStartups(pageable);
+    }
+
+    @Override
     public List<StartupResponseDto> getStartupsByFounderId(Long founderId) {
         return queryService.getStartupsByFounderId(founderId);
+    }
+
+    @Override
+    public Page<StartupResponseDto> getStartupsByFounderId(Long founderId, Pageable pageable) {
+        return queryService.getStartupsByFounderId(founderId, pageable);
     }
 
     @Override
     public List<StartupResponseDto> searchStartups(String industry, StartupStage stage,
                                                     BigDecimal minFunding, BigDecimal maxFunding) {
         return queryService.searchStartups(industry, stage, minFunding, maxFunding);
+    }
+
+    @Override
+    public Page<StartupResponseDto> searchStartups(String industry, StartupStage stage,
+                                                   BigDecimal minFunding, BigDecimal maxFunding,
+                                                   Pageable pageable) {
+        return queryService.searchStartups(industry, stage, minFunding, maxFunding, pageable);
     }
 }

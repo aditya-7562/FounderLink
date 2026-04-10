@@ -44,6 +44,15 @@
       }
     </div>
 
+    <app-pagination-controls
+      [page]="startupPage().page"
+      [totalPages]="startupPage().totalPages"
+      [totalElements]="startupPage().totalElements"
+      label="startups"
+      (previous)="previousStartupPage()"
+      (next)="nextStartupPage()"
+    />
+
     <!-- ── USER DISCOVERY PANEL ───────────────────────────────── -->
     @if (showDiscovery()) {
       <div class="discovery-panel">
@@ -118,6 +127,15 @@
                   </div>
                 }
               </div>
+
+              <app-pagination-controls
+                [page]="userPage().page"
+                [totalPages]="userPage().totalPages"
+                [totalElements]="userPage().totalElements"
+                label="users"
+                (previous)="previousUserPage()"
+                (next)="nextUserPage()"
+              />
             }
           </div>
 
@@ -279,6 +297,15 @@
             </div>
           }
         </div>
+
+        <app-pagination-controls
+          [page]="teamPage().page"
+          [totalPages]="teamPage().totalPages"
+          [totalElements]="teamPage().totalElements"
+          label="members"
+          (previous)="previousTeamPage()"
+          (next)="nextTeamPage()"
+        />
       }
     }
 
@@ -330,5 +357,14 @@
         </div>
       }
     </div>
+
+    <app-pagination-controls
+      [page]="myTeamsPage().page"
+      [totalPages]="myTeamsPage().totalPages"
+      [totalElements]="myTeamsPage().totalElements"
+      label="teams"
+      (previous)="previousMyTeamsPage()"
+      (next)="nextMyTeamsPage()"
+    />
   }
 }

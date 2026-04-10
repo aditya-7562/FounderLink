@@ -6,17 +6,34 @@ import { AuthService } from '../../core/services/auth.service';
 import { InvestmentService } from '../../core/services/investment.service';
 import { StartupService } from '../../core/services/startup.service';
 import { UserService } from '../../core/services/user.service';
-import { InvestmentResponse, InvestmentStatus, StartupResponse } from '../../models';
+import { InvestmentResponse, InvestmentStatus, PaginatedData, StartupResponse } from '../../models';
+import { PaginationControlsComponent } from '../../shared/components/pagination-controls/pagination-controls';
 
 @Component({
   selector: 'app-investments',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginationControlsComponent],
   templateUrl: './investments.html',
   styleUrl: './investments.css'
 })
 export class InvestmentsComponent implements OnInit {
   investments       = signal<InvestmentResponse[]>([]);
   myStartups        = signal<StartupResponse[]>([]);
+  startupPage       = signal<PaginatedData<StartupResponse>>({
+    content: [],
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+    last: true
+  });
+  investmentPage    = signal<PaginatedData<InvestmentResponse>>({
+    content: [],
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+    last: true
+  });
   selectedStartupId = signal<number | null>(null);
   loading           = signal(true);
   updating          = signal<number | null>(null);
@@ -34,26 +51,35 @@ export class InvestmentsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.startupService.getMyStartups().subscribe({
+    this.loadMyStartups();
+
+    this.userService.getAllUsers({ page: 0, size: 50, sort: 'id,asc' }).subscribe({
       next: env => {
-        const list = env.data ?? [];
-        this.myStartups.set(list);
-        if (list.length > 0) {
-          this.selectedStartupId.set(list[0].id);
-          this.loadInvestments(list[0].id);
+        const map = new Map<number, string>();
+        env.data?.content.forEach(u => map.set(u.userId, u.name || `Investor ${u.userId}`));
+        this.userNames.set(map);
+      }
+    });
+  }
+
+  loadMyStartups(page = 0): void {
+    this.startupService.getMyStartups({ page, size: 10, sort: 'createdAt,desc' }).subscribe({
+      next: env => {
+        const startupPage = env.data ?? this.startupPage();
+        this.startupPage.set(startupPage);
+        this.myStartups.set(startupPage.content);
+        if (startupPage.content.length > 0) {
+          const current = this.selectedStartupId();
+          const selected = startupPage.content.find(s => s.id === current) ?? startupPage.content[0];
+          this.selectedStartupId.set(selected.id);
+          this.loadInvestments(selected.id, 0);
         } else {
           this.loading.set(false);
+          this.investments.set([]);
+          this.investmentPage.set({ ...this.investmentPage(), content: [], totalElements: 0, totalPages: 0, last: true, page: 0 });
         }
       },
       error: () => this.loading.set(false)
-    });
-
-    this.userService.getAllUsers().subscribe({
-      next: env => {
-        const map = new Map<number, string>();
-        env.data?.forEach(u => map.set(u.userId, u.name || `Investor ${u.userId}`));
-        this.userNames.set(map);
-      }
     });
   }
 
@@ -62,10 +88,15 @@ export class InvestmentsComponent implements OnInit {
     this.loadInvestments(startupId);
   }
 
-  loadInvestments(startupId: number): void {
+  loadInvestments(startupId: number, page = 0): void {
     this.loading.set(true);
-    this.investmentService.getStartupInvestments(startupId).subscribe({
-      next: env => { this.investments.set(env.data ?? []); this.loading.set(false); },
+    this.investmentService.getStartupInvestments(startupId, { page, size: 10, sort: 'createdAt,desc' }).subscribe({
+      next: env => {
+        const investmentPage = env.data ?? this.investmentPage();
+        this.investmentPage.set(investmentPage);
+        this.investments.set(investmentPage.content);
+        this.loading.set(false);
+      },
       error: env => { this.errorMsg.set(env.error ?? 'Failed to load investments.'); this.loading.set(false); }
     });
   }
@@ -121,5 +152,25 @@ export class InvestmentsComponent implements OnInit {
 
   messageInvestor(investorId: number): void {
     this.router.navigate(['/dashboard/messages'], { queryParams: { user: investorId } });
+  }
+
+  nextStartupPage(): void {
+    this.loadMyStartups(this.startupPage().page + 1);
+  }
+
+  previousStartupPage(): void {
+    this.loadMyStartups(Math.max(this.startupPage().page - 1, 0));
+  }
+
+  nextInvestmentPage(): void {
+    const startupId = this.selectedStartupId();
+    if (startupId == null) return;
+    this.loadInvestments(startupId, this.investmentPage().page + 1);
+  }
+
+  previousInvestmentPage(): void {
+    const startupId = this.selectedStartupId();
+    if (startupId == null) return;
+    this.loadInvestments(startupId, Math.max(this.investmentPage().page - 1, 0));
   }
 }

@@ -2,17 +2,26 @@ import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { NotificationResponse } from '../../models';
+import { NotificationResponse, PaginatedData } from '../../models';
 import { Router } from '@angular/router';
+import { PaginationControlsComponent } from '../../shared/components/pagination-controls/pagination-controls';
 
 @Component({
   selector: 'app-notifications',
-  imports: [CommonModule],
+  imports: [CommonModule, PaginationControlsComponent],
   templateUrl: './notifications.html',
   styleUrl: './notifications.css'
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
   notifications = signal<NotificationResponse[]>([]);
+  notificationPage = signal<PaginatedData<NotificationResponse>>({
+    content: [],
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+    last: true
+  });
   loading       = signal(true);
   errorMsg      = signal('');
   unreadCount   = signal(0);
@@ -36,14 +45,20 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     if (this.refreshInterval) clearInterval(this.refreshInterval);
   }
 
-  loadNotifications(): void {
+  loadNotifications(page = 0): void {
     this.loading.set(true);
-    this.notificationService.getMyNotifications().subscribe({
+    const request$ = this.filterType() === 'unread'
+      ? this.notificationService.getMyUnreadNotifications({ page, size: 10, sort: 'createdAt,desc' })
+      : this.notificationService.getMyNotifications({ page, size: 10, sort: 'createdAt,desc' });
+
+    request$.subscribe({
       next: env => {
-        const all = env.data ?? [];
+        const notificationPage = env.data ?? this.notificationPage();
+        this.notificationPage.set(notificationPage);
+        const all = notificationPage.content;
         this.notifications.set(all);
-        this.unreadCount.set(all.filter(n => !n.read).length);
         this.loading.set(false);
+        this.refreshUnreadCount();
       },
       error: () => {
         this.errorMsg.set('Failed to load notifications.');
@@ -95,13 +110,14 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   getFiltered(): NotificationResponse[] {
     const f = this.filterType();
     const all = this.notifications();
+    if (f === 'unread') return all;
     if (f === 'read')   return all.filter(n => n.read);
-    if (f === 'unread') return all.filter(n => !n.read);
     return all;
   }
 
   setFilter(f: 'all' | 'unread' | 'read'): void {
     this.filterType.set(f);
+    this.loadNotifications(0);
   }
 
   getIcon(type: string): string {
@@ -127,5 +143,20 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7)  return `${diffDays}d ago`;
     return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  nextPage(): void {
+    this.loadNotifications(this.notificationPage().page + 1);
+  }
+
+  previousPage(): void {
+    this.loadNotifications(Math.max(this.notificationPage().page - 1, 0));
+  }
+
+  private refreshUnreadCount(): void {
+    this.notificationService.getMyUnreadNotifications({ page: 0, size: 10, sort: 'createdAt,desc' }).subscribe({
+      next: env => this.unreadCount.set(env.data?.totalElements ?? 0),
+      error: () => {}
+    });
   }
 }

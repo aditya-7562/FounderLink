@@ -3,6 +3,8 @@ package com.founderlink.team.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,6 +22,9 @@ public interface TeamMemberRepository
     // ─────────────────────────────────────────
     List<TeamMember> findByStartupIdAndIsActiveTrue(
             Long startupId);
+    Page<TeamMember> findByStartupIdAndIsActiveTrue(
+            Long startupId,
+            Pageable pageable);
 
     // ─────────────────────────────────────────
     // MANDATORY
@@ -57,6 +62,7 @@ public interface TeamMemberRepository
     // ALL records active + inactive
     // ─────────────────────────────────────────
     List<TeamMember> findByUserId(Long userId);
+    Page<TeamMember> findByUserId(Long userId, Pageable pageable);
 
     // ─────────────────────────────────────────
     // NEW
@@ -65,6 +71,9 @@ public interface TeamMemberRepository
     // ─────────────────────────────────────────
     List<TeamMember> findByUserIdAndIsActiveTrue(
             Long userId);
+    Page<TeamMember> findByUserIdAndIsActiveTrue(
+            Long userId,
+            Pageable pageable);
 
     // ─────────────────────────────────────────
     // NEW

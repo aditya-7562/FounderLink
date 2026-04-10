@@ -1,11 +1,12 @@
 package com.founderlink.team.query;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.founderlink.team.client.StartupServiceClient;
@@ -34,10 +35,13 @@ public class InvitationQueryService {
     @Cacheable(value = "invitationsByUser", key = "#userId")
     public List<InvitationResponseDto> getInvitationsByUserId(Long userId) {
         log.info("QUERY - getInvitationsByUserId: userId={} (cache miss, hitting DB)", userId);
-        return invitationRepository.findByInvitedUserId(userId)
-                .stream()
-                .map(invitationMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return getInvitationsByUserId(userId, Pageable.unpaged()).getContent();
+    }
+
+    public Page<InvitationResponseDto> getInvitationsByUserId(Long userId, Pageable pageable) {
+        log.info("QUERY - getInvitationsByUserId: userId={}, pageable={}", userId, pageable);
+        return invitationRepository.findByInvitedUserId(userId, pageable)
+                .map(invitationMapper::toResponseDto);
     }
 
     // ── getInvitationsByStartupId — calls Feign, needs retry + CB ───────────
@@ -48,10 +52,14 @@ public class InvitationQueryService {
     public List<InvitationResponseDto> getInvitationsByStartupId(Long startupId, Long founderId) {
         log.info("QUERY - getInvitationsByStartupId: startupId={} (cache miss, hitting DB)", startupId);
         verifyFounderOwnsStartup(startupId, founderId);
-        return invitationRepository.findByStartupId(startupId)
-                .stream()
-                .map(invitationMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return getInvitationsByStartupId(startupId, founderId, Pageable.unpaged()).getContent();
+    }
+
+    public Page<InvitationResponseDto> getInvitationsByStartupId(Long startupId, Long founderId, Pageable pageable) {
+        log.info("QUERY - getInvitationsByStartupId: startupId={}, founderId={}, pageable={}", startupId, founderId, pageable);
+        verifyFounderOwnsStartup(startupId, founderId);
+        return invitationRepository.findByStartupId(startupId, pageable)
+                .map(invitationMapper::toResponseDto);
     }
 
     public List<InvitationResponseDto> getInvitationsByStartupIdFallback(Long startupId, Long founderId,

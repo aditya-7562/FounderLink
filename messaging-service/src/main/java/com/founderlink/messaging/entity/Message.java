@@ -8,7 +8,16 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "messages")
+@Table(
+        name = "messages",
+        indexes = {
+                @Index(name = "idx_messages_sender_created",   columnList = "sender_id, created_at"),
+                @Index(name = "idx_messages_receiver_created", columnList = "receiver_id, created_at"),
+                // Composite indexes for cursor-based conversation queries (both directions)
+                @Index(name = "idx_conv_fwd", columnList = "sender_id, receiver_id, id"),
+                @Index(name = "idx_conv_rev", columnList = "receiver_id, sender_id, id")
+        }
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -15,10 +15,6 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = 'dockerhub-creds'
         DOCKER_REPO           = 'founderlink'
-        // Service lists are written to workspace files by Detect/Rollback stages
-        // and read back by every downstream stage. This permanently avoids Jenkins
-        // CPS env var propagation bugs where env vars set inside script{} blocks
-        // are null when read in subsequent stage bodies or when{} expressions.
         SERVICES_FILE         = '.pipeline_services'
         INFRA_FILE            = '.pipeline_infra'
         RESTART_FILE          = '.pipeline_restart'

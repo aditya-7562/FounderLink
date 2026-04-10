@@ -3,16 +3,25 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { StartupService } from '../../core/services/startup.service';
 import { WalletService } from '../../core/services/wallet.service';
-import { StartupResponse, WalletResponse } from '../../models';
+import { PaginatedData, StartupResponse, WalletResponse } from '../../models';
+import { PaginationControlsComponent } from '../../shared/components/pagination-controls/pagination-controls';
 
 @Component({
   selector: 'app-wallet',
-  imports: [CommonModule],
+  imports: [CommonModule, PaginationControlsComponent],
   templateUrl: './wallet.html',
   styleUrl: './wallet.css'
 })
 export class WalletComponent implements OnInit {
   startups          = signal<StartupResponse[]>([]);
+  startupPage       = signal<PaginatedData<StartupResponse>>({
+    content: [],
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+    last: true
+  });
   selectedStartupId = signal<number | null>(null);
   wallet            = signal<WalletResponse | null>(null);
   loading           = signal(true);
@@ -31,15 +40,19 @@ export class WalletComponent implements OnInit {
     this.loadFounderStartups();
   }
 
-  loadFounderStartups(): void {
+  loadFounderStartups(page = 0): void {
     this.loading.set(true);
-    this.startupService.getMyStartups().subscribe({
+    this.startupService.getMyStartups({ page, size: 10, sort: 'createdAt,desc' }).subscribe({
       next: env => {
-        const list = env.data ?? [];
+        const startupPage = env.data ?? this.startupPage();
+        this.startupPage.set(startupPage);
+        const list = startupPage.content;
         this.startups.set(list);
         if (list.length > 0) {
-          this.selectedStartupId.set(list[0].id);
-          this.loadWallet(list[0].id);
+          const current = this.selectedStartupId();
+          const selected = list.find(s => s.id === current) ?? list[0];
+          this.selectedStartupId.set(selected.id);
+          this.loadWallet(selected.id);
         }
         this.loading.set(false);
       },
@@ -77,5 +90,13 @@ export class WalletComponent implements OnInit {
 
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  nextPage(): void {
+    this.loadFounderStartups(this.startupPage().page + 1);
+  }
+
+  previousPage(): void {
+    this.loadFounderStartups(Math.max(this.startupPage().page - 1, 0));
   }
 }

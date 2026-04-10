@@ -7,6 +7,8 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -38,6 +40,12 @@ public class NotificationQueryService {
                 .collect(Collectors.toList());
     }
 
+    public Page<NotificationResponseDTO> getNotificationsByUser(Long userId, Pageable pageable) {
+        log.info("QUERY - getNotificationsByUser: userId={}, pageable={}", userId, pageable);
+        return notificationRepository.findByUserId(userId, pageable)
+                .map(this::mapToDTO);
+    }
+
     public List<NotificationResponseDTO> getNotificationsByUserFallback(Long userId, Throwable throwable) {
         log.error("Fallback - getNotificationsByUser. User: {}, Reason: {}", userId, throwable.getMessage());
         return Collections.emptyList();
@@ -55,6 +63,12 @@ public class NotificationQueryService {
         return notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(userId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Page<NotificationResponseDTO> getUnreadNotifications(Long userId, Pageable pageable) {
+        log.info("QUERY - getUnreadNotifications: userId={}, pageable={}", userId, pageable);
+        return notificationRepository.findByUserIdAndReadFalse(userId, pageable)
+                .map(this::mapToDTO);
     }
 
     public List<NotificationResponseDTO> getUnreadNotificationsFallback(Long userId, Throwable throwable) {

@@ -102,4 +102,13 @@
       }
     </div>
   }
+
+  <app-pagination-controls
+    [page]="invitationPage().page"
+    [totalPages]="invitationPage().totalPages"
+    [totalElements]="invitationPage().totalElements"
+    label="invitations"
+    (previous)="previousPage()"
+    (next)="nextPage()"
+  />
 }

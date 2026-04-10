@@ -3,16 +3,25 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { StartupService } from '../../../core/services/startup.service';
-import { StartupResponse, StartupRequest, StartupStage } from '../../../models';
+import { PaginatedData, StartupResponse, StartupRequest, StartupStage } from '../../../models';
+import { PaginationControlsComponent } from '../../../shared/components/pagination-controls/pagination-controls';
 
 @Component({
   selector: 'app-my-startup',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PaginationControlsComponent],
   templateUrl: './my-startup.html',
   styleUrl: './my-startup.css'
 })
 export class MyStartupComponent implements OnInit {
   startups   = signal<StartupResponse[]>([]);
+  startupPage = signal<PaginatedData<StartupResponse>>({
+    content: [],
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+    last: true
+  });
   loading    = signal(true);
   saving     = signal(false);
   deleting   = signal<number | null>(null);
@@ -47,10 +56,15 @@ export class MyStartupComponent implements OnInit {
 
   ngOnInit(): void { this.loadStartups(); }
 
-  loadStartups(): void {
+  loadStartups(page = 0): void {
     this.loading.set(true);
-    this.startupService.getMyStartups().subscribe({
-      next: env => { this.startups.set(env.data ?? []); this.loading.set(false); },
+    this.startupService.getMyStartups({ page, size: 10, sort: 'createdAt,desc' }).subscribe({
+      next: env => {
+        const startupPage = env.data ?? this.startupPage();
+        this.startupPage.set(startupPage);
+        this.startups.set(startupPage.content);
+        this.loading.set(false);
+      },
       error: env => { this.errorMsg.set(env.error ?? 'Failed to load startups.'); this.loading.set(false); }
     });
   }
@@ -131,4 +145,12 @@ export class MyStartupComponent implements OnInit {
   }
 
   get f() { return this.form.controls; }
+
+  nextPage(): void {
+    this.loadStartups(this.startupPage().page + 1);
+  }
+
+  previousPage(): void {
+    this.loadStartups(Math.max(this.startupPage().page - 1, 0));
+  }
 }

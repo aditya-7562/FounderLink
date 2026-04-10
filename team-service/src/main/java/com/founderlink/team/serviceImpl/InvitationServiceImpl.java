@@ -2,6 +2,8 @@ package com.founderlink.team.serviceImpl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.founderlink.team.command.InvitationCommandService;
@@ -45,7 +47,17 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
+    public Page<InvitationResponseDto> getInvitationsByUserId(Long userId, Pageable pageable) {
+        return queryService.getInvitationsByUserId(userId, pageable);
+    }
+
+    @Override
     public List<InvitationResponseDto> getInvitationsByStartupId(Long startupId, Long founderId) {
         return queryService.getInvitationsByStartupId(startupId, founderId);
+    }
+
+    @Override
+    public Page<InvitationResponseDto> getInvitationsByStartupId(Long startupId, Long founderId, Pageable pageable) {
+        return queryService.getInvitationsByStartupId(startupId, founderId, pageable);
     }
 }

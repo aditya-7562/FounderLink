@@ -1,11 +1,12 @@
 package com.founderlink.team.query;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.founderlink.team.client.StartupServiceClient;
@@ -39,10 +40,16 @@ public class TeamMemberQueryService {
         if (userRole.equals("ROLE_FOUNDER")) {
             verifyFounderOwnsStartup(startupId, founderId);
         }
-        return teamMemberRepository.findByStartupIdAndIsActiveTrue(startupId)
-                .stream()
-                .map(teamMemberMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return getTeamByStartupId(startupId, founderId, userRole, Pageable.unpaged()).getContent();
+    }
+
+    public Page<TeamMemberResponseDto> getTeamByStartupId(Long startupId, Long founderId, String userRole, Pageable pageable) {
+        log.info("QUERY - getTeamByStartupId: startupId={}, pageable={}", startupId, pageable);
+        if (userRole.equals("ROLE_FOUNDER")) {
+            verifyFounderOwnsStartup(startupId, founderId);
+        }
+        return teamMemberRepository.findByStartupIdAndIsActiveTrue(startupId, pageable)
+                .map(teamMemberMapper::toResponseDto);
     }
 
     public List<TeamMemberResponseDto> getTeamByStartupIdFallback(Long startupId, Long founderId,
@@ -62,10 +69,13 @@ public class TeamMemberQueryService {
     @Cacheable(value = "memberHistory", key = "#userId")
     public List<TeamMemberResponseDto> getMemberHistory(Long userId) {
         log.info("QUERY - getMemberHistory: userId={} (cache miss, hitting DB)", userId);
-        return teamMemberRepository.findByUserId(userId)
-                .stream()
-                .map(teamMemberMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return getMemberHistory(userId, Pageable.unpaged()).getContent();
+    }
+
+    public Page<TeamMemberResponseDto> getMemberHistory(Long userId, Pageable pageable) {
+        log.info("QUERY - getMemberHistory: userId={}, pageable={}", userId, pageable);
+        return teamMemberRepository.findByUserId(userId, pageable)
+                .map(teamMemberMapper::toResponseDto);
     }
 
     // ── getActiveMemberRoles — no Feign call, no retry needed ───────────────
@@ -73,10 +83,13 @@ public class TeamMemberQueryService {
     @Cacheable(value = "activeMemberRoles", key = "#userId")
     public List<TeamMemberResponseDto> getActiveMemberRoles(Long userId) {
         log.info("QUERY - getActiveMemberRoles: userId={} (cache miss, hitting DB)", userId);
-        return teamMemberRepository.findByUserIdAndIsActiveTrue(userId)
-                .stream()
-                .map(teamMemberMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return getActiveMemberRoles(userId, Pageable.unpaged()).getContent();
+    }
+
+    public Page<TeamMemberResponseDto> getActiveMemberRoles(Long userId, Pageable pageable) {
+        log.info("QUERY - getActiveMemberRoles: userId={}, pageable={}", userId, pageable);
+        return teamMemberRepository.findByUserIdAndIsActiveTrue(userId, pageable)
+                .map(teamMemberMapper::toResponseDto);
     }
 
     // ── isTeamMember — no Feign call, real-time access control ──────────────

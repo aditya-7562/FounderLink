@@ -1,10 +1,9 @@
 package com.founderlink.User_Service.query;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.founderlink.User_Service.dto.UserResponseDto;
@@ -14,6 +13,8 @@ import com.founderlink.User_Service.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -42,10 +43,7 @@ public class UserQueryService {
     @Cacheable(value = "allUsers", key = "'all'")
     public List<UserResponseDto> getAllUsers() {
         log.info("QUERY - getAllUsers (cache miss, hitting DB)");
-        return repository.findAll()
-                .stream()
-                .map(u -> modelMapper.map(u, UserResponseDto.class))
-                .collect(Collectors.toList());
+        return getAllUsers(Pageable.unpaged()).getContent();
     }
 
     /**
@@ -55,10 +53,19 @@ public class UserQueryService {
     @Cacheable(value = "usersByRole", key = "#role.name()")
     public List<UserResponseDto> getUsersByRole(Role role) {
         log.info("QUERY - getUsersByRole: role={} (cache miss, hitting DB)", role);
-        return repository.findByRole(role)
-                .stream()
-                .map(u -> modelMapper.map(u, UserResponseDto.class))
-                .collect(Collectors.toList());
+        return getUsersByRole(role, Pageable.unpaged()).getContent();
+    }
+
+    public Page<UserResponseDto> getAllUsers(Pageable pageable) {
+        log.info("QUERY - getAllUsers: pageable={}", pageable);
+        return repository.findAll(pageable)
+                .map(user -> modelMapper.map(user, UserResponseDto.class));
+    }
+
+    public Page<UserResponseDto> getUsersByRole(Role role, Pageable pageable) {
+        log.info("QUERY - getUsersByRole: role={}, pageable={}", role, pageable);
+        return repository.findByRole(role, pageable)
+                .map(user -> modelMapper.map(user, UserResponseDto.class));
     }
 
     

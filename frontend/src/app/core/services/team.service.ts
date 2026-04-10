@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   ApiEnvelope, ApiResponse,
   InvitationRequest, InvitationResponse,
-  JoinTeamRequest, TeamMemberResponse
+  JoinTeamRequest, PaginatedData, PaginationQuery, TeamMemberResponse
 } from '../../models';
-import { normalizeWrapped, normalizeError } from './api-normalizer';
+import { normalizeCollection, normalizeWrapped, normalizeError } from './api-normalizer';
 
 @Injectable({ providedIn: 'root' })
 export class TeamService {
@@ -49,25 +49,25 @@ export class TeamService {
   }
 
   /** CoFounder: get own pending invitations */
-  getMyInvitations(): Observable<ApiEnvelope<InvitationResponse[]>> {
-    return this.http.get<ApiResponse<InvitationResponse[]>>(`${this.api}/teams/invitations/user`).pipe(
-      map(normalizeWrapped),
+  getMyInvitations(query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<InvitationResponse>>> {
+    return this.http.get<unknown>(`${this.api}/teams/invitations/user`, { params: this.withPagination(query, 'createdAt,desc') }).pipe(
+      map(normalizeCollection<InvitationResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
   }
 
   /** Founder: get invitations for a startup */
-  getStartupInvitations(startupId: number): Observable<ApiEnvelope<InvitationResponse[]>> {
-    return this.http.get<ApiResponse<InvitationResponse[]>>(`${this.api}/teams/invitations/startup/${startupId}`).pipe(
-      map(normalizeWrapped),
+  getStartupInvitations(startupId: number, query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<InvitationResponse>>> {
+    return this.http.get<unknown>(`${this.api}/teams/invitations/startup/${startupId}`, { params: this.withPagination(query, 'createdAt,desc') }).pipe(
+      map(normalizeCollection<InvitationResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
   }
 
   /** Get active team members for a startup */
-  getTeamMembers(startupId: number): Observable<ApiEnvelope<TeamMemberResponse[]>> {
-    return this.http.get<ApiResponse<TeamMemberResponse[]>>(`${this.api}/teams/startup/${startupId}`).pipe(
-      map(normalizeWrapped),
+  getTeamMembers(startupId: number, query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<TeamMemberResponse>>> {
+    return this.http.get<unknown>(`${this.api}/teams/startup/${startupId}`, { params: this.withPagination(query, 'joinedAt,desc') }).pipe(
+      map(normalizeCollection<TeamMemberResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
   }
@@ -81,18 +81,25 @@ export class TeamService {
   }
 
   /** CoFounder / Admin: get active roles for current user */
-  getMyActiveRoles(): Observable<ApiEnvelope<TeamMemberResponse[]>> {
-    return this.http.get<ApiResponse<TeamMemberResponse[]>>(`${this.api}/teams/member/active`).pipe(
-      map(normalizeWrapped),
+  getMyActiveRoles(query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<TeamMemberResponse>>> {
+    return this.http.get<unknown>(`${this.api}/teams/member/active`, { params: this.withPagination(query, 'joinedAt,desc') }).pipe(
+      map(normalizeCollection<TeamMemberResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
   }
 
   /** CoFounder / Admin: get full member history for current user */
-  getMemberHistory(): Observable<ApiEnvelope<TeamMemberResponse[]>> {
-    return this.http.get<ApiResponse<TeamMemberResponse[]>>(`${this.api}/teams/member/history`).pipe(
-      map(normalizeWrapped),
+  getMemberHistory(query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<TeamMemberResponse>>> {
+    return this.http.get<unknown>(`${this.api}/teams/member/history`, { params: this.withPagination(query, 'joinedAt,desc') }).pipe(
+      map(normalizeCollection<TeamMemberResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
+  }
+
+  private withPagination(query: PaginationQuery, defaultSort: string): HttpParams {
+    return new HttpParams()
+      .set('page', query.page ?? 0)
+      .set('size', query.size ?? 10)
+      .set('sort', query.sort ?? defaultSort);
   }
 }

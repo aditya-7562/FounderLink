@@ -10,6 +10,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "investments")
+@Table(
+        name = "investments",
+        indexes = {
+                @Index(name = "idx_investments_startup_created", columnList = "startupId, createdAt"),
+                @Index(name = "idx_investments_investor_created", columnList = "investorId, createdAt"),
+                @Index(name = "idx_investments_status", columnList = "status")
+        }
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

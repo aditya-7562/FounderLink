@@ -45,11 +45,20 @@
     </select>
   </div>
 
+  <app-pagination-controls
+    [page]="startupPage().page"
+    [totalPages]="startupPage().totalPages"
+    [totalElements]="startupPage().totalElements"
+    label="startups"
+    (previous)="previousStartupPage()"
+    (next)="nextStartupPage()"
+  />
+
   <!-- Stats -->
   @if (!loading()) {
     <div class="inv-stats">
       <div class="inv-stat">
-        <span class="inv-stat-value">{{ investments().length }}</span>
+        <span class="inv-stat-value">{{ investmentPage().totalElements }}</span>
         <span class="inv-stat-label">Total</span>
       </div>
       <div class="inv-stat">
@@ -134,5 +143,14 @@
         </tbody>
       </table>
     </div>
+
+    <app-pagination-controls
+      [page]="investmentPage().page"
+      [totalPages]="investmentPage().totalPages"
+      [totalElements]="investmentPage().totalElements"
+      label="investments"
+      (previous)="previousInvestmentPage()"
+      (next)="nextInvestmentPage()"
+    />
   }
 }

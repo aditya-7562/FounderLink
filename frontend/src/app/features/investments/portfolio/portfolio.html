@@ -96,5 +96,14 @@
         </div>
       }
     </div>
+
+    <app-pagination-controls
+      [page]="portfolioPage().page"
+      [totalPages]="portfolioPage().totalPages"
+      [totalElements]="portfolioPage().totalElements"
+      label="investments"
+      (previous)="previousPage()"
+      (next)="nextPage()"
+    />
   }
 }

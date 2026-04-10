@@ -1,9 +1,12 @@
 package com.founderlink.messaging.service;
 
 import com.founderlink.messaging.command.MessageCommandService;
+import com.founderlink.messaging.dto.CursorPageDTO;
 import com.founderlink.messaging.dto.MessageRequestDTO;
 import com.founderlink.messaging.dto.MessageResponseDTO;
 import com.founderlink.messaging.query.MessageQueryService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,7 +39,20 @@ public class MessageService {
         return queryService.getConversation(user1, user2);
     }
 
+    public Page<MessageResponseDTO> getConversation(Long user1, Long user2, Pageable pageable) {
+        return queryService.getConversation(user1, user2, pageable);
+    }
+
     public List<Long> getConversationPartners(Long userId) {
         return queryService.getConversationPartners(userId);
+    }
+
+    public Page<Long> getConversationPartners(Long userId, Pageable pageable) {
+        return queryService.getConversationPartners(userId, pageable);
+    }
+
+    public CursorPageDTO<MessageResponseDTO> getConversationCursor(
+            Long user1, Long user2, Long beforeId, Long afterId, int size) {
+        return queryService.getConversationCursor(user1, user2, beforeId, afterId, size);
     }
 }

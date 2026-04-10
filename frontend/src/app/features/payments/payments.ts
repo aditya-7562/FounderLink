@@ -40,10 +40,10 @@ export class PaymentsComponent implements OnInit {
   ngOnInit(): void {
     this.loadPortfolio();
 
-    this.startupService.getAll().subscribe({
+    this.startupService.getAll({ page: 0, size: 50, sort: 'createdAt,desc' }).subscribe({
       next: env => {
         const map = new Map<number, string>();
-        env.data?.forEach(s => map.set(s.id, s.name));
+        env.data?.content.forEach(s => map.set(s.id, s.name));
         this.startupNames.set(map);
       }
     });
@@ -51,9 +51,9 @@ export class PaymentsComponent implements OnInit {
 
   loadPortfolio(): void {
     this.loading.set(true);
-    this.investmentService.getMyPortfolio().subscribe({
+    this.investmentService.getMyPortfolio({ page: 0, size: 50, sort: 'createdAt,desc' }).subscribe({
       next: env => {
-        const all = env.data ?? [];
+        const all = env.data?.content ?? [];
         // Only show investments that require payment action
         const relevant = all.filter(i =>
           i.status === 'APPROVED' || i.status === 'COMPLETED' || i.status === 'PAYMENT_FAILED'

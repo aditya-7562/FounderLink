@@ -178,5 +178,14 @@
         </div>
       }
     </div>
+
+    <app-pagination-controls
+      [page]="startupPage().page"
+      [totalPages]="startupPage().totalPages"
+      [totalElements]="startupPage().totalElements"
+      label="startups"
+      (previous)="previousPage()"
+      (next)="nextPage()"
+    />
   }
 }

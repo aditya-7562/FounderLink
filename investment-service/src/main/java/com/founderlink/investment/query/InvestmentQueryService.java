@@ -1,11 +1,12 @@
 package com.founderlink.investment.query;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.founderlink.investment.client.StartupServiceClient;
@@ -49,10 +50,15 @@ public class InvestmentQueryService {
         log.info("QUERY - getInvestmentsByStartupId: startupId={}, founderId={} (cache miss, hitting DB)",
                 startupId, founderId);
         verifyFounderOwnsStartup(startupId, founderId);
-        return investmentRepository.findByStartupId(startupId)
-                .stream()
-                .map(investmentMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return getInvestmentsByStartupId(startupId, founderId, Pageable.unpaged()).getContent();
+    }
+
+    public Page<InvestmentResponseDto> getInvestmentsByStartupId(Long startupId, Long founderId, Pageable pageable) {
+        log.info("QUERY - getInvestmentsByStartupId: startupId={}, founderId={}, pageable={}",
+                startupId, founderId, pageable);
+        verifyFounderOwnsStartup(startupId, founderId);
+        return investmentRepository.findByStartupId(startupId, pageable)
+                .map(investmentMapper::toResponseDto);
     }
 
     public List<InvestmentResponseDto> getInvestmentsByStartupIdFallback(Long startupId, Long founderId,
@@ -72,10 +78,13 @@ public class InvestmentQueryService {
     @Cacheable(value = "investmentsByInvestor", key = "#investorId")
     public List<InvestmentResponseDto> getInvestmentsByInvestorId(Long investorId) {
         log.info("QUERY - getInvestmentsByInvestorId: {} (cache miss, hitting DB)", investorId);
-        return investmentRepository.findByInvestorId(investorId)
-                .stream()
-                .map(investmentMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return getInvestmentsByInvestorId(investorId, Pageable.unpaged()).getContent();
+    }
+
+    public Page<InvestmentResponseDto> getInvestmentsByInvestorId(Long investorId, Pageable pageable) {
+        log.info("QUERY - getInvestmentsByInvestorId: investorId={}, pageable={}", investorId, pageable);
+        return investmentRepository.findByInvestorId(investorId, pageable)
+                .map(investmentMapper::toResponseDto);
     }
 
     // ── Private helper ───────────────────────────────────────────────────────

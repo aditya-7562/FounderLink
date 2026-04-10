@@ -29,6 +29,27 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface PaginatedData<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+}
+
+export interface PaginatedApiResponse<T> {
+  success: boolean;
+  data: PaginatedData<T> | null;
+  error: string | null;
+}
+
+export interface PaginationQuery {
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export interface RegisterRequest {
   name: string;
@@ -167,6 +188,15 @@ export interface MessageResponse {
   receiverId: number;
   content: string;
   createdAt: string;
+}
+
+/** Response shape from GET /messages/conversation/{u1}/{u2}/cursor */
+export interface CursorPage<T> {
+  content: T[];
+  /** ID of the oldest message in this batch — pass as ?before= to load older history */
+  nextCursor: number | null;
+  /** ID of the newest message in this batch — pass as ?after= for catch-up */
+  prevCursor: number | null;
 }
 
 // ── Notification ──────────────────────────────────────────────────────────────

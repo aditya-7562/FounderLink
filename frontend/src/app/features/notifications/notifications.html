@@ -74,6 +74,15 @@
           </div>
         }
       </div>
+
+      <app-pagination-controls
+        [page]="notificationPage().page"
+        [totalPages]="notificationPage().totalPages"
+        [totalElements]="notificationPage().totalElements"
+        label="notifications"
+        (previous)="previousPage()"
+        (next)="nextPage()"
+      />
     }
   </div>
 

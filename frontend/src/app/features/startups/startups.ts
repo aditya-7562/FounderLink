@@ -1,22 +1,31 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { StartupService } from '../../core/services/startup.service';
 import { InvestmentService } from '../../core/services/investment.service';
-import { StartupResponse, StartupStage } from '../../models';
+import { PaginatedData, StartupResponse, StartupStage } from '../../models';
+import { PaginationControlsComponent } from '../../shared/components/pagination-controls/pagination-controls';
 
 @Component({
   selector: 'app-startups',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, PaginationControlsComponent],
   templateUrl: './startups.html',
   styleUrl: './startups.css'
 })
 export class StartupsComponent implements OnInit {
-  allStartups = signal<StartupResponse[]>([]);
+  startupPage  = signal<PaginatedData<StartupResponse>>({
+    content: [],
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+    last: true
+  });
   loading     = signal(true);
   errorMsg    = signal('');
+  startups    = computed(() => this.startupPage().content);
 
   // Filters
   selectedStage    = '';
@@ -48,13 +57,14 @@ export class StartupsComponent implements OnInit {
     this.loadStartups();
   }
 
-  loadStartups(): void {
+  loadStartups(page = 0): void {
     this.loading.set(true);
     this.errorMsg.set('');
-    this.startupService.getAll().subscribe({
+    this.startupService.getAll({ page, size: 10, sort: 'createdAt,desc' }).subscribe({
       next: env => { 
-        const startups = env.data ?? [];
-        this.allStartups.set(startups);
+        const startupPage = env.data ?? this.startupPage();
+        this.startupPage.set(startupPage);
+        const startups = startupPage.content;
         if (this.availableIndustries().length === 0) {
           this.availableIndustries.set([...new Set(startups.map(s => s.industry))].sort());
         }
@@ -64,7 +74,7 @@ export class StartupsComponent implements OnInit {
     });
   }
 
-  applyFilters(): void {
+  applyFilters(page = 0): void {
     this.loading.set(true);
     this.errorMsg.set('');
     const filters: any = {};
@@ -72,9 +82,15 @@ export class StartupsComponent implements OnInit {
     if (this.selectedIndustry) filters.industry = this.selectedIndustry;
     if (this.minFunding)       filters.minFunding = Number(this.minFunding);
     if (this.maxFunding)       filters.maxFunding = Number(this.maxFunding);
+    filters.page = page;
+    filters.size = 10;
+    filters.sort = 'createdAt,desc';
 
     this.startupService.search(filters).subscribe({
-      next: env => { this.allStartups.set(env.data ?? []); this.loading.set(false); },
+      next: env => {
+        this.startupPage.set(env.data ?? this.startupPage());
+        this.loading.set(false);
+      },
       error: env => { this.errorMsg.set(env.error ?? 'Search failed.'); this.loading.set(false); }
     });
   }
@@ -84,11 +100,29 @@ export class StartupsComponent implements OnInit {
     this.selectedIndustry = '';
     this.minFunding = '';
     this.maxFunding = '';
-    this.loadStartups();
+    this.loadStartups(0);
   }
 
   get hasFilters(): boolean {
     return !!(this.selectedStage || this.selectedIndustry || this.minFunding || this.maxFunding);
+  }
+
+  nextPage(): void {
+    const next = this.startupPage().page + 1;
+    if (this.hasFilters) {
+      this.applyFilters(next);
+      return;
+    }
+    this.loadStartups(next);
+  }
+
+  previousPage(): void {
+    const previous = Math.max(this.startupPage().page - 1, 0);
+    if (this.hasFilters) {
+      this.applyFilters(previous);
+      return;
+    }
+    this.loadStartups(previous);
   }
 
 

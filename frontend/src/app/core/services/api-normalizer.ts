@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ApiEnvelope, ApiResponse } from '../../models';
+import { ApiEnvelope, ApiResponse, PaginatedData } from '../../models';
 
 /** Pattern A: Wrapped { message, data } response */
 export function normalizeWrapped<T>(body: ApiResponse<T>): ApiEnvelope<T> {
@@ -14,6 +14,76 @@ export function normalizePlain<T>(body: T): ApiEnvelope<T> {
 /** Pattern C: Plain array */
 export function normalizeArray<T>(body: T[]): ApiEnvelope<T[]> {
   return { success: true, data: Array.isArray(body) ? body : [], error: null };
+}
+
+function emptyPage<T>(): PaginatedData<T> {
+  return {
+    content: [],
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+    last: true
+  };
+}
+
+function toPaginatedData<T>(body: unknown): PaginatedData<T> {
+  if (Array.isArray(body)) {
+    return {
+      content: body as T[],
+      page: 0,
+      size: body.length || 10,
+      totalElements: body.length,
+      totalPages: body.length > 0 ? 1 : 0,
+      last: true
+    };
+  }
+
+  if (body && typeof body === 'object') {
+    const maybePage = body as Partial<PaginatedData<T>> & { content?: unknown };
+    if (Array.isArray(maybePage.content)) {
+      const totalElements = Number(maybePage.totalElements ?? maybePage.content.length ?? 0);
+      const size = Number(maybePage.size ?? maybePage.content.length ?? 10);
+      const totalPages = Number(
+        maybePage.totalPages ?? (size > 0 ? Math.ceil(totalElements / size) : 0)
+      );
+      return {
+        content: maybePage.content as T[],
+        page: Number(maybePage.page ?? 0),
+        size,
+        totalElements,
+        totalPages,
+        last: Boolean(maybePage.last ?? totalPages <= 1)
+      };
+    }
+  }
+
+  return emptyPage<T>();
+}
+
+export function normalizeCollection<T>(body: unknown): ApiEnvelope<PaginatedData<T>> {
+  if (body && typeof body === 'object') {
+    const response = body as {
+      success?: boolean;
+      data?: unknown;
+      error?: string | null;
+      message?: string;
+    };
+
+    if ('success' in response) {
+      return {
+        success: Boolean(response.success),
+        data: response.data ? toPaginatedData<T>(response.data) : emptyPage<T>(),
+        error: response.error ?? null
+      };
+    }
+
+    if ('message' in response && 'data' in response) {
+      return { success: true, data: toPaginatedData<T>(response.data), error: null };
+    }
+  }
+
+  return { success: true, data: toPaginatedData<T>(body), error: null };
 }
 
 /** Pattern D: Empty body (204 logout) */

@@ -2,6 +2,9 @@ package com.founderlink.team.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.founderlink.team.dto.request.InvitationRequestDto;
 import com.founderlink.team.dto.response.InvitationResponseDto;
 
@@ -26,7 +29,16 @@ public interface InvitationService {
     List<InvitationResponseDto> getInvitationsByUserId(
             Long userId);
 
+    Page<InvitationResponseDto> getInvitationsByUserId(
+            Long userId,
+            Pageable pageable);
+
     // Get all invitations for a startup
     List<InvitationResponseDto> getInvitationsByStartupId(
             Long startupId,Long founderId);
+
+    Page<InvitationResponseDto> getInvitationsByStartupId(
+            Long startupId,
+            Long founderId,
+            Pageable pageable);
 }

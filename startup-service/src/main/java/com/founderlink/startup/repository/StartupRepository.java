@@ -4,6 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -28,6 +32,8 @@ public interface StartupRepository
     // ─────────────────────────────────────────
     List<Startup> findByIsDeletedFalse();
 
+    Page<Startup> findByIsDeletedFalse(Pageable pageable);
+
     // ─────────────────────────────────────────
     // MANDATORY
     // Get active startups by founder
@@ -35,6 +41,10 @@ public interface StartupRepository
     // ─────────────────────────────────────────
     List<Startup> findByFounderIdAndIsDeletedFalse(
             Long founderId);
+
+    Page<Startup> findByFounderIdAndIsDeletedFalse(
+            Long founderId,
+            Pageable pageable);
 
     // ─────────────────────────────────────────
     // GOOD TO HAVE
@@ -74,4 +84,19 @@ public interface StartupRepository
             String industry,
             BigDecimal min,
             BigDecimal max);
+
+    @Query("""
+            SELECT s FROM Startup s
+            WHERE s.isDeleted = false
+              AND (:industry IS NULL OR s.industry = :industry)
+              AND (:stage IS NULL OR s.stage = :stage)
+              AND (:minFunding IS NULL OR s.fundingGoal >= :minFunding)
+              AND (:maxFunding IS NULL OR s.fundingGoal <= :maxFunding)
+            """)
+    Page<Startup> searchActiveStartups(
+            @Param("industry") String industry,
+            @Param("stage") StartupStage stage,
+            @Param("minFunding") BigDecimal minFunding,
+            @Param("maxFunding") BigDecimal maxFunding,
+            Pageable pageable);
 }

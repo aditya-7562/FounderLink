@@ -48,51 +48,51 @@ export class HomeComponent implements OnInit {
     if (role === 'ADMIN')    { this.loading.set(false); }
 
     // Pre-fetch names for mapping IDs
-    this.startupService.getAll().subscribe({
+    this.startupService.getAll({ page: 0, size: 50, sort: 'createdAt,desc' }).subscribe({
       next: env => {
         const map = new Map<number, string>();
-        env.data?.forEach(s => map.set(s.id, s.name));
+        env.data?.content.forEach(s => map.set(s.id, s.name));
         this.startupNames.set(map);
       }
     });
 
-    this.userService.getAllUsers().subscribe({
+    this.userService.getAllUsers({ page: 0, size: 50, sort: 'id,asc' }).subscribe({
       next: env => {
         const map = new Map<number, string>();
-        env.data?.forEach(u => map.set(u.userId, u.name || `User ${u.userId}`));
+        env.data?.content.forEach(u => map.set(u.userId, u.name || `User ${u.userId}`));
         this.userNames.set(map);
       }
     });
   }
 
   private loadFounderData(): void {
-    this.startupService.getMyStartups().subscribe({
+    this.startupService.getMyStartups({ page: 0, size: 10, sort: 'createdAt,desc' }).subscribe({
       next: env => {
-        this.myStartups.set(env.data ?? []);
+        this.myStartups.set(env.data?.content ?? []);
         this.loading.set(false);
-        if (env.data?.length) this.loadStartupInvestments(env.data[0].id);
+        if (env.data?.content.length) this.loadStartupInvestments(env.data.content[0].id);
       },
       error: () => { this.myStartups.set([]); this.loading.set(false); }
     });
   }
 
   private loadStartupInvestments(startupId: number): void {
-    this.investmentService.getStartupInvestments(startupId).subscribe({
-      next: env => this.startupInvestments.set(env.data ?? []),
+    this.investmentService.getStartupInvestments(startupId, { page: 0, size: 10, sort: 'createdAt,desc' }).subscribe({
+      next: env => this.startupInvestments.set(env.data?.content ?? []),
       error: () => this.startupInvestments.set([])
     });
   }
 
   private loadInvestorData(): void {
-    this.investmentService.getMyPortfolio().subscribe({
-      next: env => { this.myInvestments.set(env.data ?? []); this.loading.set(false); },
+    this.investmentService.getMyPortfolio({ page: 0, size: 10, sort: 'createdAt,desc' }).subscribe({
+      next: env => { this.myInvestments.set(env.data?.content ?? []); this.loading.set(false); },
       error: () => { this.myInvestments.set([]); this.loading.set(false); }
     });
   }
 
   private loadCofounderData(): void {
-    this.teamService.getMyInvitations().subscribe({
-      next: env => { this.myInvitations.set(env.data ?? []); this.loading.set(false); },
+    this.teamService.getMyInvitations({ page: 0, size: 10, sort: 'createdAt,desc' }).subscribe({
+      next: env => { this.myInvitations.set(env.data?.content ?? []); this.loading.set(false); },
       error: () => { this.myInvitations.set([]); this.loading.set(false); }
     });
   }

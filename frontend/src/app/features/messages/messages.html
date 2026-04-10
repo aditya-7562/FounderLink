@@ -53,6 +53,15 @@
             }
           }
         </div>
+
+        <app-pagination-controls
+          [page]="partnerPage().page"
+          [totalPages]="partnerPage().totalPages"
+          [totalElements]="partnerPage().totalElements"
+          label="conversations"
+          (previous)="previousPartnerPage()"
+          (next)="nextPartnerPage()"
+        />
       </div>
 
       <!-- Main: Chat window -->
@@ -66,6 +75,14 @@
 
           <!-- Messages area -->
           <div class="messages-area" #messagesContainer>
+            @if (oldestCursor()) {
+              <div class="load-older-container" style="text-align: center; margin-bottom: 10px;">
+                <button class="btn btn-ghost btn-sm" (click)="loadOlderMessages()" [disabled]="loadingOlder()">
+                  {{ loadingOlder() ? 'Loading...' : 'Load Older Messages' }}
+                </button>
+              </div>
+            }
+
             @if (messages().length === 0) {
               <p class="empty-messages">No messages yet. Start the conversation!</p>
             } @else {

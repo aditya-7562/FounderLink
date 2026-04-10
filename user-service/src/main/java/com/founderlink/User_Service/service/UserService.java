@@ -1,8 +1,8 @@
 package com.founderlink.User_Service.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.founderlink.User_Service.command.UserCommandService;
 import com.founderlink.User_Service.dto.UserRequestAuthDto;
@@ -12,6 +12,8 @@ import com.founderlink.User_Service.entity.Role;
 import com.founderlink.User_Service.query.UserQueryService;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 /**
  * Facade that preserves the existing UserService contract.
@@ -41,8 +43,16 @@ public class UserService {
         return queryService.getAllUsers();
     }
 
+    public Page<UserResponseDto> getAllUsers(Pageable pageable) {
+        return queryService.getAllUsers(pageable);
+    }
+
     public List<UserResponseDto> getUsersByRole(Role role) {
         return queryService.getUsersByRole(role);
+    }
+
+    public Page<UserResponseDto> getUsersByRole(Role role, Pageable pageable) {
+        return queryService.getUsersByRole(role, pageable);
     }
 
     public long countByRole(Role role) {

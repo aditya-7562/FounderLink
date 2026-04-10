@@ -57,7 +57,7 @@ export class LandingComponent implements OnInit {
     if (this.industryFilter) filters.industry = this.industryFilter;
 
     this.startupService.search(filters).subscribe({
-      next:  env => { this.startups.set(env.data ?? []); this.loading.set(false); },
+      next:  env => { this.startups.set(env.data?.content ?? []); this.loading.set(false); },
       error: ()  => { this.loading.set(false); }
     });
   }

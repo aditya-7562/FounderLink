@@ -3,16 +3,25 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { TeamService } from '../../../core/services/team.service';
 import { StartupService } from '../../../core/services/startup.service';
-import { InvitationResponse, InvitationStatus } from '../../../models';
+import { InvitationResponse, InvitationStatus, PaginatedData } from '../../../models';
+import { PaginationControlsComponent } from '../../../shared/components/pagination-controls/pagination-controls';
 
 @Component({
   selector: 'app-invitations',
-  imports: [CommonModule],
+  imports: [CommonModule, PaginationControlsComponent],
   templateUrl: './invitations.html',
   styleUrl: './invitations.css'
 })
 export class InvitationsComponent implements OnInit {
   invitations = signal<InvitationResponse[]>([]);
+  invitationPage = signal<PaginatedData<InvitationResponse>>({
+    content: [],
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+    last: true
+  });
   loading     = signal(true);
   acting      = signal<number | null>(null);
   errorMsg    = signal('');
@@ -27,17 +36,22 @@ export class InvitationsComponent implements OnInit {
 
   ngOnInit(): void { this.loadInvitations(); }
 
-  loadInvitations(): void {
+  loadInvitations(page = 0): void {
     this.loading.set(true);
-    this.teamService.getMyInvitations().subscribe({
-      next: env => { this.invitations.set(env.data ?? []); this.loading.set(false); },
+    this.teamService.getMyInvitations({ page, size: 10, sort: 'createdAt,desc' }).subscribe({
+      next: env => {
+        const invitationPage = env.data ?? this.invitationPage();
+        this.invitationPage.set(invitationPage);
+        this.invitations.set(invitationPage.content);
+        this.loading.set(false);
+      },
       error: env => { this.errorMsg.set(env.error ?? 'Failed to load invitations.'); this.loading.set(false); }
     });
 
-    this.startupService.getAll().subscribe({
+    this.startupService.getAll({ page: 0, size: 50, sort: 'createdAt,desc' }).subscribe({
       next: env => {
         const map = new Map<number, string>();
-        env.data?.forEach(s => map.set(s.id, s.name));
+        env.data?.content.forEach(s => map.set(s.id, s.name));
         this.startupNames.set(map);
       }
     });
@@ -105,5 +119,13 @@ export class InvitationsComponent implements OnInit {
       CTO: 'CTO', CPO: 'CPO', MARKETING_HEAD: 'Marketing Head', ENGINEERING_LEAD: 'Engineering Lead'
     };
     return labels[role] ?? role.replace(/_/g, ' ');
+  }
+
+  nextPage(): void {
+    this.loadInvitations(this.invitationPage().page + 1);
+  }
+
+  previousPage(): void {
+    this.loadInvitations(Math.max(this.invitationPage().page - 1, 0));
   }
 }

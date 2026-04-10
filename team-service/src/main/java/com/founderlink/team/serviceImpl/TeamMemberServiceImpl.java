@@ -2,6 +2,8 @@ package com.founderlink.team.serviceImpl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.founderlink.team.command.TeamMemberCommandService;
@@ -40,13 +42,28 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     }
 
     @Override
+    public Page<TeamMemberResponseDto> getTeamByStartupId(Long startupId, Long founderId, String userRole, Pageable pageable) {
+        return queryService.getTeamByStartupId(startupId, founderId, userRole, pageable);
+    }
+
+    @Override
     public List<TeamMemberResponseDto> getMemberHistory(Long userId) {
         return queryService.getMemberHistory(userId);
     }
 
     @Override
+    public Page<TeamMemberResponseDto> getMemberHistory(Long userId, Pageable pageable) {
+        return queryService.getMemberHistory(userId, pageable);
+    }
+
+    @Override
     public List<TeamMemberResponseDto> getActiveMemberRoles(Long userId) {
         return queryService.getActiveMemberRoles(userId);
+    }
+
+    @Override
+    public Page<TeamMemberResponseDto> getActiveMemberRoles(Long userId, Pageable pageable) {
+        return queryService.getActiveMemberRoles(userId, pageable);
     }
 
     @Override

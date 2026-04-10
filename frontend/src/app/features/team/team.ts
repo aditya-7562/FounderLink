@@ -7,12 +7,18 @@ import { TeamService } from '../../core/services/team.service';
 import { StartupService } from '../../core/services/startup.service';
 import { UserService } from '../../core/services/user.service';
 import {
-  TeamMemberResponse, StartupResponse, UserResponse, TeamRole, InvitationRequest
+  InvitationRequest,
+  PaginatedData,
+  StartupResponse,
+  TeamMemberResponse,
+  TeamRole,
+  UserResponse
 } from '../../models';
+import { PaginationControlsComponent } from '../../shared/components/pagination-controls/pagination-controls';
 
 @Component({
   selector: 'app-team',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, PaginationControlsComponent],
   templateUrl: './team.html',
   styleUrl: './team.css'
 })
@@ -21,15 +27,16 @@ export class TeamComponent implements OnInit {
   errorMsg      = signal('');
   successMsg    = signal('');
 
-  // ── Founder state ─────────────────────────────────────────────────────────
   myStartups        = signal<StartupResponse[]>([]);
+  startupPage       = signal<PaginatedData<StartupResponse>>(this.emptyPage<StartupResponse>());
   selectedStartupId = signal<number | null>(null);
   teamMembers       = signal<TeamMemberResponse[]>([]);
+  teamPage          = signal<PaginatedData<TeamMemberResponse>>(this.emptyPage<TeamMemberResponse>());
   removing          = signal<number | null>(null);
 
-  // User discovery panel
   showDiscovery    = signal(false);
   allUsers         = signal<UserResponse[]>([]);
+  userPage         = signal<PaginatedData<UserResponse>>(this.emptyPage<UserResponse>());
   usersLoading     = signal(false);
   roleFilter       = signal<string>('COFOUNDER');
   searchQuery      = signal('');
@@ -37,13 +44,12 @@ export class TeamComponent implements OnInit {
   selectedRole     = signal<TeamRole | ''>('');
   inviting         = signal(false);
 
-  // ── CoFounder state ───────────────────────────────────────────────────────
-  myTeams = signal<TeamMemberResponse[]>([]);
-  viewedUser = signal<UserResponse | null>(null);
+  myTeams       = signal<TeamMemberResponse[]>([]);
+  myTeamsPage   = signal<PaginatedData<TeamMemberResponse>>(this.emptyPage<TeamMemberResponse>());
+  viewedUser    = signal<UserResponse | null>(null);
 
-  // Startup Name Map & User Name Map
-  startupNames = signal<Map<number, string>>(new Map());
-  userNames    = signal<Map<number, string>>(new Map());
+  startupNames    = signal<Map<number, string>>(new Map());
+  userNames       = signal<Map<number, string>>(new Map());
   startupFounders = signal<Map<number, number>>(new Map());
 
   readonly teamRoles: TeamRole[] = ['CTO', 'CPO', 'MARKETING_HEAD', 'ENGINEERING_LEAD'];
@@ -61,7 +67,7 @@ export class TeamComponent implements OnInit {
     const stored = this.authService.role() ?? '';
     return stored === r || stored === `ROLE_${r}`;
   }
-  isFounder():   boolean { return this.hasRole('FOUNDER'); }
+  isFounder(): boolean { return this.hasRole('FOUNDER'); }
   isCoFounder(): boolean { return this.hasRole('COFOUNDER'); }
 
   constructor(
@@ -73,15 +79,14 @@ export class TeamComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (this.isFounder())   this.loadFounderData();
+    if (this.isFounder()) this.loadFounderData();
     if (this.isCoFounder()) this.loadCoFounderData();
 
-    // Prefetch startup names
-    this.startupService.getAll().subscribe({
+    this.startupService.getAll({ page: 0, size: 50, sort: 'createdAt,desc' }).subscribe({
       next: env => {
         const nameMap = new Map<number, string>();
         const founderMap = new Map<number, number>();
-        env.data?.forEach(s => {
+        env.data?.content.forEach(s => {
           nameMap.set(s.id, s.name);
           founderMap.set(s.id, s.founderId);
         });
@@ -90,25 +95,29 @@ export class TeamComponent implements OnInit {
       }
     });
 
-    // Prefetch all users to map names in the team members list
-    this.userService.getAllUsers().subscribe({
+    this.userService.getAllUsers({ page: 0, size: 50, sort: 'id,asc' }).subscribe({
       next: env => {
         const map = new Map<number, string>();
-        env.data?.forEach(u => map.set(u.userId, u.name || u.email));
+        env.data?.content.forEach(u => map.set(u.userId, u.name || u.email));
         this.userNames.set(map);
       }
     });
   }
 
-  // ── Founder ───────────────────────────────────────────────────────────────
-  loadFounderData(): void {
-    this.startupService.getMyStartups().subscribe({
+  loadFounderData(page = 0): void {
+    this.startupService.getMyStartups({ page, size: 10, sort: 'createdAt,desc' }).subscribe({
       next: env => {
-        this.myStartups.set(env.data ?? []);
-        if (env.data?.length) {
-          this.selectedStartupId.set(env.data[0].id);
-          this.loadTeam(env.data[0].id);
+        const startupPage = env.data ?? this.startupPage();
+        this.startupPage.set(startupPage);
+        this.myStartups.set(startupPage.content);
+        if (startupPage.content.length) {
+          const current = this.selectedStartupId();
+          const selected = startupPage.content.find(s => s.id === current) ?? startupPage.content[0];
+          this.selectedStartupId.set(selected.id);
+          this.loadTeam(selected.id, 0);
         } else {
+          this.teamMembers.set([]);
+          this.teamPage.set(this.emptyPage<TeamMemberResponse>());
           this.loading.set(false);
         }
       },
@@ -116,18 +125,26 @@ export class TeamComponent implements OnInit {
     });
   }
 
-  loadTeam(startupId: number): void {
+  loadTeam(startupId: number, page = 0): void {
     this.loading.set(true);
-    this.teamService.getTeamMembers(startupId).subscribe({
-      next: env => { this.teamMembers.set(env.data ?? []); this.loading.set(false); },
-      error: env => { this.errorMsg.set(env.error ?? 'Failed to load team.'); this.loading.set(false); }
+    this.teamService.getTeamMembers(startupId, { page, size: 10, sort: 'joinedAt,desc' }).subscribe({
+      next: env => {
+        const teamPage = env.data ?? this.teamPage();
+        this.teamPage.set(teamPage);
+        this.teamMembers.set(teamPage.content);
+        this.loading.set(false);
+      },
+      error: env => {
+        this.errorMsg.set(env.error ?? 'Failed to load team.');
+        this.loading.set(false);
+      }
     });
   }
 
   onStartupChange(id: number): void {
     this.selectedStartupId.set(id);
     this.closeDiscovery();
-    this.loadTeam(id);
+    this.loadTeam(id, 0);
   }
 
   removeMember(memberId: number): void {
@@ -148,17 +165,15 @@ export class TeamComponent implements OnInit {
   }
 
   messageMember(userId: number): void {
-    // Navigate safely to the messaging portal for this specific user
     this.router.navigate(['/dashboard/messages'], { queryParams: { user: userId } });
   }
 
-  // ── User Discovery ────────────────────────────────────────────────────────
   openDiscovery(): void {
     this.showDiscovery.set(true);
     this.selectedUser.set(null);
     this.selectedRole.set('');
     this.searchQuery.set('');
-    this.loadUsersForRole('COFOUNDER');
+    this.loadUsersForRole('COFOUNDER', 0);
   }
 
   closeDiscovery(): void {
@@ -176,23 +191,26 @@ export class TeamComponent implements OnInit {
     this.viewedUser.set(null);
   }
 
-  loadUsersForRole(role: string): void {
+  loadUsersForRole(role: string, page = 0): void {
     this.roleFilter.set(role);
     this.usersLoading.set(true);
     this.selectedUser.set(null);
     const obs$ = role
-      ? this.userService.getUsersByRole(role)
-      : this.userService.getAllUsers();
+      ? this.userService.getUsersByRole(role, { page, size: 10, sort: 'id,asc' })
+      : this.userService.getAllUsers({ page, size: 10, sort: 'id,asc' });
 
     obs$.subscribe({
-      next: env => { this.allUsers.set(env.data ?? []); this.usersLoading.set(false); },
-      error: () => { this.allUsers.set([]); this.usersLoading.set(false); }
+      next: env => {
+        const userPage = env.data ?? this.userPage();
+        this.userPage.set(userPage);
+        this.allUsers.set(userPage.content);
+        this.usersLoading.set(false);
+      },
+      error: () => {
+        this.allUsers.set([]);
+        this.usersLoading.set(false);
+      }
     });
-  }
-
-  /** Already in team for the selected startup */
-  private get currentMemberIds(): Set<number> {
-    return new Set(this.teamMembers().map(m => m.userId));
   }
 
   filteredUsers = computed(() => {
@@ -203,8 +221,8 @@ export class TeamComponent implements OnInit {
       u.userId !== myId &&
       !memberIds.has(u.userId) &&
       (!q || (u.name ?? '').toLowerCase().includes(q) ||
-              u.email.toLowerCase().includes(q) ||
-              (u.skills ?? '').toLowerCase().includes(q))
+        u.email.toLowerCase().includes(q) ||
+        (u.skills ?? '').toLowerCase().includes(q))
     );
   });
 
@@ -246,11 +264,18 @@ export class TeamComponent implements OnInit {
     });
   }
 
-  // ── CoFounder ─────────────────────────────────────────────────────────────
-  loadCoFounderData(): void {
-    this.teamService.getMyActiveRoles().subscribe({
-      next: env => { this.myTeams.set(env.data ?? []); this.loading.set(false); },
-      error: env => { this.errorMsg.set(env.error ?? 'Failed to load teams.'); this.loading.set(false); }
+  loadCoFounderData(page = 0): void {
+    this.teamService.getMyActiveRoles({ page, size: 10, sort: 'joinedAt,desc' }).subscribe({
+      next: env => {
+        const myTeamsPage = env.data ?? this.myTeamsPage();
+        this.myTeamsPage.set(myTeamsPage);
+        this.myTeams.set(myTeamsPage.content);
+        this.loading.set(false);
+      },
+      error: env => {
+        this.errorMsg.set(env.error ?? 'Failed to load teams.');
+        this.loading.set(false);
+      }
     });
   }
 
@@ -265,7 +290,6 @@ export class TeamComponent implements OnInit {
     }
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
   roleLabel(role: string): string {
     return this.roleLabels[role as TeamRole] ?? role.replace(/_/g, ' ');
   }
@@ -275,14 +299,61 @@ export class TeamComponent implements OnInit {
   }
 
   roleClass(role: string): string {
-    return role === 'CTO'              ? 'badge-purple'
-         : role === 'CPO'              ? 'badge-info'
-         : role === 'MARKETING_HEAD'   ? 'badge-warning'
-         : 'badge-success';
+    return role === 'CTO' ? 'badge-purple'
+      : role === 'CPO' ? 'badge-info'
+        : role === 'MARKETING_HEAD' ? 'badge-warning'
+          : 'badge-success';
   }
 
   userInitials(user: UserResponse): string {
     const name = user.name ?? user.email;
     return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  nextStartupPage(): void {
+    this.loadFounderData(this.startupPage().page + 1);
+  }
+
+  previousStartupPage(): void {
+    this.loadFounderData(Math.max(this.startupPage().page - 1, 0));
+  }
+
+  nextTeamPage(): void {
+    const startupId = this.selectedStartupId();
+    if (startupId == null) return;
+    this.loadTeam(startupId, this.teamPage().page + 1);
+  }
+
+  previousTeamPage(): void {
+    const startupId = this.selectedStartupId();
+    if (startupId == null) return;
+    this.loadTeam(startupId, Math.max(this.teamPage().page - 1, 0));
+  }
+
+  nextUserPage(): void {
+    this.loadUsersForRole(this.roleFilter(), this.userPage().page + 1);
+  }
+
+  previousUserPage(): void {
+    this.loadUsersForRole(this.roleFilter(), Math.max(this.userPage().page - 1, 0));
+  }
+
+  nextMyTeamsPage(): void {
+    this.loadCoFounderData(this.myTeamsPage().page + 1);
+  }
+
+  previousMyTeamsPage(): void {
+    this.loadCoFounderData(Math.max(this.myTeamsPage().page - 1, 0));
+  }
+
+  private emptyPage<T>(): PaginatedData<T> {
+    return {
+      content: [],
+      page: 0,
+      size: 10,
+      totalElements: 0,
+      totalPages: 0,
+      last: true
+    };
   }
 }

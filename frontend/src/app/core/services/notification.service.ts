@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { ApiEnvelope, NotificationResponse } from '../../models';
-import { normalizeArray, normalizePlain, normalizeError } from './api-normalizer';
+import { ApiEnvelope, NotificationResponse, PaginatedData, PaginationQuery } from '../../models';
+import { normalizeCollection, normalizePlain, normalizeError } from './api-normalizer';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
@@ -14,19 +14,23 @@ export class NotificationService {
   constructor(private http: HttpClient, private auth: AuthService) {}
 
   /** Get all notifications for the logged-in user (plain array response) */
-  getMyNotifications(): Observable<ApiEnvelope<NotificationResponse[]>> {
+  getMyNotifications(query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<NotificationResponse>>> {
     const userId = this.auth.userId()!;
-    return this.http.get<NotificationResponse[]>(`${this.api}/notifications/${userId}`).pipe(
-      map(normalizeArray),
+    return this.http.get<unknown>(`${this.api}/notifications/${userId}`, {
+      params: this.withPagination(query)
+    }).pipe(
+      map(normalizeCollection<NotificationResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
   }
 
   /** Get unread notifications for the logged-in user (plain array response) */
-  getMyUnreadNotifications(): Observable<ApiEnvelope<NotificationResponse[]>> {
+  getMyUnreadNotifications(query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<NotificationResponse>>> {
     const userId = this.auth.userId()!;
-    return this.http.get<NotificationResponse[]>(`${this.api}/notifications/${userId}/unread`).pipe(
-      map(normalizeArray),
+    return this.http.get<unknown>(`${this.api}/notifications/${userId}/unread`, {
+      params: this.withPagination(query)
+    }).pipe(
+      map(normalizeCollection<NotificationResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
   }
@@ -37,5 +41,18 @@ export class NotificationService {
       map(normalizePlain),
       catchError(err => throwError(() => normalizeError(err)))
     );
+  }
+
+  private withPagination(query: PaginationQuery): HttpParams {
+    return new HttpParams()
+      .set('page', query.page ?? 0)
+      .set('size', query.size ?? 10)
+      .set('sort', query.sort ?? 'createdAt,desc');
+  }
+
+  /** Global UI error display handler */
+  showUIError(title: string, message: string): void {
+    console.error(`[Global Error] ${title}: ${message}`);
+    alert(`${title}\n\n${message}`);
   }
 }

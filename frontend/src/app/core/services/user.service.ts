@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { ApiEnvelope, UserResponse, UserUpdateRequest } from '../../models';
-import { normalizeArray, normalizePlain, normalizeError } from './api-normalizer';
+import { ApiEnvelope, PaginatedData, PaginationQuery, UserResponse, UserUpdateRequest } from '../../models';
+import { normalizeCollection, normalizePlain, normalizeError } from './api-normalizer';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
@@ -31,16 +31,16 @@ export class UserService {
   }
 
   /** Get all users (plain array response) */
-  getAllUsers(): Observable<ApiEnvelope<UserResponse[]>> {
-    return this.http.get<UserResponse[]>(`${this.api}/users`).pipe(
-      map(normalizeArray),
+  getAllUsers(query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<UserResponse>>> {
+    return this.http.get<unknown>(`${this.api}/users`, { params: this.withPagination(query, 'id,asc') }).pipe(
+      map(normalizeCollection<UserResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
   }
 
-  getUsersByRole(role: string): Observable<ApiEnvelope<UserResponse[]>> {
-    return this.http.get<UserResponse[]>(`${this.api}/users/role/${role}`).pipe(
-      map(normalizeArray),
+  getUsersByRole(role: string, query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<UserResponse>>> {
+    return this.http.get<unknown>(`${this.api}/users/role/${role}`, { params: this.withPagination(query, 'id,asc') }).pipe(
+      map(normalizeCollection<UserResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );
   }
@@ -48,5 +48,12 @@ export class UserService {
   /** Get aggregated public stats for landing page */
   getPublicStats(): Observable<{founders: number, investors: number, cofounders: number}> {
     return this.http.get<{founders: number, investors: number, cofounders: number}>(`${this.api}/users/public/stats`);
+  }
+
+  private withPagination(query: PaginationQuery, defaultSort: string): HttpParams {
+    return new HttpParams()
+      .set('page', query.page ?? 0)
+      .set('size', query.size ?? 10)
+      .set('sort', query.sort ?? defaultSort);
   }
 }

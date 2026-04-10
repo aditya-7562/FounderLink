@@ -1,0 +1,15 @@
+<div class="pagination-shell">
+  <div class="pagination-meta">
+    <span class="pagination-count">{{ totalElements() }} {{ label() }}</span>
+    <span class="pagination-page">Page {{ currentPageLabel }} of {{ totalPages() || 0 }}</span>
+  </div>
+
+  <div class="pagination-actions">
+    <button class="page-btn" type="button" (click)="previous.emit()" [disabled]="!canGoPrevious">
+      Previous
+    </button>
+    <button class="page-btn page-btn-primary" type="button" (click)="next.emit()" [disabled]="!canGoNext">
+      Next
+    </button>
+  </div>
+</div>

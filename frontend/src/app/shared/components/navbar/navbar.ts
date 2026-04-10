@@ -38,8 +38,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   loadUnread(): void {
     if (!this.authService.userId()) return;
-    this.notificationService.getMyUnreadNotifications().subscribe({
-      next: env => this.unreadCount.set((env.data ?? []).length),
+    this.notificationService.getMyUnreadNotifications({ page: 0, size: 10, sort: 'createdAt,desc' }).subscribe({
+      next: env => this.unreadCount.set(env.data?.totalElements ?? 0),
       error: () => { }
     });
   }
@@ -50,8 +50,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   loadNotifications(): void {
-    this.notificationService.getMyNotifications().subscribe({
-      next: env => this.notifications.set((env.data ?? []).slice(0, 10)),
+    this.notificationService.getMyNotifications({ page: 0, size: 10, sort: 'createdAt,desc' }).subscribe({
+      next: env => this.notifications.set(env.data?.content ?? []),
       error: () => { }
     });
   }
