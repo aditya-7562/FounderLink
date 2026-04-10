@@ -329,13 +329,26 @@ public class StartupController {
                                                         response));
                 }
 
-                Pageable pageable = buildPageable(page, size, sort, "createdAt", Sort.Direction.DESC);
+        Pageable pageable = buildPageable(page, size, sort, "createdAt", Sort.Direction.DESC);
                 return ResponseEntity.ok(toPaginatedResponse(startupService.searchStartups(
                                 industry,
                                 stage,
                                 minFunding,
                                 maxFunding,
                                 pageable)));
+        }
+
+        // ─────────────────────────────────────────
+        // GET PUBLIC STATS
+        // GET /startup/public/stats
+        // ─────────────────────────────────────────
+        @GetMapping("/public/stats")
+        @Operation(summary = "Get public platform stats", description = "Fetches the public count of startups and total funding.")
+        @ApiResponses(value = {
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Stats fetched successfully")
+        })
+        public ResponseEntity<Map<String, Object>> getPublicStats() {
+                return ResponseEntity.ok(startupService.getPublicStats());
         }
 
         private boolean isPaginatedRequest(HttpServletRequest request) {

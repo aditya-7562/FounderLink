@@ -17,8 +17,10 @@ export class LandingComponent implements OnInit {
   startups   = signal<StartupResponse[]>([]);
   loading    = signal(true);
   error      = signal('');
-  stats      = signal({ founders: 350, investors: 200, cofounders: 120 });
-  totalFunding = computed(() => this.startups().reduce((acc, s) => acc + (s.fundingGoal || 0), 0));
+  stats      = signal({ 
+    founders: 0, investors: 0, cofounders: 0,
+    startups: 0, totalFunding: 0
+  });
   searchQuery = '';
   stageFilter = '';
   industryFilter = '';
@@ -45,8 +47,13 @@ export class LandingComponent implements OnInit {
 
   loadStats(): void {
     this.userService.getPublicStats().subscribe({
-      next: (data) => this.stats.set(data),
-      error: () => console.warn('Failed to load public stats from backend.')
+      next: (data) => this.stats.update(s => ({ ...s, ...data })),
+      error: () => console.warn('Failed to load user public stats from backend.')
+    });
+
+    this.startupService.getPublicStats().subscribe({
+      next: (data) => this.stats.update(s => ({ ...s, startups: data.startups, totalFunding: data.totalFunding })),
+      error: () => console.warn('Failed to load startup public stats from backend.')
     });
   }
 

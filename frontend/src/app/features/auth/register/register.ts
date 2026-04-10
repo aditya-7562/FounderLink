@@ -19,7 +19,7 @@ export class RegisterComponent implements OnInit {
   successMsg = signal('');
   showPassword = false;
   isRoleLocked = false;
-  stats = signal({ founders: 350, investors: 200, cofounders: 120 });
+  stats = signal({ founders: 0, investors: 0, cofounders: 0 });
 
   readonly roles = [
     { value: 'FOUNDER',   icon: 'founder', label: 'Founder',    desc: 'Build a startup' },

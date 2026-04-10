@@ -99,4 +99,10 @@ public interface StartupRepository
             @Param("minFunding") BigDecimal minFunding,
             @Param("maxFunding") BigDecimal maxFunding,
             Pageable pageable);
+
+    @Query("SELECT COUNT(s) FROM Startup s WHERE s.isDeleted = false")
+    long countActiveStartups();
+
+    @Query("SELECT SUM(s.fundingGoal) FROM Startup s WHERE s.isDeleted = false")
+    BigDecimal sumActiveFundingGoal();
 }

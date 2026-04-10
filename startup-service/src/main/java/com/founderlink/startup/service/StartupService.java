@@ -106,4 +106,10 @@ public interface StartupService {
             BigDecimal minFunding,
             BigDecimal maxFunding,
             Pageable pageable);
+
+    // ─────────────────────────────────────────
+    // GET PUBLIC STATS
+    // Returns active startup count and total funding
+    // ─────────────────────────────────────────
+    java.util.Map<String, Object> getPublicStats();
 }

@@ -190,6 +190,7 @@ gateway:
       - /wallets/webjars/**
     public-get-paths:
       - /startup
+      - /startup/public/stats
       - /startup/search
       - /startup/details/**
 

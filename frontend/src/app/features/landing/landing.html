@@ -41,7 +41,7 @@
     </div>
     </div>
     <div class="hero-stats">
-      <div class="hstat"><span class="hstat-n">{{ startups().length }}</span><span class="hstat-l">Startups</span></div>
+      <div class="hstat"><span class="hstat-n">{{ stats().startups }}</span><span class="hstat-l">Startups</span></div>
       <div class="hstat-div"></div>
       <div class="hstat"><span class="hstat-n">{{ stats().founders }}+</span><span class="hstat-l">Founders</span></div>
       <div class="hstat-div"></div>
@@ -49,7 +49,7 @@
       <div class="hstat-div"></div>
       <div class="hstat"><span class="hstat-n">{{ stats().investors }}+</span><span class="hstat-l">Investors</span></div>
       <div class="hstat-div"></div>
-      <div class="hstat"><span class="hstat-n">{{ formatCurrency(totalFunding()) }}</span><span class="hstat-l">Seeking/Funded</span></div>
+      <div class="hstat"><span class="hstat-n">{{ formatCurrency(stats().totalFunding) }}</span><span class="hstat-l">Seeking/Funded</span></div>
     </div>
   </div>
 </section>

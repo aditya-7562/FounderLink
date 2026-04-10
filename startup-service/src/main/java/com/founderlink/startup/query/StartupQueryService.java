@@ -107,4 +107,16 @@ public class StartupQueryService {
         return startupRepository.searchActiveStartups(industry, stage, minFunding, maxFunding, pageable)
                 .map(startupMapper::toResponseDto);
     }
+
+    /**
+     * QUERY: Get public aggregated stats.
+     */
+    @Cacheable(value = "publicStats", key = "'stats'")
+    public java.util.Map<String, Object> getPublicStats() {
+        log.info("QUERY - getPublicStats (cache miss, hitting DB)");
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        stats.put("startups", startupRepository.countActiveStartups());
+        stats.put("totalFunding", startupRepository.sumActiveFundingGoal());
+        return stats;
+    }
 }

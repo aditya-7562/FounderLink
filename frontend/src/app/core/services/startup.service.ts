@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, shareReplay } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiEnvelope, ApiResponse, PaginationQuery, StartupRequest, StartupResponse, PaginatedData } from '../../models';
@@ -10,8 +10,18 @@ import { normalizeCollection, normalizeWrapped, normalizeError } from './api-nor
 @Injectable({ providedIn: 'root' })
 export class StartupService {
   private readonly api = environment.apiUrl;
+  private publicStatsCache$?: Observable<{startups: number, totalFunding: number}>;
 
   constructor(private http: HttpClient) {}
+
+  getPublicStats(): Observable<{startups: number, totalFunding: number}> {
+    if (!this.publicStatsCache$) {
+      this.publicStatsCache$ = this.http.get<{startups: number, totalFunding: number}>(`${this.api}/startup/public/stats`).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.publicStatsCache$;
+  }
 
   getAll(query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<StartupResponse>>> {
     return this.http.get<unknown>(`${this.api}/startup`, { params: this.withPagination(query, 'createdAt,desc') }).pipe(

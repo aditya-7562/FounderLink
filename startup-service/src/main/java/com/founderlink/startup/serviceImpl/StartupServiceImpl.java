@@ -80,4 +80,9 @@ public class StartupServiceImpl implements StartupService {
                                                    Pageable pageable) {
         return queryService.searchStartups(industry, stage, minFunding, maxFunding, pageable);
     }
+
+    @Override
+    public java.util.Map<String, Object> getPublicStats() {
+        return queryService.getPublicStats();
+    }
 }

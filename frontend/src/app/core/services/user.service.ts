@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiEnvelope, PaginatedData, PaginationQuery, UserResponse, UserUpdateRequest } from '../../models';
 import { normalizeCollection, normalizePlain, normalizeError } from './api-normalizer';
@@ -10,6 +10,7 @@ import { AuthService } from './auth.service';
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private readonly api = environment.apiUrl;
+  private publicStatsCache$?: Observable<{founders: number, investors: number, cofounders: number}>;
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
@@ -47,7 +48,12 @@ export class UserService {
 
   /** Get aggregated public stats for landing page */
   getPublicStats(): Observable<{founders: number, investors: number, cofounders: number}> {
-    return this.http.get<{founders: number, investors: number, cofounders: number}>(`${this.api}/users/public/stats`);
+    if (!this.publicStatsCache$) {
+      this.publicStatsCache$ = this.http.get<{founders: number, investors: number, cofounders: number}>(`${this.api}/users/public/stats`).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.publicStatsCache$;
   }
 
   private withPagination(query: PaginationQuery, defaultSort: string): HttpParams {

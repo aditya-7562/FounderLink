@@ -16,7 +16,7 @@ export class LoginComponent implements OnInit {
   loading = signal(false);
   errorMsg = signal('');
   showPassword = false;
-  stats = signal({ founders: 350, investors: 200, cofounders: 120 });
+  stats = signal({ founders: 0, investors: 0, cofounders: 0 });
 
   readonly features = [
     { icon: 'founder', title: 'Launch Your Startup',   desc: 'Create your profile and attract top talent and investors' },
