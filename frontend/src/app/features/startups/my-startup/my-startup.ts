@@ -17,7 +17,7 @@ export class MyStartupComponent implements OnInit {
   startupPage = signal<PaginatedData<StartupResponse>>({
     content: [],
     page: 0,
-    size: 10,
+    size: 9,
     totalElements: 0,
     totalPages: 0,
     last: true
@@ -58,7 +58,7 @@ export class MyStartupComponent implements OnInit {
 
   loadStartups(page = 0): void {
     this.loading.set(true);
-    this.startupService.getMyStartups({ page, size: 10, sort: 'createdAt,desc' }).subscribe({
+    this.startupService.getMyStartups({ page, size: 9, sort: 'createdAt,desc' }).subscribe({
       next: env => {
         const startupPage = env.data ?? this.startupPage();
         this.startupPage.set(startupPage);

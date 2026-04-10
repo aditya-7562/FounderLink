@@ -96,7 +96,7 @@ public class StartupController {
         public ResponseEntity<ApiResponse<?>> getAllStartups(
                         @RequestHeader(value = "X-User-Role", required = false) String userRole,
                         @RequestParam(defaultValue = "0") int page,
-                        @RequestParam(defaultValue = "10") int size,
+                        @RequestParam(defaultValue = "9") int size,
                         @RequestParam(required = false) String sort,
                         HttpServletRequest request) {
 
@@ -187,7 +187,7 @@ public class StartupController {
                         @RequestHeader("X-User-Id") Long founderId,
                         @RequestHeader("X-User-Role") String userRole,
                         @RequestParam(defaultValue = "0") int page,
-                        @RequestParam(defaultValue = "10") int size,
+                        @RequestParam(defaultValue = "9") int size,
                         @RequestParam(required = false) String sort,
                         HttpServletRequest request) {
 
@@ -301,7 +301,7 @@ public class StartupController {
                         @RequestParam(required = false) BigDecimal minFunding,
                         @RequestParam(required = false) BigDecimal maxFunding,
                         @RequestParam(defaultValue = "0") int page,
-                        @RequestParam(defaultValue = "10") int size,
+                        @RequestParam(defaultValue = "9") int size,
                         @RequestParam(required = false) String sort,
                         HttpServletRequest request) {
 

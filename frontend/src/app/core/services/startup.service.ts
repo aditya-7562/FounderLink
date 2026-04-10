@@ -79,7 +79,7 @@ export class StartupService {
 
   private withPagination(query: PaginationQuery, defaultSort: string): HttpParams {
     const page = query.page ?? 0;
-    const size = query.size ?? 10;
+    const size = query.size ?? 9;
     const sort = query.sort ?? defaultSort;
 
     return new HttpParams()
