@@ -12,7 +12,7 @@
 SET NAMES utf8mb4;
 SET foreign_key_checks = 0;
 
-INSERT IGNORE INTO investments (id, startupId, investorId, amount, status, createdAt) VALUES
+INSERT IGNORE INTO investments (id, startup_id, investor_id, amount, status, created_at) VALUES
 -- 150 investment records
 -- COMPLETED investments (payment went through — used by payment-service / wallet-service)
 -- Investment IDs 3001–3050 → COMPLETED

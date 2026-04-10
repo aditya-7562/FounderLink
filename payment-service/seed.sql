@@ -22,9 +22,9 @@ SET foreign_key_checks = 0;
 -- ---------------------------------------------------------------------------
 
 INSERT IGNORE INTO payments
-  (id, investmentId, investorId, startupId, founderId, amount, status,
-   idempotencyKey, razorpayOrderId, razorpayPaymentId, razorpaySignature,
-   walletCredited, failureReason, createdAt, updatedAt)
+  (id, investment_id, investor_id, startup_id, founder_id, amount, status,
+   idempotency_key, razorpay_order_id, razorpay_payment_id, razorpay_signature,
+   wallet_credited, failure_reason, created_at, updated_at)
 VALUES
 -- SUCCESS payments (payment IDs 5001–5050, investments 3001–3050)
 (5001,3001,1061,2001,1001,500000.00,'SUCCESS','seed-pay-10001','order_seed001','pay_seed001','sig_seed001hash001',1,NULL,'2024-04-02 10:00:00','2024-04-02 11:00:00'),

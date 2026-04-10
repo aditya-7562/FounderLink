@@ -17,7 +17,7 @@ SET foreign_key_checks = 0;
 -- (MySQL: insert with explicit PK works; JPA won't re-insert via INSERT IGNORE)
 
 INSERT IGNORE INTO startups
-  (id, name, description, industry, problemStatement, solution, fundingGoal, stage, founderId, isDeleted, created_at)
+  (id, name, description, industry, problem_statement, solution, funding_goal, stage, founder_id, is_deleted, created_at)
 VALUES
 -- Startup IDs 2001–2100
 -- Founders cycle through 1001–1060 (60 founders → some have multiple startups)

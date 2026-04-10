@@ -22,7 +22,7 @@ SET foreign_key_checks = 0;
 --   • Total: 100 founder-level + 100 cofounder memberships = 200 rows
 -- ---------------------------------------------------------------------------
 
-INSERT IGNORE INTO team_members (startupId, userId, role, isActive, leftAt, joinedAt) VALUES
+INSERT IGNORE INTO team_members (startup_id, user_id, role, is_active, left_at, joined_at) VALUES
 -- Round 1: Startup founders as FOUNDER members (startup 2001..2060 → founders 1001..1060)
 (2001,1001,'CTO',1,NULL,'2024-02-01 10:00:00'),
 (2002,1002,'CPO',1,NULL,'2024-02-05 10:00:00'),
@@ -194,7 +194,7 @@ INSERT IGNORE INTO team_members (startupId, userId, role, isActive, leftAt, join
 -- Mix of PENDING / ACCEPTED / REJECTED / CANCELLED statuses
 -- ---------------------------------------------------------------------------
 
-INSERT IGNORE INTO invitations (startupId, founderId, invitedUserId, role, status, createdAt, updatedAt) VALUES
+INSERT IGNORE INTO invitations (startup_id, founder_id, invited_user_id, role, status, created_at, updated_at) VALUES
 -- ACCEPTED invitations (these correspond to active team members above)
 (2001,1001,1121,'ENGINEERING_LEAD','ACCEPTED','2024-02-15 10:00:00','2024-02-20 10:00:00'),
 (2002,1002,1122,'CTO','ACCEPTED','2024-02-19 10:00:00','2024-02-25 10:00:00'),

@@ -18,7 +18,7 @@ SET foreign_key_checks = 0;
 -- 50 wallets for startups 2001–2050
 -- ---------------------------------------------------------------------------
 
-INSERT IGNORE INTO wallets (id, startupId, balance, createdAt, updatedAt) VALUES
+INSERT IGNORE INTO wallets (id, startup_id, balance, created_at, updated_at) VALUES
 (6001,2001,500000.00,'2024-04-01 09:00:00','2024-04-02 11:00:00'),
 (6002,2002,200000.00,'2024-04-03 09:00:00','2024-04-04 11:00:00'),
 (6003,2003,750000.00,'2024-04-05 09:00:00','2024-04-06 11:00:00'),
@@ -77,7 +77,7 @@ INSERT IGNORE INTO wallets (id, startupId, balance, createdAt, updatedAt) VALUES
 -- ---------------------------------------------------------------------------
 
 INSERT IGNORE INTO wallet_transactions
-  (wallet_id, referenceId, sourcePaymentId, idempotencyKey, amount, createdAt)
+  (wallet_id, reference_id, source_payment_id, idempotency_key, amount, created_at)
 VALUES
 (6001,3001,5001,'seed-wtx-10001',500000.00,'2024-04-02 11:00:00'),
 (6002,3002,5002,'seed-wtx-10002',200000.00,'2024-04-04 11:00:00'),
