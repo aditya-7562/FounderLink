@@ -10,7 +10,7 @@
 SET NAMES utf8mb4;
 SET foreign_key_checks = 0;
 
-INSERT IGNORE INTO users (id, name, email, skills, experience, bio, portfolioLinks, role, updatedAt) VALUES
+INSERT IGNORE INTO users (id, name, email, skills, experience, bio, portfolio_links, role, updated_at) VALUES
 -- FOUNDER users (1001–1060)
 (1001,'seed_Aarav Shah','seed_user1@test.com','Java,Spring Boot,React','5 years in SaaS',
  'Passionate founder building the next-gen startup ecosystem.',
