@@ -53,6 +53,5 @@ export class NotificationService {
   /** Global UI error display handler */
   showUIError(title: string, message: string): void {
     console.error(`[Global Error] ${title}: ${message}`);
-    alert(`${title}\n\n${message}`);
   }
 }

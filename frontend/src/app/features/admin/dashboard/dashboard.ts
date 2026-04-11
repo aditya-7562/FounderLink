@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../services/admin';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of, catchError } from 'rxjs';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -32,10 +32,10 @@ export class DashboardComponent implements OnInit {
     }
 
     forkJoin({
-      users: this.adminService.searchUsers(0, 1),
-      banned: this.adminService.searchUsers(0, 1, { status: 'BANNED' }),
-      startups: this.adminService.getStartups(0, 1),
-      health: this.adminService.getMicroservicesHealth()
+      users: this.adminService.searchUsers(0, 1).pipe(catchError(() => of({ totalElements: 0 }))),
+      banned: this.adminService.searchUsers(0, 1, { status: 'BANNED' }).pipe(catchError(() => of({ totalElements: 0 }))),
+      startups: this.adminService.getStartups(0, 1).pipe(catchError(() => of({ totalElements: 0 }))),
+      health: this.adminService.getMicroservicesHealth().pipe(catchError(() => of([])))
     }).subscribe({
       next: (res: any) => {
         const newStats = {

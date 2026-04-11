@@ -35,6 +35,7 @@ public class AdminUserController {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final RestTemplate restTemplate;
+    private final RestTemplate plainRestTemplate;
 
     @Operation(summary = "Update user status", description = "Updates a user's status to ACTIVE/SUSPENDED/BANNED")
     @Caching(evict = {
@@ -112,7 +113,7 @@ public class AdminUserController {
         }
 
         try {
-            Map response = restTemplate.getForObject("http://prometheus:9090/api/v1/query?query=up", Map.class);
+            Map response = plainRestTemplate.getForObject("http://prometheus:9090/api/v1/query?query=up", Map.class);
             if (response != null && response.get("data") != null) {
                 Map data = (Map) response.get("data");
                 List<Map> results = (List<Map>) data.get("result");
@@ -136,8 +137,8 @@ public class AdminUserController {
             }
             return ResponseEntity.ok(new ArrayList<>());
         } catch (Exception e) {
-            log.error("Failed to fetch health from prometheus: {}", e.getMessage());
-            return ResponseEntity.status(500).build();
+            log.error("Prometheus monitoring unavailable: {}", e.getMessage());
+            return ResponseEntity.ok(new ArrayList<>());
         }
     }
 }
