@@ -8,6 +8,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.founderlink.investment.exception.ForbiddenAccessException;
+import com.founderlink.investment.exception.StartupServiceUnavailableException;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -231,5 +234,36 @@ class CreateInvestmentTest {
 
         verify(investmentRepository, times(1))
                 .save(any(Investment.class));
+    }
+
+    // FALLBACK TESTS
+
+    @Test
+    void createInvestmentFallback_StartupNotFound_ThrowsOriginal() {
+        StartupNotFoundException ex = new StartupNotFoundException("Not found");
+        assertThatThrownBy(() -> investmentService.createInvestmentFallback(202L, requestDto, ex))
+                .isEqualTo(ex);
+    }
+
+    @Test
+    void createInvestmentFallback_Forbidden_ThrowsOriginal() {
+        ForbiddenAccessException ex = new ForbiddenAccessException("Forbidden");
+        assertThatThrownBy(() -> investmentService.createInvestmentFallback(202L, requestDto, ex))
+                .isEqualTo(ex);
+    }
+
+    @Test
+    void createInvestmentFallback_Duplicate_ThrowsOriginal() {
+        DuplicateInvestmentException ex = new DuplicateInvestmentException("Duplicate");
+        assertThatThrownBy(() -> investmentService.createInvestmentFallback(202L, requestDto, ex))
+                .isEqualTo(ex);
+    }
+
+    @Test
+    void createInvestmentFallback_OtherError_ThrowsServiceUnavailable() {
+        RuntimeException ex = new RuntimeException("Generic error");
+        assertThatThrownBy(() -> investmentService.createInvestmentFallback(202L, requestDto, ex))
+                .isInstanceOf(StartupServiceUnavailableException.class)
+                .hasMessageContaining("Startup service is temporarily unavailable");
     }
 }

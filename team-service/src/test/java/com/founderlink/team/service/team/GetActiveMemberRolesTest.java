@@ -62,8 +62,10 @@ class GetActiveMemberRolesTest {
 
         // Arrange
         when(teamMemberRepository
-                .findByUserIdAndIsActiveTrue(202L))
-                .thenReturn(List.of(activeMember));
+                .findByUserIdAndIsActiveTrue(
+                        org.mockito.ArgumentMatchers.eq(202L),
+                        org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(activeMember)));
         when(teamMemberMapper
                 .toResponseDto(activeMember))
                 .thenReturn(activeResponseDto);
@@ -89,8 +91,10 @@ class GetActiveMemberRolesTest {
 
         // Arrange
         when(teamMemberRepository
-                .findByUserIdAndIsActiveTrue(202L))
-                .thenReturn(List.of());
+                .findByUserIdAndIsActiveTrue(
+                        org.mockito.ArgumentMatchers.eq(202L),
+                        org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
 
         // Act
         List<TeamMemberResponseDto> result =

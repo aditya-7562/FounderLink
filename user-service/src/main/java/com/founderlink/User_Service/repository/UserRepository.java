@@ -1,6 +1,7 @@
 package com.founderlink.User_Service.repository;
 
 import com.founderlink.User_Service.entity.Role;
+import com.founderlink.User_Service.entity.UserStatus;
 import com.founderlink.User_Service.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,4 +22,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByRole(@Param("role") Role role, Pageable pageable);
 
     long countByRole(Role role);
+
+    @Query("SELECT u FROM User u WHERE " +
+           "(:email IS NULL OR u.email LIKE %:email%) AND " +
+           "(:name IS NULL OR u.name LIKE %:name%) AND " +
+           "(:role IS NULL OR u.role = :role) AND " +
+           "(:status IS NULL OR u.status = :status)")
+    Page<User> searchUsers(@Param("email") String email,
+                           @Param("name") String name,
+                           @Param("role") Role role,
+                           @Param("status") UserStatus status,
+                           Pageable pageable);
 }

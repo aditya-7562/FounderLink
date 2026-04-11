@@ -138,6 +138,10 @@ public class NotificationController {
         }
 
         String[] tokens = sort.split(",");
+        if (tokens.length == 0) {
+            return Sort.by(defaultDirection, defaultProperty);
+        }
+
         String property = tokens[0].isBlank() ? defaultProperty : tokens[0].trim();
         Sort.Direction direction = tokens.length > 1 && "desc".equalsIgnoreCase(tokens[1].trim())
                 ? Sort.Direction.DESC

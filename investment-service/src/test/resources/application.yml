@@ -1,0 +1,38 @@
+spring:
+  config:
+    import: optional:configserver:http://config-server:8888
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  rabbitmq:
+    host: localhost
+
+eureka:
+  client:
+    enabled: false
+
+rabbitmq:
+  exchange: founderlink.exchange
+  investment:
+    queue: investment.queue
+    routing-key: investment.created
+    approved:
+      queue: investment.approved.queue
+      routing-key: investment.approved
+    rejected:
+      queue: investment.rejected.queue
+      routing-key: investment.rejected
+  startup:
+    deleted:
+      queue: investment.startup.deleted.queue
+      routing-key: startup.deleted
+  payment:
+    completed:
+      queue: investment.payment.completed.queue
+      routing-key: payment.completed
+    failed:
+      queue: investment.payment.failed.queue
+      routing-key: payment.failed

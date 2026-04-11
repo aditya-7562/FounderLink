@@ -60,6 +60,19 @@ export const routes: Routes = [
     ]
   },
 
+  // ── Protected (Admin shell) ────────────────────────────────────────────────
+  {
+    path: 'admin',
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/admin/admin-layout/admin-layout').then(m => m.AdminLayoutComponent),
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', loadComponent: () => import('./features/admin/dashboard/dashboard').then(m => m.DashboardComponent) },
+      { path: 'users',     loadComponent: () => import('./features/admin/users/users').then(m => m.UsersComponent) },
+      { path: 'startups',  loadComponent: () => import('./features/admin/startups/startups').then(m => m.StartupsComponent) }
+    ]
+  },
+
   // ── Fallback ───────────────────────────────────────────────────────────────
   { path: '**', redirectTo: '' }
 ];

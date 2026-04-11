@@ -78,9 +78,8 @@ class GetStartupsByFounderTest {
 
         // Arrange
         when(startupRepository
-                .findByFounderIdAndIsDeletedFalse(5L))
-                .thenReturn(
-                        List.of(startup1, startup2));
+                .findByFounderIdAndIsDeletedFalse(org.mockito.ArgumentMatchers.eq(5L), org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(startup1, startup2)));
         when(startupMapper.toResponseDto(startup1))
                 .thenReturn(responseDto1);
         when(startupMapper.toResponseDto(startup2))
@@ -107,8 +106,8 @@ class GetStartupsByFounderTest {
 
         // Arrange
         when(startupRepository
-                .findByFounderIdAndIsDeletedFalse(5L))
-                .thenReturn(List.of());
+                .findByFounderIdAndIsDeletedFalse(org.mockito.ArgumentMatchers.eq(5L), org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
 
         // Act
         List<StartupResponseDto> result =

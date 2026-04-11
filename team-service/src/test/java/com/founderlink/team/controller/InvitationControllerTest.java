@@ -130,13 +130,74 @@ class InvitationControllerTest {
     }
 
     @Test
-    void getInvitationsByStartupId_Success() throws Exception {
-        when(invitationService.getInvitationsByStartupId(101L, 5L)).thenReturn(List.of(responseDto));
+    void getInvitationsByUserId_Paginated_Success() throws Exception {
+        org.springframework.data.domain.Page<InvitationResponseDto> page = new org.springframework.data.domain.PageImpl<>(List.of(responseDto));
+        when(invitationService.getInvitationsByUserId(eq(300L), any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/teams/invitations/user")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content[0].invitedUserId").value(300L))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
+    }
+
+    @Test
+    void getInvitationsByStartupId_Paginated_Success() throws Exception {
+        org.springframework.data.domain.Page<InvitationResponseDto> page = new org.springframework.data.domain.PageImpl<>(List.of(responseDto));
+        when(invitationService.getInvitationsByStartupId(eq(101L), eq(5L), any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/teams/invitations/startup/101")
                 .header("X-User-Id", 5L)
-                .header("X-User-Role", "ROLE_FOUNDER"))
+                .header("X-User-Role", "ROLE_FOUNDER")
+                .param("page", "0")
+                .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Invitations fetched successfully"));
+                .andExpect(jsonPath("$.data.content[0].startupId").value(101L));
+    }
+
+    @Test
+    void resolveSort_Exhaustive() throws Exception {
+        org.springframework.data.domain.Page<InvitationResponseDto> page = new org.springframework.data.domain.PageImpl<>(List.of(responseDto));
+        when(invitationService.getInvitationsByUserId(any(), any())).thenReturn(page);
+
+        // Case: sort is null
+        mockMvc.perform(get("/teams/invitations/user")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER")
+                .param("page", "0"))
+                .andExpect(status().isOk());
+
+        // Case: sort=id (tokens.length == 1)
+        mockMvc.perform(get("/teams/invitations/user")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER")
+                .param("page", "0")
+                .param("sort", "id"))
+                .andExpect(status().isOk());
+
+        // Case: sort=id,asc (tokens.length > 1, but NOT desc)
+        mockMvc.perform(get("/teams/invitations/user")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER")
+                .param("page", "0")
+                .param("sort", "id,asc"))
+                .andExpect(status().isOk());
+
+        // Case: non-paginated path check
+        when(invitationService.getInvitationsByUserId(300L)).thenReturn(List.of(responseDto));
+        mockMvc.perform(get("/teams/invitations/user")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER"))
+                .andExpect(status().isOk());
+                
+        // Case: non-paginated path for startup
+        when(invitationService.getInvitationsByStartupId(101L, 5L)).thenReturn(List.of(responseDto));
+        mockMvc.perform(get("/teams/invitations/startup/101")
+                .header("X-User-Id", 5L)
+                .header("X-User-Role", "ROLE_FOUNDER"))
+                .andExpect(status().isOk());
     }
 }

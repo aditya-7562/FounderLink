@@ -208,6 +208,7 @@ public class InvestmentController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Investment not found")
     })
     public ResponseEntity<ApiResponse<?>> getInvestmentById(
+            @RequestHeader("X-User-Id") Long authenticatedUserId,
             @RequestHeader("X-User-Role") String userRole,
             @PathVariable Long id) {
 
@@ -222,6 +223,13 @@ public class InvestmentController {
 
         InvestmentResponseDto response = investmentService
                 .getInvestmentById(id);
+
+        // Ownership check: investor must own the investment, or admin bypass
+        if (!"ROLE_ADMIN".equals(userRole)) {
+            if ("ROLE_INVESTOR".equals(userRole) && !response.getInvestorId().equals(authenticatedUserId)) {
+                throw new ForbiddenAccessException("You do not own this investment");
+            }
+        }
 
         return ResponseEntity
                 .ok(new ApiResponse<>(

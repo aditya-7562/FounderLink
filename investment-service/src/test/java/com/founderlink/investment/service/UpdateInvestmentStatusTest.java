@@ -31,6 +31,7 @@ import com.founderlink.investment.exception.InvestmentNotFoundException;
 import com.founderlink.investment.exception.StartupNotFoundException;
 import com.founderlink.investment.mapper.InvestmentMapper;
 import com.founderlink.investment.repository.InvestmentRepository;
+import com.founderlink.investment.exception.StartupServiceUnavailableException;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateInvestmentStatusTest {
@@ -116,6 +117,31 @@ class UpdateInvestmentStatusTest {
                 investmentService.updateInvestmentStatus(1L, 5L, dto);
 
         assertThat(result.getStatus()).isEqualTo(InvestmentStatus.REJECTED);
+    }
+
+    @Test
+    void updateStatus_ApprovedToCompleted_ShouldSucceed() {
+        investment.setStatus(InvestmentStatus.APPROVED);
+        InvestmentStatusUpdateDto dto =
+                new InvestmentStatusUpdateDto(ManualInvestmentStatus.COMPLETED);
+
+        Investment saved = new Investment();
+        saved.setId(1L);
+        saved.setStatus(InvestmentStatus.COMPLETED);
+
+        InvestmentResponseDto response = new InvestmentResponseDto();
+        response.setId(1L);
+        response.setStatus(InvestmentStatus.COMPLETED);
+
+        when(investmentRepository.findById(1L)).thenReturn(Optional.of(investment));
+        when(startupServiceClient.getStartupById(101L)).thenReturn(startup);
+        when(investmentRepository.save(any())).thenReturn(saved);
+        when(investmentMapper.toResponseDto(saved)).thenReturn(response);
+
+        InvestmentResponseDto result =
+                investmentService.updateInvestmentStatus(1L, 5L, dto);
+
+        assertThat(result.getStatus()).isEqualTo(InvestmentStatus.COMPLETED);
     }
 
     // ================= VALIDATION FAILURES =================
@@ -225,5 +251,26 @@ class UpdateInvestmentStatusTest {
                 investmentService.updateInvestmentStatus(1L, 5L, dto))
                 .isInstanceOf(InvalidStatusTransitionException.class)
                 .hasMessage("Investment must be APPROVED before marking COMPLETED");
+    }
+
+    // ================= FALLBACK TESTS =================
+
+    @Test
+    void updateInvestmentStatusFallback_BusinessException_ThrowsOriginal() {
+        InvestmentNotFoundException ex = new InvestmentNotFoundException("Not found");
+        InvestmentStatusUpdateDto dto = new InvestmentStatusUpdateDto(ManualInvestmentStatus.APPROVED);
+        
+        assertThatThrownBy(() -> investmentService.updateInvestmentStatusFallback(1L, 5L, dto, ex))
+                .isEqualTo(ex);
+    }
+
+    @Test
+    void updateInvestmentStatusFallback_OtherException_ThrowsServiceUnavailable() {
+        RuntimeException ex = new RuntimeException("Generic error");
+        InvestmentStatusUpdateDto dto = new InvestmentStatusUpdateDto(ManualInvestmentStatus.APPROVED);
+
+        assertThatThrownBy(() -> investmentService.updateInvestmentStatusFallback(1L, 5L, dto, ex))
+                .isInstanceOf(StartupServiceUnavailableException.class)
+                .hasMessageContaining("Startup service is temporarily unavailable");
     }
 }

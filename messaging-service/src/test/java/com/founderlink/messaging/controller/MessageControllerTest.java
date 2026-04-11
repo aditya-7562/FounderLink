@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -23,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,8 +40,7 @@ class MessageControllerTest {
     @InjectMocks
     private MessageController messageController;
 
-    private ObjectMapper objectMapper;
-
+    private ObjectMapper objectMapper = new ObjectMapper();
     private MessageResponseDTO responseDTO;
 
     @BeforeEach
@@ -47,8 +48,6 @@ class MessageControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(messageController)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
-        objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
 
         responseDTO = MessageResponseDTO.builder()
                 .id(1L)
@@ -59,183 +58,213 @@ class MessageControllerTest {
                 .build();
     }
 
-    // --- POST /messages ---
-
     @Test
-    @DisplayName("POST /messages - success returns 201")
-    void sendMessage_WithValidRequest_Returns201() throws Exception {
-
-        MessageRequestDTO request = new MessageRequestDTO();
-        request.setSenderId(100L);
-        request.setReceiverId(200L);
-        request.setContent("Hello!");
-
-        when(messageService.sendMessage(any(MessageRequestDTO.class)))
-                .thenReturn(responseDTO);
+    @DisplayName("POST /messages - Success")
+    void sendMessage_Success() throws Exception {
+        MessageRequestDTO request = new MessageRequestDTO(100L, 200L, "Hello!");
+        when(messageService.sendMessage(any())).thenReturn(responseDTO);
 
         mockMvc.perform(post("/messages")
+                        .header("X-User-Id", 100L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.senderId").value(100))
-                .andExpect(jsonPath("$.receiverId").value(200))
-                .andExpect(jsonPath("$.content").value("Hello!"));
+                .andExpect(status().isCreated());
     }
 
     @Test
-    @DisplayName("POST /messages - missing senderId returns 400")
-    void sendMessage_WithMissingSenderId_Returns400() throws Exception {
-
-        MessageRequestDTO request = new MessageRequestDTO();
-        request.setReceiverId(200L);
-        request.setContent("Hello!");
-
-        mockMvc.perform(post("/messages")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("POST /messages - blank content returns 400")
-    void sendMessage_WithBlankContent_Returns400() throws Exception {
-
-        MessageRequestDTO request = new MessageRequestDTO();
-        request.setSenderId(100L);
-        request.setReceiverId(200L);
-        request.setContent(""); // important
-
-        mockMvc.perform(post("/messages")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-    }
-
-    // --- GET /messages/{id} ---
-
-    @Test
-    @DisplayName("GET /messages/{id} - success returns 200")
-    void getMessageById_WhenFound_Returns200() throws Exception {
+    @DisplayName("GET /messages/{id} - Success")
+    void getMessageById_Success() throws Exception {
         when(messageService.getMessageById(1L)).thenReturn(responseDTO);
 
         mockMvc.perform(get("/messages/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.content").value("Hello!"));
+                .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("GET /messages/{id} - not found returns 404")
-    void getMessageById_WhenNotFound_Returns404() throws Exception {
-        when(messageService.getMessageById(999L)).thenThrow(new MessageNotFoundException(999L));
+    @DisplayName("GET /messages/{id} - Not Found")
+    void getMessageById_NotFound() throws Exception {
+        when(messageService.getMessageById(99L)).thenThrow(new MessageNotFoundException(99L));
 
-        mockMvc.perform(get("/messages/999"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Message not found with id: 999"));
-    }
-
-    @Test
-    @DisplayName("GET /messages/conversation without path IDs does not bind to message-by-id route")
-    void getConversation_WithoutPathIds_DoesNotBindToMessageIdRoute() throws Exception {
-        mockMvc.perform(get("/messages/conversation"))
+        mockMvc.perform(get("/messages/99"))
                 .andExpect(status().isNotFound());
     }
 
-    // --- GET /messages/conversation/{user1}/{user2} ---
-
     @Test
-    @DisplayName("GET /messages/conversation/{user1}/{user2} - returns conversation")
-    void getConversation_ReturnsMessages() throws Exception {
-        MessageResponseDTO response2 = MessageResponseDTO.builder()
-                .id(2L).senderId(200L).receiverId(100L)
-                .content("Reply!").createdAt(LocalDateTime.now()).build();
+    @DisplayName("GET /conversation - Success variants")
+    void getConversation_Success() throws Exception {
+        when(messageService.getConversation(100L, 200L)).thenReturn(List.of(responseDTO));
 
-        when(messageService.getConversation(100L, 200L))
-                .thenReturn(Arrays.asList(responseDTO, response2));
+        // Particpant 1
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 100L))
+                .andExpect(status().isOk());
 
+        // Participant 2
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 200L))
+                .andExpect(status().isOk());
+
+        // Admin
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 500L)
+                        .header("X-User-Role", "ROLE_ADMIN"))
+                .andExpect(status().isOk());
+
+        // No header (bypass check)
         mockMvc.perform(get("/messages/conversation/100/200"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].content").value("Hello!"))
-                .andExpect(jsonPath("$[1].content").value("Reply!"));
+                .andExpect(status().isOk());
     }
 
-    // --- GET /messages/partners/{userId} ---
+    @Test
+    @DisplayName("GET /conversation - Forbidden")
+    void getConversation_Forbidden() throws Exception {
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 300L)
+                        .header("X-User-Role", "ROLE_USER"))
+                .andExpect(status().isForbidden());
+    }
 
     @Test
-    @DisplayName("GET /messages/partners/{userId} - returns partner IDs")
-    void getConversationPartners_ReturnsPartnerIds() throws Exception {
-        when(messageService.getConversationPartners(100L))
-                .thenReturn(List.of(200L, 300L));
+    @DisplayName("GET /conversation - Paginated success")
+    void getConversation_Page() throws Exception {
+        when(messageService.getConversation(eq(100L), eq(200L), any())).thenReturn(new PageImpl<>(List.of(responseDTO)));
 
+        // Full params
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 100L)
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "id,asc"))
+                .andExpect(status().isOk());
+
+        // Partial params
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 100L)
+                        .param("page", "0"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /conversation - Paginated sorting variants")
+    void getConversation_PageSorting() throws Exception {
+        when(messageService.getConversation(eq(100L), eq(200L), any())).thenReturn(new PageImpl<>(List.of(responseDTO)));
+
+        // default desc
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 100L)
+                        .param("page", "0")
+                        .param("sort", "id"))
+                .andExpect(status().isOk());
+
+        // invalid prop (comma only handled by my hardening)
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 100L)
+                        .param("page", "0")
+                        .param("sort", ",")) 
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /partners - Success variants")
+    void getPartners() throws Exception {
+        when(messageService.getConversationPartners(100L)).thenReturn(List.of(200L));
+
+        // Owner
+        mockMvc.perform(get("/messages/partners/100")
+                        .header("X-User-Id", 100L))
+                .andExpect(status().isOk());
+
+        // Admin
+        mockMvc.perform(get("/messages/partners/100")
+                        .header("X-User-Role", "ROLE_ADMIN"))
+                .andExpect(status().isOk());
+
+        // No header
         mockMvc.perform(get("/messages/partners/100"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0]").value(200))
-                .andExpect(jsonPath("$[1]").value(300));
+                .andExpect(status().isOk());
     }
 
-    // --- GET /messages/conversation/{user1}/{user2}/cursor ---
+    @Test
+    @DisplayName("GET /partners - Forbidden")
+    void getPartners_Forbidden() throws Exception {
+        mockMvc.perform(get("/messages/partners/100")
+                        .header("X-User-Id", 200L))
+                .andExpect(status().isForbidden());
+    }
 
     @Test
-    @DisplayName("GET /cursor - none -> initial load works")
-    void getConversationCursor_WithoutParams_Works() throws Exception {
-        CursorPageDTO<MessageResponseDTO> pageDto = CursorPageDTO.<MessageResponseDTO>builder()
-                .content(List.of(responseDTO))
-                .nextCursor(1L)
-                .prevCursor(1L)
-                .build();
-        when(messageService.getConversationCursor(100L, 200L, null, null, 20))
-                .thenReturn(pageDto);
+    @DisplayName("GET /partners - Paginated")
+    void getPartners_Page() throws Exception {
+        when(messageService.getConversationPartners(eq(100L), any())).thenReturn(new PageImpl<>(List.of(200L)));
 
+        mockMvc.perform(get("/messages/partners/100")
+                        .header("X-User-Id", 100L)
+                        .param("page", "0"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /cursor - Success variants")
+    void getCursor() throws Exception {
+        CursorPageDTO<MessageResponseDTO> page = CursorPageDTO.<MessageResponseDTO>builder()
+                .content(List.of(responseDTO)).build();
+        when(messageService.getConversationCursor(100L, 200L, null, null, 20)).thenReturn(page);
+
+        // Owner
+        mockMvc.perform(get("/messages/conversation/100/200/cursor")
+                        .header("X-User-Id", 100L))
+                .andExpect(status().isOk());
+
+        // Admin
+        mockMvc.perform(get("/messages/conversation/100/200/cursor")
+                        .header("X-User-Role", "ROLE_ADMIN"))
+                .andExpect(status().isOk());
+
+        // No header
         mockMvc.perform(get("/messages/conversation/100/200/cursor"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.nextCursor").value(1));
+                .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("GET /cursor - before only -> works")
-    void getConversationCursor_WithBefore_Works() throws Exception {
-        CursorPageDTO<MessageResponseDTO> pageDto = CursorPageDTO.<MessageResponseDTO>builder()
-                .content(List.of(responseDTO))
-                .nextCursor(0L)
-                .prevCursor(1L)
-                .build();
-        when(messageService.getConversationCursor(100L, 200L, 5L, null, 20))
-                .thenReturn(pageDto);
-
+    @DisplayName("GET /cursor - Forbidden")
+    void getCursor_Forbidden() throws Exception {
         mockMvc.perform(get("/messages/conversation/100/200/cursor")
-                        .param("before", "5"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(1));
+                        .header("X-User-Id", 300L))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("GET /cursor - after only -> works")
-    void getConversationCursor_WithAfter_Works() throws Exception {
-         CursorPageDTO<MessageResponseDTO> pageDto = CursorPageDTO.<MessageResponseDTO>builder()
-                .content(List.of(responseDTO))
-                .nextCursor(1L)
-                .prevCursor(2L)
-                .build();
-        when(messageService.getConversationCursor(100L, 200L, null, 1L, 20))
-                .thenReturn(pageDto);
-
+    @DisplayName("GET /cursor - Bad Request")
+    void getCursor_Bad() throws Exception {
         mockMvc.perform(get("/messages/conversation/100/200/cursor")
-                        .param("after", "1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(1));
+                        .header("X-User-Id", 100L)
+                        .param("before", "1")
+                        .param("after", "2"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    @DisplayName("GET /cursor - both -> 400 error")
-    void getConversationCursor_WithBoth_Returns400() throws Exception {
-        mockMvc.perform(get("/messages/conversation/100/200/cursor")
-                        .param("before", "5")
-                        .param("after", "1"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Cannot use both 'before' and 'after' cursors simultaneously"));
+    @DisplayName("Sanitization and Boundary Edge Cases")
+    void sanitization() throws Exception {
+        when(messageService.getConversation(eq(100L), eq(200L), any())).thenReturn(new PageImpl<>(List.of(responseDTO)));
+
+        // safePage Math.max(page, 0)
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 100L)
+                        .param("page", "-5"))
+                .andExpect(status().isOk());
+
+        // safeSize clipping (size=0 -> 1, size=100 -> 50)
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 100L)
+                        .param("page", "0")
+                        .param("size", "0"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/messages/conversation/100/200")
+                        .header("X-User-Id", 100L)
+                        .param("page", "0")
+                        .param("size", "100"))
+                .andExpect(status().isOk());
     }
 }

@@ -50,6 +50,37 @@ class AuthenticationFilterTest {
     }
 
     @Test
+    void returnsUnauthorizedWhenAuthorizationHeaderLacksBearerPrefix() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/teams/invite")
+                    .header("Authorization", "Basic dXNlcjpwYXNz")
+                    .build()
+        );
+        GatewayFilterChain chain = mock(GatewayFilterChain.class);
+        when(routeValidator.isSecured(exchange.getRequest())).thenReturn(true);
+
+        filter.filter(exchange, chain).block();
+
+        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        verify(chain, never()).filter(any(ServerWebExchange.class));
+    }
+    
+    @Test
+    void returnsUnauthorizedWhenBearerPrefixExistsButTokenIsEmpty() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/teams/invite")
+                    .header("Authorization", "Bearer     ")
+                    .build()
+        );
+        GatewayFilterChain chain = mock(GatewayFilterChain.class);
+        when(routeValidator.isSecured(exchange.getRequest())).thenReturn(true);
+
+        filter.filter(exchange, chain).block();
+
+        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
     void returnsUnauthorizedWhenJwtServiceRejectsToken() {
         MockServerWebExchange exchange = MockServerWebExchange.from(
                 MockServerHttpRequest.get("/teams/invite")
@@ -165,5 +196,59 @@ class AuthenticationFilterTest {
         verify(rbacService, never()).verifyAccess(any(), any(), any());
         verify(headerService, never()).applyAuthenticationHeaders(any(), any());
         Mockito.verifyNoMoreInteractions(jwtService, rbacService, headerService);
+    }
+
+    @Test
+    void bypassesAuthenticationForOptionsMethod() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.options("/api/something").build()
+        );
+        AtomicReference<ServerWebExchange> chainedExchange = new AtomicReference<>();
+        GatewayFilterChain chain = chained -> {
+            chainedExchange.set(chained);
+            return Mono.empty();
+        };
+
+        filter.filter(exchange, chain).block();
+
+        assertThat(chainedExchange.get()).isSameAs(exchange);
+        verifyNoSecurityInteractions();
+    }
+
+    @Test
+    void catchesGenericExceptionAndReturnsInternalServerError() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/fail/endpoint")
+                        .header("Authorization", "Bearer normal-token")
+                        .build()
+        );
+        GatewayFilterChain chain = mock(GatewayFilterChain.class);
+        
+        when(routeValidator.isSecured(exchange.getRequest())).thenReturn(true);
+        // Force a runtime exception from inside the filter logic
+        when(jwtService.authenticate("normal-token")).thenThrow(new RuntimeException("Unexpected systemic crash"));
+
+        filter.filter(exchange, chain).block();
+
+        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        verify(chain, never()).filter(any(ServerWebExchange.class));
+    }
+
+    @Test
+    void debuggingTokenDecodeHandlesVariousLengthsSafely() {
+        // Trigger the internal try-catch of decoding parts by sending a token with missing parts
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/teams/invite")
+                        .header("Authorization", "Bearer invalid.short")
+                        .build()
+        );
+        GatewayFilterChain chain = mock(GatewayFilterChain.class);
+        when(routeValidator.isSecured(exchange.getRequest())).thenReturn(true);
+        when(jwtService.authenticate("invalid.short"))
+                .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token"));
+
+        filter.filter(exchange, chain).block();
+
+        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }

@@ -62,6 +62,14 @@ public class Startup {
     @Column(nullable = false)
     private Long founderId;
 
+    // ← Startup moderation
+    @Enumerated(EnumType.STRING)
+    @Column(name = "moderation_status", nullable = false)
+    private ModerationStatus moderationStatus = ModerationStatus.APPROVED;
+
+    @Column(name = "moderation_reason")
+    private String moderationReason;
+
     // ← Soft delete flag
     @Column(nullable = false)
     private Boolean isDeleted = false;

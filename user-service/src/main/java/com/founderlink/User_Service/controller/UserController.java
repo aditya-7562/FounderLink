@@ -80,8 +80,15 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "Conflict — duplicate data")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,
+    public ResponseEntity<UserResponseDto> updateUser(
+            @RequestHeader("X-User-Id") Long authenticatedUserId,
+            @RequestHeader("X-User-Role") String userRole,
+            @PathVariable Long id,
             @RequestBody UserRequestDto userRequestDto) {
+        if (!authenticatedUserId.equals(id) && !"ROLE_ADMIN".equals(userRole)) {
+            log.warn("PUT /users/{} forbidden - authenticated user {} is not owner and not ADMIN", id, authenticatedUserId);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return ResponseEntity.ok(service.updateUser(id, userRequestDto));
     }
 

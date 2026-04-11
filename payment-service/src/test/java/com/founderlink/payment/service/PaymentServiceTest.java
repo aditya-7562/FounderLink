@@ -1,6 +1,8 @@
 package com.founderlink.payment.service;
 
 import com.founderlink.payment.command.PaymentCommandService;
+import com.founderlink.payment.dto.response.ConfirmPaymentResponse;
+import com.founderlink.payment.dto.response.CreateOrderResponse;
 import com.founderlink.payment.dto.response.PaymentResponseDto;
 import com.founderlink.payment.entity.Payment;
 import com.founderlink.payment.entity.PaymentStatus;
@@ -18,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -105,5 +108,41 @@ class PaymentServiceTest {
         PaymentStatus status = paymentQueryService.getPaymentStatus(paymentId);
 
         assertEquals(PaymentStatus.SUCCESS, status);
+    }
+
+    @Test
+    void getPaymentStatus_NotFound() {
+        when(paymentRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(PaymentNotFoundException.class, () -> paymentQueryService.getPaymentStatus(1L));
+    }
+
+    @Test
+    void getPaymentByInvestmentId_NotFound() {
+        when(paymentRepository.findByInvestmentId(101L)).thenReturn(Optional.empty());
+        assertThrows(PaymentNotFoundException.class, () -> paymentQueryService.getPaymentByInvestmentId(101L));
+    }
+
+    // COMMAND SERVICE TESTS
+
+    @Test
+    void createOrder_DelegatesToRazorpay() {
+        CreateOrderResponse mockResponse = new CreateOrderResponse("order_1", BigDecimal.TEN, "INR", 100L);
+        when(razorpayService.createOrder(100L)).thenReturn(mockResponse);
+
+        CreateOrderResponse result = paymentCommandService.createOrder(100L);
+
+        assertEquals(mockResponse, result);
+        verify(razorpayService).createOrder(100L);
+    }
+
+    @Test
+    void confirmPayment_DelegatesToRazorpay() {
+        ConfirmPaymentResponse mockResponse = new ConfirmPaymentResponse("SUCCESS", 100L);
+        when(razorpayService.confirmPayment("order_1", "pay_1", "sig_1")).thenReturn(mockResponse);
+
+        ConfirmPaymentResponse result = paymentCommandService.confirmPayment("order_1", "pay_1", "sig_1");
+
+        assertEquals(mockResponse, result);
+        verify(razorpayService).confirmPayment("order_1", "pay_1", "sig_1");
     }
 }

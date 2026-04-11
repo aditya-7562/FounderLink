@@ -62,7 +62,10 @@ class GetInvitationsTest {
 
     @Test
     void getInvitationsByUserId_Success() {
-        when(invitationRepository.findByInvitedUserId(300L)).thenReturn(List.of(invitation));
+        when(invitationRepository.findByInvitedUserId(
+                org.mockito.ArgumentMatchers.eq(300L),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(invitation)));
         when(invitationMapper.toResponseDto(invitation)).thenReturn(responseDto);
 
         List<InvitationResponseDto> result = invitationQueryService.getInvitationsByUserId(300L);
@@ -73,7 +76,10 @@ class GetInvitationsTest {
 
     @Test
     void getInvitationsByUserId_Empty() {
-        when(invitationRepository.findByInvitedUserId(300L)).thenReturn(List.of());
+        when(invitationRepository.findByInvitedUserId(
+                org.mockito.ArgumentMatchers.eq(300L),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
 
         List<InvitationResponseDto> result = invitationQueryService.getInvitationsByUserId(300L);
 
@@ -83,7 +89,10 @@ class GetInvitationsTest {
     @Test
     void getInvitationsByStartupId_Success() {
         when(startupServiceClient.getStartupById(101L)).thenReturn(startupResponseDto);
-        when(invitationRepository.findByStartupId(101L)).thenReturn(List.of(invitation));
+        when(invitationRepository.findByStartupId(
+                org.mockito.ArgumentMatchers.eq(101L),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(invitation)));
         when(invitationMapper.toResponseDto(invitation)).thenReturn(responseDto);
 
         List<InvitationResponseDto> result = invitationQueryService.getInvitationsByStartupId(101L, 5L);

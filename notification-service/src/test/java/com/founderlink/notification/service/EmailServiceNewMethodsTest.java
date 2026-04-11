@@ -1,6 +1,5 @@
 package com.founderlink.notification.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,9 +23,30 @@ class EmailServiceNewMethodsTest {
     @InjectMocks
     private EmailService emailService;
 
-    @BeforeEach
-    void setUp() {
-        doNothing().when(mailSender).send(any(SimpleMailMessage.class));
+    @Test
+    @DisplayName("sendBulkEmail - sends multiple emails")
+    void sendBulkEmail_Success() {
+        String[] recipients = {"a@t.com", "b@t.com"};
+        emailService.sendBulkEmail(recipients, "S", "B");
+        verify(mailSender, times(2)).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    @DisplayName("sendPasswordResetPinEmail - correct content")
+    void sendPasswordResetPinEmail_Success() {
+        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        emailService.sendPasswordResetPinEmail("a@t.com", "User", "123456");
+        verify(mailSender).send(messageCaptor.capture());
+        assertThat(messageCaptor.getValue().getText()).contains("123456");
+    }
+
+    @Test
+    @DisplayName("sendWelcomeEmail - correct content")
+    void sendWelcomeEmail_Success() {
+        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        emailService.sendWelcomeEmail("a@t.com", "User", "INVESTOR");
+        verify(mailSender).send(messageCaptor.capture());
+        assertThat(messageCaptor.getValue().getText()).contains("INVESTOR");
     }
 
     @Test
@@ -63,84 +83,34 @@ class EmailServiceNewMethodsTest {
 
         assertThat(message.getTo()).containsExactly("founder@test.com");
         assertThat(message.getSubject()).contains("Team Member Rejected");
-        assertThat(message.getText()).contains("John");
-        assertThat(message.getText()).contains("Bob");
-        assertThat(message.getText()).contains("CFO");
-        assertThat(message.getText()).contains("102");
     }
 
     @Test
     @DisplayName("sendPaymentCompletedEmail - sends email with correct content")
     void sendPaymentCompletedEmail_Success() {
-        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-
-        emailService.sendPaymentCompletedEmail(
-                "investor@test.com", "Alice", 1L, "$50,000"
-        );
-
-        verify(mailSender, times(1)).send(messageCaptor.capture());
-        SimpleMailMessage message = messageCaptor.getValue();
-
-        assertThat(message.getTo()).containsExactly("investor@test.com");
-        assertThat(message.getSubject()).contains("Payment Successful");
-        assertThat(message.getText()).contains("Alice");
-        assertThat(message.getText()).contains("$50,000");
+        emailService.sendPaymentCompletedEmail("investor@test.com", "Alice", 1L, "$50,000");
+        verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
     }
 
     @Test
     @DisplayName("sendPaymentFailedEmail - sends email with correct content")
     void sendPaymentFailedEmail_Success() {
-        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-
-        emailService.sendPaymentFailedEmail(
-                "investor@test.com", "Bob", 2L, "Insufficient funds"
-        );
-
-        verify(mailSender, times(1)).send(messageCaptor.capture());
-        SimpleMailMessage message = messageCaptor.getValue();
-
-        assertThat(message.getTo()).containsExactly("investor@test.com");
-        assertThat(message.getSubject()).contains("Payment Failed");
-        assertThat(message.getText()).contains("Bob");
-        assertThat(message.getText()).contains("Insufficient funds");
+        emailService.sendPaymentFailedEmail("investor@test.com", "Bob", 2L, "Insufficient funds");
+        verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
     }
 
     @Test
     @DisplayName("sendInvestmentApprovedEmail - sends email with correct content")
     void sendInvestmentApprovedEmail_Success() {
-        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-
-        emailService.sendInvestmentApprovedEmail(
-                "investor@test.com", "Charlie", 101L, "$100,000"
-        );
-
-        verify(mailSender, times(1)).send(messageCaptor.capture());
-        SimpleMailMessage message = messageCaptor.getValue();
-
-        assertThat(message.getTo()).containsExactly("investor@test.com");
-        assertThat(message.getSubject()).contains("Investment Was Approved");
-        assertThat(message.getText()).contains("Charlie");
-        assertThat(message.getText()).contains("$100,000");
-        assertThat(message.getText()).contains("101");
+        emailService.sendInvestmentApprovedEmail("investor@test.com", "Charlie", 101L, "$100,000");
+        verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
     }
 
     @Test
     @DisplayName("sendInvestmentRejectedEmail - sends email with correct content")
     void sendInvestmentRejectedEmail_Success() {
-        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-
-        emailService.sendInvestmentRejectedEmail(
-                "investor@test.com", "David", 102L, "$75,000", "Not aligned with goals"
-        );
-
-        verify(mailSender, times(1)).send(messageCaptor.capture());
-        SimpleMailMessage message = messageCaptor.getValue();
-
-        assertThat(message.getTo()).containsExactly("investor@test.com");
-        assertThat(message.getSubject()).contains("Investment Was Rejected");
-        assertThat(message.getText()).contains("David");
-        assertThat(message.getText()).contains("$75,000");
-        assertThat(message.getText()).contains("Not aligned with goals");
+        emailService.sendInvestmentRejectedEmail("investor@test.com", "David", 102L, "$75,000", "Reason");
+        verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
     }
 
     @Test

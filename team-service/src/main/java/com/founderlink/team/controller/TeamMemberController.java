@@ -265,7 +265,7 @@ public class TeamMemberController {
         }
 
         String[] tokens = sort.split(",");
-        String property = tokens[0].isBlank() ? defaultProperty : tokens[0].trim();
+        String property = tokens.length > 0 && !tokens[0].isBlank() ? tokens[0].trim() : defaultProperty;
         Sort.Direction direction = tokens.length > 1 && "desc".equalsIgnoreCase(tokens[1].trim())
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;

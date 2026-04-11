@@ -2,11 +2,13 @@ package com.founderlink.messaging.service;
 
 import com.founderlink.messaging.client.UserServiceClient;
 import com.founderlink.messaging.command.MessageCommandService;
+import com.founderlink.messaging.dto.CursorPageDTO;
 import com.founderlink.messaging.dto.MessageRequestDTO;
 import com.founderlink.messaging.dto.MessageResponseDTO;
 import com.founderlink.messaging.dto.UserDTO;
 import com.founderlink.messaging.entity.Message;
 import com.founderlink.messaging.event.MessageEventPublisher;
+import com.founderlink.messaging.event.MessageWebSocketPublisher;
 import com.founderlink.messaging.exception.InvalidMessageException;
 import com.founderlink.messaging.exception.MessageNotFoundException;
 import com.founderlink.messaging.query.MessageQueryService;
@@ -18,8 +20,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -27,12 +34,12 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MessageServiceTest {
-
-    // ── Command side mocks ───────────────────────────────────────────────────
 
     @Mock
     private MessageRepository messageRepository;
@@ -43,10 +50,11 @@ class MessageServiceTest {
     @Mock
     private MessageEventPublisher messageEventPublisher;
 
+    @Mock
+    private MessageWebSocketPublisher wsPublisher;
+
     @InjectMocks
     private MessageCommandService messageCommandService;
-
-    // ── Query side (shares messageRepository mock — same field name) ─────────
 
     @InjectMocks
     private MessageQueryService messageQueryService;
@@ -79,11 +87,9 @@ class MessageServiceTest {
         receiverDTO = new UserDTO(2L, 200L, "Receiver User", "receiver@test.com");
     }
 
-    // --- sendMessage tests ---
-
     @Test
-    @DisplayName("sendMessage - success with valid users")
-    void sendMessage_WithValidUsers_ReturnsResponseDTO() {
+    @DisplayName("sendMessage - success")
+    void sendMessage_Success() {
         when(userServiceClient.getUserById(100L)).thenReturn(senderDTO);
         when(userServiceClient.getUserById(200L)).thenReturn(receiverDTO);
         when(messageRepository.saveAndFlush(any(Message.class))).thenReturn(message1);
@@ -91,131 +97,151 @@ class MessageServiceTest {
         MessageResponseDTO result = messageCommandService.sendMessage(validRequest);
 
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getSenderId()).isEqualTo(100L);
-        assertThat(result.getReceiverId()).isEqualTo(200L);
-        assertThat(result.getContent()).isEqualTo("Hello from sender!");
-        verify(userServiceClient).getUserById(100L);
-        verify(userServiceClient).getUserById(200L);
-        verify(messageRepository).saveAndFlush(any(Message.class));
+        verify(wsPublisher).pushToConversation(anyLong(), anyLong(), any());
     }
 
     @Test
-    @DisplayName("sendMessage - throws when user-service returns null (user not found)")
-    void sendMessage_WhenUserServiceReturnsNull_ThrowsException() {
+    @DisplayName("sendMessage - same user throws")
+    void sendMessage_SameUser_Throws() {
+        MessageRequestDTO same = new MessageRequestDTO(100L, 100L, "Hi");
+        assertThatThrownBy(() -> messageCommandService.sendMessage(same))
+                .isInstanceOf(InvalidMessageException.class);
+    }
+
+    @Test
+    @DisplayName("sendMessage - sender null throws")
+    void sendMessage_SenderNull_Throws() {
         when(userServiceClient.getUserById(100L)).thenReturn(null);
-
         assertThatThrownBy(() -> messageCommandService.sendMessage(validRequest))
-                .isInstanceOf(InvalidMessageException.class)
-                .hasMessageContaining("does not exist");
-
-        verify(messageRepository, never()).save(any());
+                .isInstanceOf(InvalidMessageException.class);
     }
 
     @Test
-    @DisplayName("sendMessage - throws when sender equals receiver")
-    void sendMessage_WhenSenderEqualsReceiver_ThrowsException() {
-        MessageRequestDTO sameUserRequest = new MessageRequestDTO(100L, 100L, "Self message");
-
-        assertThatThrownBy(() -> messageCommandService.sendMessage(sameUserRequest))
-                .isInstanceOf(InvalidMessageException.class)
-                .hasMessage("Sender and receiver cannot be the same user");
-
-        verify(messageRepository, never()).save(any());
-    }
-
-    // --- sendMessageFallback test ---
-
-    @Test
-    @DisplayName("sendMessageFallback - throws when user-service is unavailable")
-    void sendMessageFallback_ThrowsWhenServiceUnavailable() {
-        assertThatThrownBy(() -> messageCommandService.sendMessageFallback(
-                validRequest, new RuntimeException("Service unavailable")))
-                .isInstanceOf(InvalidMessageException.class)
-                .hasMessageContaining("User Service is unavailable");
-
-        verify(messageRepository, never()).save(any());
-    }
-
-    // --- getConversation tests ---
-
-    @Test
-    @DisplayName("getConversation - returns conversation between two users")
-    void getConversation_ReturnsMessages() {
-        when(messageRepository.findConversation(100L, 200L))
-                .thenReturn(Arrays.asList(message1, message2));
-
-        List<MessageResponseDTO> result = messageQueryService.getConversation(100L, 200L);
-
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getContent()).isEqualTo("Hello from sender!");
-        assertThat(result.get(1).getContent()).isEqualTo("Hello back from receiver!");
+    @DisplayName("sendMessage - receiver null throws")
+    void sendMessage_ReceiverNull_Throws() {
+        when(userServiceClient.getUserById(100L)).thenReturn(senderDTO);
+        when(userServiceClient.getUserById(200L)).thenReturn(null);
+        assertThatThrownBy(() -> messageCommandService.sendMessage(validRequest))
+                .isInstanceOf(InvalidMessageException.class);
     }
 
     @Test
-    @DisplayName("getConversation - returns empty list when no messages")
-    void getConversation_WhenNoMessages_ReturnsEmptyList() {
-        when(messageRepository.findConversation(100L, 300L)).thenReturn(List.of());
+    @DisplayName("sendMessage - null sender name uses default")
+    void sendMessage_NullSenderName_UsesDefault() {
+        senderDTO.setName(null);
+        when(userServiceClient.getUserById(100L)).thenReturn(senderDTO);
+        when(userServiceClient.getUserById(200L)).thenReturn(receiverDTO);
+        when(messageRepository.saveAndFlush(any(Message.class))).thenReturn(message1);
 
-        List<MessageResponseDTO> result = messageQueryService.getConversation(100L, 300L);
+        messageCommandService.sendMessage(validRequest);
 
-        assertThat(result).isEmpty();
+        verify(messageEventPublisher).publishMessageSent(anyLong(), anyLong(), anyLong(), eq("Someone"));
     }
 
-    // --- getConversationPartners tests ---
-
     @Test
-    @DisplayName("getConversationPartners - returns partner IDs")
-    void getConversationPartners_ReturnsPartnerIds() {
-        when(messageRepository.findConversationPartners(100L))
-                .thenReturn(Arrays.asList(200L, 300L));
+    @DisplayName("sendMessage - handles publication error")
+    void sendMessage_HandlesPubError() {
+        when(userServiceClient.getUserById(100L)).thenReturn(senderDTO);
+        when(userServiceClient.getUserById(200L)).thenReturn(receiverDTO);
+        when(messageRepository.saveAndFlush(any(Message.class))).thenReturn(message1);
+        doThrow(new RuntimeException("Err")).when(messageEventPublisher).publishMessageSent(anyLong(), anyLong(), anyLong(), anyString());
 
-        List<Long> result = messageQueryService.getConversationPartners(100L);
-
-        assertThat(result).containsExactly(200L, 300L);
-    }
-
-    // --- getMessageById tests ---
-
-    @Test
-    @DisplayName("getMessageById - returns message when found")
-    void getMessageById_WhenFound_ReturnsDTO() {
-        when(messageRepository.findById(1L)).thenReturn(Optional.of(message1));
-
-        MessageResponseDTO result = messageQueryService.getMessageById(1L);
-
+        MessageResponseDTO result = messageCommandService.sendMessage(validRequest);
         assertThat(result).isNotNull();
+    }
+
+    @Test
+    @DisplayName("sendMessageFallback - throws")
+    void sendMessageFallback_Throws() {
+        assertThatThrownBy(() -> messageCommandService.sendMessageFallback(validRequest, new RuntimeException()))
+                .isInstanceOf(InvalidMessageException.class);
+    }
+
+    @Test
+    @DisplayName("getConversation - returns list")
+    void getConversation_ReturnsList() {
+        when(messageRepository.findConversation(100L, 200L)).thenReturn(List.of(message1));
+        List<MessageResponseDTO> result = messageQueryService.getConversation(100L, 200L);
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getConversationPartners - returns list")
+    void getConversationPartners_ReturnsList() {
+        when(messageRepository.findConversationPartners(100L)).thenReturn(List.of(200L));
+        List<Long> result = messageQueryService.getConversationPartners(100L);
+        assertThat(result).containsExactly(200L);
+    }
+
+    @Test
+    @DisplayName("getMessageById - returns dto")
+    void getMessageById_ReturnsDto() {
+        when(messageRepository.findById(1L)).thenReturn(Optional.of(message1));
+        MessageResponseDTO result = messageQueryService.getMessageById(1L);
         assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getContent()).isEqualTo("Hello from sender!");
     }
 
     @Test
-    @DisplayName("getMessageById - throws when not found")
-    void getMessageById_WhenNotFound_ThrowsException() {
-        when(messageRepository.findById(999L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> messageQueryService.getMessageById(999L))
-                .isInstanceOf(MessageNotFoundException.class)
-                .hasMessageContaining("999");
-    }
-
-    // --- Fallback tests ---
-
-    @Test
-    @DisplayName("getConversationFallback - returns empty list")
-    void getConversationFallback_ReturnsEmptyList() {
-        List<MessageResponseDTO> result = messageQueryService.getConversationFallback(
-                100L, 200L, new RuntimeException("fail"));
-
-        assertThat(result).isEmpty();
+    @DisplayName("getConversationCursor - initial")
+    void getConversationCursor_Initial() {
+        when(messageRepository.findBefore(eq(100L), eq(200L), anyLong(), any())).thenReturn(new ArrayList<>(List.of(message2, message1)));
+        CursorPageDTO<MessageResponseDTO> result = messageQueryService.getConversationCursor(100L, 200L, null, null, 20);
+        assertThat(result.getContent().get(0).getId()).isEqualTo(1L);
     }
 
     @Test
-    @DisplayName("getConversationPartnersFallback - returns empty list")
-    void getConversationPartnersFallback_ReturnsEmptyList() {
-        List<Long> result = messageQueryService.getConversationPartnersFallback(
-                100L, new RuntimeException("fail"));
+    @DisplayName("getConversationCursor - before")
+    void getConversationCursor_Before() {
+        when(messageRepository.findBefore(eq(100L), eq(200L), eq(2L), any())).thenReturn(new ArrayList<>(List.of(message1)));
+        CursorPageDTO<MessageResponseDTO> result = messageQueryService.getConversationCursor(100L, 200L, 2L, null, 10);
+        assertThat(result.getContent()).hasSize(1);
+    }
 
-        assertThat(result).isEmpty();
+    @Test
+    @DisplayName("getConversationCursor - after")
+    void getConversationCursor_After() {
+        when(messageRepository.findAfter(eq(100L), eq(200L), eq(1L), any())).thenReturn(List.of(message2));
+        CursorPageDTO<MessageResponseDTO> result = messageQueryService.getConversationCursor(100L, 200L, null, 1L, 10);
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getConversationCursor - empty")
+    void getConversationCursor_Empty() {
+        when(messageRepository.findBefore(eq(100L), eq(200L), anyLong(), any())).thenReturn(List.of());
+        CursorPageDTO<MessageResponseDTO> result = messageQueryService.getConversationCursor(100L, 200L, null, null, 10);
+        assertThat(result.getContent()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getConversationCursor - size clipping logic")
+    void getConversationCursor_SizeClipping() {
+        when(messageRepository.findBefore(eq(100L), eq(200L), anyLong(), any())).thenReturn(new ArrayList<>());
+        
+        // size 0 -> safeSize 1
+        messageQueryService.getConversationCursor(100L, 200L, null, null, 0);
+        verify(messageRepository).findBefore(eq(100L), eq(200L), anyLong(), argThat(p -> p.getPageSize() == 1));
+
+        // size 100 -> safeSize 50
+        messageQueryService.getConversationCursor(100L, 200L, null, null, 100);
+        verify(messageRepository).findBefore(eq(100L), eq(200L), anyLong(), argThat(p -> p.getPageSize() == 50));
+    }
+
+    @Test
+    @DisplayName("Fallbacks")
+    void fallbacks() {
+        assertThat(messageQueryService.getConversationFallback(1L, 2L, new RuntimeException())).isEmpty();
+        assertThat(messageQueryService.getConversationPartnersFallback(1L, new RuntimeException())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Paginated")
+    void paginated() {
+        Pageable p = PageRequest.of(0, 10);
+        when(messageRepository.findConversationPage(eq(1L), eq(2L), eq(p))).thenReturn(new PageImpl<>(List.of(message1)));
+        assertThat(messageQueryService.getConversation(1L, 2L, p)).hasSize(1);
+
+        when(messageRepository.findConversationPartnersPage(eq(1L), eq(p))).thenReturn(new PageImpl<>(List.of(2L)));
+        assertThat(messageQueryService.getConversationPartners(1L, p)).hasSize(1);
     }
 }

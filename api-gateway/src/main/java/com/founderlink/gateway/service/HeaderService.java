@@ -25,6 +25,7 @@ public class HeaderService {
                             .toList();
                     userHeaders.forEach(headers::remove);
                     headers.remove(AUTH_SOURCE_HEADER);
+                    headers.remove("X-Internal-Secret"); // Prevent client forgery of internal service calls
                     headers.set(USER_ID_HEADER, user.userId());
                     headers.set(USER_ROLE_HEADER, ROLE_PREFIX + user.role().name());
                     headers.set(AUTH_SOURCE_HEADER, "gateway");

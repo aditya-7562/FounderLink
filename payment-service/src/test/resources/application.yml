@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: payment-service-test
+  cloud:
+    config:
+      enabled: false
+  config:
+    import: optional:configserver:http://config-server:8888
+    import-check.enabled: false
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  rabbitmq:
+    host: localhost
+  data:
+    redis:
+      host: localhost
+
+eureka:
+  client:
+    enabled: false
+
+rabbitmq:
+  exchange: founderlink.exchange
+  dlx: founderlink.dlx
+  dlq: founderlink.dlq
+  payment:
+    completed:
+      routing-key: payment.completed
+    failed:
+      routing-key: payment.failed
+
+razorpay:
+  key:
+    id: dummy_id
+    secret: dummy_secret
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      wallet-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s

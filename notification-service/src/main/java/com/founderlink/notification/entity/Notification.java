@@ -34,14 +34,15 @@ public class Notification {
     private String message;
 
     @Column(name = "is_read")
-    private boolean read;
+    private boolean read = false;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        read = false;
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 }

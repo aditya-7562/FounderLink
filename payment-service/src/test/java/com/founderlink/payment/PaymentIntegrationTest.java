@@ -4,10 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.founderlink.payment.client.WalletServiceClient;
 import com.founderlink.payment.dto.request.ConfirmPaymentRequest;
 import com.founderlink.payment.dto.request.CreateOrderRequest;
+import com.founderlink.payment.dto.response.ConfirmPaymentResponse;
+import com.founderlink.payment.dto.response.CreateOrderResponse;
+import com.founderlink.payment.dto.response.PaymentResponseDto;
 import com.founderlink.payment.entity.Payment;
 import com.founderlink.payment.entity.PaymentStatus;
 import com.founderlink.payment.repository.PaymentRepository;
-import com.razorpay.Order;
+import com.founderlink.payment.serviceImpl.PaymentServiceImpl;
+import com.founderlink.payment.event.PaymentResultEventPublisher;
 import com.razorpay.RazorpayClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(properties = {"spring.cloud.config.enabled=false", "spring.cloud.config.import-check.enabled=false"})
 @AutoConfigureMockMvc
 class PaymentIntegrationTest {
 
@@ -45,6 +49,12 @@ class PaymentIntegrationTest {
     @MockBean
     private WalletServiceClient walletServiceClient;
 
+    @MockBean
+    private PaymentResultEventPublisher paymentResultEventPublisher;
+
+    @MockBean
+    private PaymentServiceImpl paymentService;
+
     @Test
     void createOrderE2E() throws Exception {
         Long userId = 100L;
@@ -55,12 +65,11 @@ class PaymentIntegrationTest {
         payment.setId(1L);
         payment.setInvestorId(userId);
         payment.setInvestmentId(investmentId);
-        payment.setAmount(BigDecimal.valueOf(500));
-        payment.setStatus(PaymentStatus.INITIATED);
-        payment.setRazorpayOrderId("order_existing");
+
+        CreateOrderResponse response = new CreateOrderResponse("order_123", BigDecimal.valueOf(500), "INR", investmentId);
 
         when(paymentRepository.findByInvestmentId(investmentId)).thenReturn(Optional.of(payment));
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(i -> i.getArgument(0));
+        when(paymentService.createOrder(investmentId)).thenReturn(response);
 
         mockMvc.perform(post("/payments/create-order")
                 .header("X-User-Id", userId)
@@ -69,7 +78,31 @@ class PaymentIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value("Razorpay order created successfully"))
-                .andExpect(jsonPath("$.data.orderId").value("order_existing"));
+                .andExpect(jsonPath("$.data.orderId").value("order_123"));
+    }
+
+    @Test
+    void confirmPaymentE2E() throws Exception {
+        Long userId = 100L;
+        ConfirmPaymentRequest request = new ConfirmPaymentRequest("order_123", "pay_456", "sign_789");
+
+        Payment payment = new Payment();
+        payment.setId(1L);
+        payment.setInvestorId(userId);
+        payment.setRazorpayOrderId("order_123");
+
+        ConfirmPaymentResponse response = new ConfirmPaymentResponse("SUCCESS", 1L);
+
+        when(paymentRepository.findByRazorpayOrderId("order_123")).thenReturn(Optional.of(payment));
+        when(paymentService.confirmPayment("order_123", "pay_456", "sign_789")).thenReturn(response);
+
+        mockMvc.perform(post("/payments/confirm")
+                .header("X-User-Id", userId)
+                .header("X-User-Role", "ROLE_INVESTOR")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Payment confirmed successfully"));
     }
 
     @Test
@@ -80,16 +113,40 @@ class PaymentIntegrationTest {
         Payment payment = new Payment();
         payment.setId(paymentId);
         payment.setInvestorId(userId);
-        payment.setAmount(BigDecimal.valueOf(1000));
-        payment.setStatus(PaymentStatus.SUCCESS);
+
+        PaymentResponseDto responseDto = new PaymentResponseDto();
+        responseDto.setId(paymentId);
+        responseDto.setStatus(PaymentStatus.SUCCESS);
 
         when(paymentRepository.findById(paymentId)).thenReturn(Optional.of(payment));
+        when(paymentService.getPaymentById(paymentId)).thenReturn(responseDto);
 
         mockMvc.perform(get("/payments/{paymentId}", paymentId)
                 .header("X-User-Id", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Payment retrieved successfully"))
-                .andExpect(jsonPath("$.data.id").value(paymentId))
-                .andExpect(jsonPath("$.data.status").value("SUCCESS"));
+                .andExpect(jsonPath("$.data.id").value(paymentId));
+    }
+
+    @Test
+    void getPaymentByInvestmentIdE2E() throws Exception {
+        Long userId = 100L;
+        Long investmentId = 200L;
+        Payment payment = new Payment();
+        payment.setId(1L);
+        payment.setInvestmentId(investmentId);
+        payment.setInvestorId(userId);
+
+        PaymentResponseDto responseDto = new PaymentResponseDto();
+        responseDto.setId(1L);
+        responseDto.setInvestmentId(investmentId);
+
+        when(paymentRepository.findByInvestmentId(investmentId)).thenReturn(Optional.of(payment));
+        when(paymentService.getPaymentByInvestmentId(investmentId)).thenReturn(responseDto);
+
+        mockMvc.perform(get("/payments/investment/{investmentId}", investmentId)
+                .header("X-User-Id", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.investmentId").value(investmentId));
     }
 }

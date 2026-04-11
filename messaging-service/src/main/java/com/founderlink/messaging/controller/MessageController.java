@@ -41,7 +41,11 @@ public class MessageController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed — invalid request body"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "503", description = "User service unavailable")
     })
-    public ResponseEntity<MessageResponseDTO> sendMessage(@Valid @RequestBody MessageRequestDTO requestDTO) {
+    public ResponseEntity<MessageResponseDTO> sendMessage(
+            @RequestHeader("X-User-Id") Long authenticatedUserId,
+            @Valid @RequestBody MessageRequestDTO requestDTO) {
+        // Override sender with authenticated user - never trust client-provided senderId
+        requestDTO.setSenderId(authenticatedUserId);
         log.info("POST /messages - sendMessage from: {} to: {}", requestDTO.getSenderId(), requestDTO.getReceiverId());
         MessageResponseDTO response = messageService.sendMessage(requestDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -61,62 +65,74 @@ public class MessageController {
     @GetMapping("/conversation/{user1}/{user2}")
     @Operation(summary = "Get conversation between users", description = "Retrieves all messages exchanged between two users.")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Conversation fetched successfully")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Conversation fetched successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden — user not part of conversation"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "503", description = "Service unavailable")
     })
     public ResponseEntity<?> getConversation(
             @PathVariable Long user1,
             @PathVariable Long user2,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String sort,
-            HttpServletRequest request) {
-        log.info("GET /messages/conversation/{}/{} - getConversation", user1, user2);
-        if (!isPaginatedRequest(request)) {
-            return ResponseEntity.ok(messageService.getConversation(user1, user2));
+            @RequestHeader(value = "X-User-Id", required = false) Long authenticatedUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @RequestParam Map<String, String> params) {
+
+        // RBAC: Only participants OR Admin can view conversation
+        if (authenticatedUserId != null && !authenticatedUserId.equals(user1) && !authenticatedUserId.equals(user2)
+                && !"ROLE_ADMIN".equals(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        Pageable pageable = buildPageable(page, size, sort, "createdAt", Sort.Direction.ASC);
-        return ResponseEntity.ok(toPaginatedResponse(messageService.getConversation(user1, user2, pageable)));
+        if (isPaginatedRequest(params)) {
+            int page = Integer.parseInt(params.getOrDefault("page", "0"));
+            int size = Integer.parseInt(params.getOrDefault("size", "20"));
+            Pageable pageable = buildPageable(page, size, params.get("sort"), "createdAt", Sort.Direction.DESC);
+            return ResponseEntity.ok(toPaginatedResponse(messageService.getConversation(user1, user2, pageable)));
+        }
+
+        return ResponseEntity.ok(messageService.getConversation(user1, user2));
     }
 
     @GetMapping("/partners/{userId}")
-    @Operation(summary = "Get conversation partners", description = "Retrieves all user IDs that have had conversations with the given user.")
+    @Operation(summary = "Get conversation partners", description = "Retrieves IDs of all users the specified user has exchanged messages with.")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Partners fetched successfully")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Partners fetched successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden — user not allowed to view partners")
     })
     public ResponseEntity<?> getConversationPartners(
             @PathVariable Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String sort,
-            HttpServletRequest request) {
-        log.info("GET /messages/partners/{} - getConversationPartners", userId);
-        if (!isPaginatedRequest(request)) {
-            return ResponseEntity.ok(messageService.getConversationPartners(userId));
+            @RequestHeader(value = "X-User-Id", required = false) Long authenticatedUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @RequestParam Map<String, String> params) {
+
+        if (authenticatedUserId != null && !authenticatedUserId.equals(userId) && !"ROLE_ADMIN".equals(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        int safePage = Math.max(page, 0);
-        int safeSize = Math.min(Math.max(size, 1), 50);
-        Pageable pageable = PageRequest.of(safePage, safeSize);
-        return ResponseEntity.ok(toPaginatedResponse(messageService.getConversationPartners(userId, pageable)));
+        if (isPaginatedRequest(params)) {
+            int page = Integer.parseInt(params.getOrDefault("page", "0"));
+            int size = Integer.parseInt(params.getOrDefault("size", "20"));
+            Pageable pageable = buildPageable(page, size, params.get("sort"), "id", Sort.Direction.DESC);
+            return ResponseEntity.ok(toPaginatedResponse(messageService.getConversationPartners(userId, pageable)));
+        }
+
+        return ResponseEntity.ok(messageService.getConversationPartners(userId));
     }
 
-    // ── Cursor-based endpoint (Step 3) ────────────────────────────────────────
-
     @GetMapping("/conversation/{user1}/{user2}/cursor")
-    @Operation(
-        summary = "Get conversation messages (cursor-based pagination)",
-        description = "Stable, real-time-safe pagination using message IDs as cursors. " +
-                      "Supply ?before=<id> to load older messages, ?after=<id> to catch up after a gap. " +
-                      "Omit both to receive the most recent messages. " +
-                      "nextCursor → older history (?before=), prevCursor → newer messages (?after=)."
-    )
+    @Operation(summary = "Get conversation by cursor", description = "Retrieves messages using cursor-based pagination for real-time sync.")
     public ResponseEntity<CursorPageDTO<MessageResponseDTO>> getConversationCursor(
             @PathVariable Long user1,
             @PathVariable Long user2,
+            @RequestHeader(value = "X-User-Id", required = false) Long authenticatedUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole,
             @RequestParam(required = false) Long before,
             @RequestParam(required = false) Long after,
             @RequestParam(defaultValue = "20") int size) {
+
+        if (authenticatedUserId != null && !authenticatedUserId.equals(user1) && !authenticatedUserId.equals(user2)
+                && !"ROLE_ADMIN".equals(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         log.info("GET /messages/conversation/{}/{}/cursor - before={}, after={}, size={}",
                  user1, user2, before, after, size);
                  
@@ -129,8 +145,8 @@ public class MessageController {
         return ResponseEntity.ok(result);
     }
 
-    private boolean isPaginatedRequest(HttpServletRequest request) {
-        return request.getParameterMap().containsKey("page");
+    private boolean isPaginatedRequest(Map<String, String> params) {
+        return params.containsKey("page");
     }
 
     private Pageable buildPageable(int page, int size, String sort, String defaultProperty, Sort.Direction defaultDirection) {
@@ -146,7 +162,7 @@ public class MessageController {
         }
 
         String[] tokens = sort.split(",");
-        String property = tokens[0].isBlank() ? defaultProperty : tokens[0].trim();
+        String property = (tokens.length > 0 && !tokens[0].isBlank()) ? tokens[0].trim() : defaultProperty;
         Sort.Direction direction = tokens.length > 1 && "desc".equalsIgnoreCase(tokens[1].trim())
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;

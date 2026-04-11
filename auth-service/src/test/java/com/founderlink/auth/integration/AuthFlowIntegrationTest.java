@@ -23,23 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = {
-        "spring.cloud.config.enabled=false",
-        "eureka.client.enabled=false",
-        "spring.config.import=",
-        "spring.datasource.url=jdbc:h2:mem:authdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-        "spring.datasource.driver-class-name=org.h2.Driver",
-        "spring.datasource.username=sa",
-        "spring.datasource.password=",
-        "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.jpa.show-sql=false",
-        "jwt.secret=VGhpc0lzQVN0cm9uZ0pXVFNlY3JldEtleUZvclRlc3RzMTIzNDU2Nzg5MDEy",
-        "resilience4j.retry.instances.userServiceSync.max-attempts=3",
-        "resilience4j.retry.instances.userServiceSync.wait-duration=1ms",
-        "resilience4j.retry.instances.userServiceSync.enable-exponential-backoff=false",
-        "resilience4j.circuitbreaker.instances.userServiceSync.sliding-window-size=10",
-        "resilience4j.circuitbreaker.instances.userServiceSync.minimum-number-of-calls=10"
-})
+@SpringBootTest(properties = {"spring.cloud.config.enabled=false", "spring.cloud.config.import-check.enabled=false"})
 @AutoConfigureMockMvc
 class AuthFlowIntegrationTest {
 

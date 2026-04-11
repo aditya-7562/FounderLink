@@ -68,6 +68,9 @@ class AuthServiceTest {
     private com.founderlink.auth.publisher.PasswordResetEventPublisher passwordResetEventPublisher;
 
     @Mock
+    private com.founderlink.auth.publisher.UserRegisteredEventPublisher userRegisteredEventPublisher;
+
+    @Mock
     private Authentication authentication;
 
     @InjectMocks
@@ -109,6 +112,7 @@ class AuthServiceTest {
         assertThat(savedUser.getRole()).isEqualTo(Role.FOUNDER);
 
         verify(syncService, times(1)).syncUser(savedUser);
+        verify(userRegisteredEventPublisher, times(1)).publishUserRegisteredEvent(any());
     }
 
     @Test

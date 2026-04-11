@@ -3,6 +3,7 @@ package com.founderlink.investment.service;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -144,7 +145,7 @@ class UpdateInvestmentStatusEventPublishingTest {
 
         // Assert: Should NOT publish rejected event
         verify(eventPublisher).publishInvestmentApprovedEvent(any(InvestmentApprovedEvent.class));
-        verify(eventPublisher).publishInvestmentRejectedEvent(any(InvestmentRejectedEvent.class));
+        verify(eventPublisher, never()).publishInvestmentRejectedEvent(any(InvestmentRejectedEvent.class));
     }
 
     // ================= INVESTMENT REJECTED EVENT TESTS =================
@@ -214,7 +215,7 @@ class UpdateInvestmentStatusEventPublishingTest {
 
         // Assert: Should NOT publish approved event
         verify(eventPublisher).publishInvestmentRejectedEvent(any(InvestmentRejectedEvent.class));
-        // Since we only created one rejected scenario, we don't want any approved events
+        verify(eventPublisher, never()).publishInvestmentApprovedEvent(any(InvestmentApprovedEvent.class));
         // but we'll allow the framework to verify only rejected was called
     }
 

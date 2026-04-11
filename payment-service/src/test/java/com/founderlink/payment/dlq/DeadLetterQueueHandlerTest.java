@@ -1,7 +1,12 @@
 package com.founderlink.payment.dlq;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -9,9 +14,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 class DeadLetterQueueHandlerTest {
@@ -26,7 +29,7 @@ class DeadLetterQueueHandlerTest {
     private DeadLetterQueueHandler deadLetterQueueHandler;
 
     @Test
-    void handleDeadLetterMessage_Success() {
+    void handleDeadLetterMessage_Success_CreatedEvent() {
         String jsonMessage = "{\"eventType\":\"InvestmentCreatedEvent\",\"investmentId\":\"123\",\"investorId\":\"456\"}";
 
         deadLetterQueueHandler.handleDeadLetterMessage(jsonMessage);
@@ -34,13 +37,23 @@ class DeadLetterQueueHandlerTest {
         verify(dlqLogRepository, times(1)).save(any(DeadLetterLog.class));
 
         DeadLetterQueueHandler.DeadLetterQueueStats stats = deadLetterQueueHandler.getStats();
-        assertEquals(1, stats.totalMessagesReceived());
-        assertEquals(0, stats.processingErrors());
-        assertEquals(1, stats.successfullyLogged());
+        assertThat(stats.totalMessagesReceived()).isEqualTo(1);
+        assertThat(stats.processingErrors()).isZero();
     }
 
     @Test
-    void handleDeadLetterMessage_ParsingError() {
+    void handleDeadLetterMessage_Success_InferredRejectedEvent() {
+        String jsonMessage = "{\"investmentId\":\"123\",\"rejectionReason\":\"bad\"}";
+
+        deadLetterQueueHandler.handleDeadLetterMessage(jsonMessage);
+
+        verify(dlqLogRepository).save(any(DeadLetterLog.class));
+        DeadLetterQueueHandler.DeadLetterQueueStats stats = deadLetterQueueHandler.getStats();
+        assertThat(stats.successfullyLogged()).isEqualTo(1);
+    }
+
+    @Test
+    void handleDeadLetterMessage_ParsingError_IncrementsErrorCount() {
         String invalidJson = "invalid-json";
 
         deadLetterQueueHandler.handleDeadLetterMessage(invalidJson);
@@ -48,8 +61,29 @@ class DeadLetterQueueHandlerTest {
         verify(dlqLogRepository, never()).save(any(DeadLetterLog.class));
 
         DeadLetterQueueHandler.DeadLetterQueueStats stats = deadLetterQueueHandler.getStats();
-        assertEquals(1, stats.totalMessagesReceived());
-        assertEquals(1, stats.processingErrors());
-        assertEquals(0, stats.successfullyLogged());
+        assertThat(stats.totalMessagesReceived()).isEqualTo(1);
+        assertThat(stats.processingErrors()).isEqualTo(1);
+    }
+
+    @Test
+    void handleDeadLetterMessage_RepositoryError_IncrementsErrorCount() {
+        String jsonMessage = "{\"eventType\":\"TestEvent\"}";
+        doThrow(new RuntimeException("DB Error")).when(dlqLogRepository).save(any());
+
+        deadLetterQueueHandler.handleDeadLetterMessage(jsonMessage);
+
+        DeadLetterQueueHandler.DeadLetterQueueStats stats = deadLetterQueueHandler.getStats();
+        assertThat(stats.processingErrors()).isEqualTo(1);
+    }
+
+    @Test
+    void handleDeadLetterMessage_MissingFields_UsesDefaults() {
+        String jsonMessage = "{}";
+
+        deadLetterQueueHandler.handleDeadLetterMessage(jsonMessage);
+
+        verify(dlqLogRepository).save(any(DeadLetterLog.class));
+        DeadLetterQueueHandler.DeadLetterQueueStats stats = deadLetterQueueHandler.getStats();
+        assertThat(stats.successfullyLogged()).isEqualTo(1);
     }
 }

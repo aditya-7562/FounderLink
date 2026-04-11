@@ -1,6 +1,7 @@
 package com.founderlink.User_Service.dto;
 
 import com.founderlink.User_Service.entity.Role;
+import com.founderlink.User_Service.entity.UserStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,5 +19,6 @@ public class UserResponseDto {
     private String experience;
     private String bio;
     private String portfolioLinks;
+    private UserStatus status;
 
 }

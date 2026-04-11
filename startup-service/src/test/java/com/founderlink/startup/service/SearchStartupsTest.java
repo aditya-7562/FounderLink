@@ -84,10 +84,13 @@ class SearchStartupsTest {
     void searchStartups_NoFilters_ReturnsAll() {
 
         // Arrange
-        when(startupRepository
-                .findByIsDeletedFalse())
-                .thenReturn(
-                        List.of(startup1, startup2));
+        when(startupRepository.searchActiveStartups(
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(startup1, startup2)));
         when(startupMapper.toResponseDto(startup1))
                 .thenReturn(responseDto1);
         when(startupMapper.toResponseDto(startup2))
@@ -109,10 +112,13 @@ class SearchStartupsTest {
     void searchStartups_ByIndustry_Success() {
 
         // Arrange
-        when(startupRepository
-                .findByIndustryAndIsDeletedFalse(
-                        "EdTech"))
-                .thenReturn(List.of(startup1));
+        when(startupRepository.searchActiveStartups(
+                org.mockito.ArgumentMatchers.eq("EdTech"),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(startup1)));
         when(startupMapper.toResponseDto(startup1))
                 .thenReturn(responseDto1);
 
@@ -134,10 +140,13 @@ class SearchStartupsTest {
     void searchStartups_ByStage_Success() {
 
         // Arrange
-        when(startupRepository
-                .findByStageAndIsDeletedFalse(
-                        StartupStage.MVP))
-                .thenReturn(List.of(startup1));
+        when(startupRepository.searchActiveStartups(
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.eq(StartupStage.MVP),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(startup1)));
         when(startupMapper.toResponseDto(startup1))
                 .thenReturn(responseDto1);
 
@@ -160,10 +169,13 @@ class SearchStartupsTest {
     void searchStartups_ByIndustryAndStage_Success() {
 
         // Arrange
-        when(startupRepository
-                .findByIndustryAndStageAndIsDeletedFalse(
-                        "EdTech", StartupStage.MVP))
-                .thenReturn(List.of(startup1));
+        when(startupRepository.searchActiveStartups(
+                org.mockito.ArgumentMatchers.eq("EdTech"),
+                org.mockito.ArgumentMatchers.eq(StartupStage.MVP),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(startup1)));
         when(startupMapper.toResponseDto(startup1))
                 .thenReturn(responseDto1);
 
@@ -186,11 +198,13 @@ class SearchStartupsTest {
     void searchStartups_ByFundingRange_Success() {
 
         // Arrange
-        when(startupRepository
-                .findByFundingGoalBetweenAndIsDeletedFalse(
-                        new BigDecimal("1000000.00"),
-                        new BigDecimal("6000000.00")))
-                .thenReturn(List.of(startup1));
+        when(startupRepository.searchActiveStartups(
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.eq(new BigDecimal("1000000.00")),
+                org.mockito.ArgumentMatchers.eq(new BigDecimal("6000000.00")),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(startup1)));
         when(startupMapper.toResponseDto(startup1))
                 .thenReturn(responseDto1);
 
@@ -249,10 +263,13 @@ class SearchStartupsTest {
     void searchStartups_NoResults_ReturnsEmpty() {
 
         // Arrange
-        when(startupRepository
-                .findByIndustryAndIsDeletedFalse(
-                        "BlockChain"))
-                .thenReturn(List.of());
+        when(startupRepository.searchActiveStartups(
+                org.mockito.ArgumentMatchers.eq("BlockChain"),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
 
         // Act
         List<StartupResponseDto> result =

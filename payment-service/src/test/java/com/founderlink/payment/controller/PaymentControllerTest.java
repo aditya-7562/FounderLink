@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(PaymentController.class)
+@WebMvcTest(controllers = PaymentController.class, properties = {"spring.cloud.config.enabled=false", "spring.cloud.config.import-check.enabled=false"})
 @ExtendWith(MockitoExtension.class)
 class PaymentControllerTest {
 

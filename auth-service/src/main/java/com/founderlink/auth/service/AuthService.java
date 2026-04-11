@@ -4,6 +4,8 @@ import com.founderlink.auth.dto.*;
 import com.founderlink.auth.entity.PasswordResetPin;
 import com.founderlink.auth.entity.Role;
 import com.founderlink.auth.entity.User;
+import com.founderlink.auth.entity.UserStatus;
+import com.founderlink.auth.exception.AccountBannedException;
 import com.founderlink.auth.exception.*;
 import com.founderlink.auth.publisher.PasswordResetEventPublisher;
 import com.founderlink.auth.repository.PasswordResetPinRepository;
@@ -108,6 +110,12 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
 
+        // Block banned/suspended users from logging in
+        if (user.getStatus() != null && user.getStatus() != UserStatus.ACTIVE) {
+            log.warn("Login blocked for user {} - account status: {}", user.getEmail(), user.getStatus());
+            throw new AccountBannedException("Your account is " + user.getStatus().name().toLowerCase() + ". Please contact support.");
+        }
+
         String token = jwtService.generateToken(
                 user.getId(),
                 user.getRole().name()
@@ -122,6 +130,12 @@ public class AuthService {
 
         User user = userRepository.findById(persistedRefreshToken.getUserId())
                 .orElseThrow(() -> new InvalidRefreshTokenException("Refresh token references a missing user"));
+
+        // Block banned/suspended users from refreshing tokens
+        if (user.getStatus() != null && user.getStatus() != UserStatus.ACTIVE) {
+            log.warn("Token refresh blocked for userId {} - account status: {}", user.getId(), user.getStatus());
+            throw new AccountBannedException("Your account is " + user.getStatus().name().toLowerCase() + ". Please contact support.");
+        }
 
         log.debug("Accepted refresh token usage");
 

@@ -38,6 +38,7 @@ gateway:
     public-paths:
       - /auth/**
       - /eureka/**
+    public-get-paths:
       - /startup
       - /startup/search
       - /startup/details/**
@@ -153,3 +154,4 @@ eureka:
 
 jwt:
   secret: FounderLinkSecretKeyForJWTTokenGeneration2024SecureKey
+

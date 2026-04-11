@@ -17,6 +17,12 @@ spring:
   cloud:
     config:
       enabled: false
+      fail-fast: false
+      import-check:
+        enabled: false
+
+  config:
+    import: ""
 
   rabbitmq:
     host: localhost

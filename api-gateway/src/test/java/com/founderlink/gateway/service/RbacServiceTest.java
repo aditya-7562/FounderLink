@@ -175,6 +175,53 @@ class RbacServiceTest {
                 .hasMessageContaining("Ambiguous RBAC rules");
     }
 
+    @Test
+    void rejectsRuleConfigurationMissingMethod() {
+        RbacProperties.Rule badRule = new RbacProperties.Rule();
+        badRule.setPath("/test");
+        badRule.setRoles(List.of(Role.ADMIN));
+        
+        assertThatThrownBy(() -> new RbacService(properties(RbacProperties.DefaultPolicy.DENY, badRule)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("missing HTTP method");
+    }
+
+    @Test
+    void rejectsRuleConfigurationMissingPath() {
+        RbacProperties.Rule badRule = new RbacProperties.Rule();
+        badRule.setMethod(HttpMethod.GET);
+        badRule.setPath("");
+        badRule.setRoles(List.of(Role.ADMIN));
+        
+        assertThatThrownBy(() -> new RbacService(properties(RbacProperties.DefaultPolicy.DENY, badRule)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("missing path");
+    }
+
+    @Test
+    void rejectsRuleConfigurationMissingRoles() {
+        RbacProperties.Rule badRule = new RbacProperties.Rule();
+        badRule.setMethod(HttpMethod.GET);
+        badRule.setPath("/test");
+        badRule.setRoles(List.of());
+        
+        assertThatThrownBy(() -> new RbacService(properties(RbacProperties.DefaultPolicy.DENY, badRule)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("at least one role");
+    }
+    
+    @Test
+    void evaluatesEmptyStringOverlapForWildcardMatching() {
+        RbacService service = new RbacService(properties(
+                RbacProperties.DefaultPolicy.DENY,
+                rule(HttpMethod.GET, "/*/test/**", Role.ADMIN),
+                rule(HttpMethod.GET, "/api/test", Role.FOUNDER)
+        ));
+        
+        assertThatCode(() -> service.verifyAccess(HttpMethod.GET, "/api/test", Role.ADMIN))
+                .doesNotThrowAnyException();
+    }
+
     @ParameterizedTest(name = "{index}: allows {2} for {0} {1}")
     @MethodSource("allowedConfiguredRules")
     void allowsConfiguredRolesForEveryApplicationRule(HttpMethod method, String path, Role role) {

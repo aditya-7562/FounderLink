@@ -18,6 +18,9 @@ spring:
     config:
       enabled: false
 
+rabbitmq:
+  exchange: test-exchange
+
 eureka:
   client:
     enabled: false

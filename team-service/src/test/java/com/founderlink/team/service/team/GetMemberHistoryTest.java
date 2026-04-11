@@ -84,10 +84,11 @@ class GetMemberHistoryTest {
 
         // Arrange
         when(teamMemberRepository
-                .findByUserId(202L))
-                .thenReturn(List.of(
-                        activeMember,
-                        inactiveMember));
+                .findByUserId(
+                        org.mockito.ArgumentMatchers.eq(202L),
+                        org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(
+                        activeMember, inactiveMember)));
         when(teamMemberMapper
                 .toResponseDto(activeMember))
                 .thenReturn(activeResponseDto);
@@ -118,8 +119,10 @@ class GetMemberHistoryTest {
 
         // Arrange
         when(teamMemberRepository
-                .findByUserId(202L))
-                .thenReturn(List.of());
+                .findByUserId(
+                        org.mockito.ArgumentMatchers.eq(202L),
+                        org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
 
         // Act
         List<TeamMemberResponseDto> result =

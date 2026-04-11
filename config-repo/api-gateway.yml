@@ -198,6 +198,23 @@ rbac:
   default-policy: DENY
   rules:
 
+    # ADMIN ROUTES
+    - method: PUT
+      path: /users/admin/**
+      roles: [ADMIN]
+
+    - method: GET
+      path: /users/admin/**
+      roles: [ADMIN]
+
+    - method: PUT
+      path: /startup/admin/**
+      roles: [ADMIN]
+
+    - method: DELETE
+      path: /startup/admin/**
+      roles: [ADMIN]
+
     - method: GET
       path: /users
       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]

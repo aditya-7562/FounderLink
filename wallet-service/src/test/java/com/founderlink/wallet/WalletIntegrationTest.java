@@ -24,18 +24,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(properties = {"spring.cloud.config.enabled=false", "spring.cloud.config.import-check.enabled=false"})
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-        "spring.data.redis.host=localhost",
-        "spring.data.redis.port=6379",
-        "spring.cache.type=none",
-        "spring.datasource.url=jdbc:h2:mem:testdb",
-        "spring.datasource.driver-class-name=org.h2.Driver",
-        "spring.jpa.hibernate.ddl-auto=create-drop",
-        "eureka.client.enabled=false",
-        "spring.cloud.config.enabled=false"
-})
 class WalletIntegrationTest {
 
     @Autowired
@@ -49,9 +39,6 @@ class WalletIntegrationTest {
 
     @MockBean
     private WalletTransactionRepository walletTransactionRepository;
-
-    @MockBean
-    private CacheManager cacheManager;
 
     @Test
     void createWalletE2E() throws Exception {

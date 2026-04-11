@@ -45,6 +45,28 @@ class RouteValidatorTest {
                 .isTrue();
     }
 
+    @Test
+    void treatsConfiguredPublicGetPathAsUnsecuredForHead() {
+        RouteValidator validator = new RouteValidator(properties(
+                List.of("/auth/**"),
+                List.of("/startup/details/**")
+        ));
+
+        assertThat(validator.isSecured(MockServerHttpRequest.head("/startup/details/42").build()))
+                .isFalse();
+    }
+
+    @Test
+    void handlesNullConfiguredPathsGracefully() {
+        RouteValidator validator = new RouteValidator(properties(null, null));
+        
+        // Everything should be secured by default when no public paths exist
+        assertThat(validator.isSecured(MockServerHttpRequest.get("/auth/login").build()))
+                .isTrue();
+        assertThat(validator.isSecured(MockServerHttpRequest.post("/api/data").build()))
+                .isTrue();
+    }
+
     private GatewaySecurityProperties properties(List<String> publicPaths, List<String> publicGetPaths) {
         GatewaySecurityProperties properties = new GatewaySecurityProperties();
         properties.setPublicPaths(publicPaths);

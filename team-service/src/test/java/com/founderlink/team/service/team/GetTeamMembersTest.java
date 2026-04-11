@@ -60,7 +60,10 @@ class GetTeamMembersTest {
     @Test
     void getTeamByStartupId_AsFounder_Success() {
         when(startupServiceClient.getStartupById(101L)).thenReturn(startupResponseDto);
-        when(teamMemberRepository.findByStartupIdAndIsActiveTrue(101L)).thenReturn(List.of(teamMember));
+        when(teamMemberRepository.findByStartupIdAndIsActiveTrue(
+                org.mockito.ArgumentMatchers.eq(101L),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(teamMember)));
         when(teamMemberMapper.toResponseDto(teamMember)).thenReturn(responseDto);
 
         List<TeamMemberResponseDto> result = teamMemberQueryService.getTeamByStartupId(101L, 5L, "ROLE_FOUNDER");
@@ -71,7 +74,10 @@ class GetTeamMembersTest {
 
     @Test
     void getTeamByStartupId_AsInvestor_Success() {
-        when(teamMemberRepository.findByStartupIdAndIsActiveTrue(101L)).thenReturn(List.of(teamMember));
+        when(teamMemberRepository.findByStartupIdAndIsActiveTrue(
+                org.mockito.ArgumentMatchers.eq(101L),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(teamMember)));
         when(teamMemberMapper.toResponseDto(teamMember)).thenReturn(responseDto);
 
         List<TeamMemberResponseDto> result = teamMemberQueryService.getTeamByStartupId(101L, 300L, "ROLE_INVESTOR");
@@ -98,7 +104,10 @@ class GetTeamMembersTest {
 
     @Test
     void getMemberHistory_Success() {
-        when(teamMemberRepository.findByUserId(300L)).thenReturn(List.of(teamMember));
+        when(teamMemberRepository.findByUserId(
+                org.mockito.ArgumentMatchers.eq(300L),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(teamMember)));
         when(teamMemberMapper.toResponseDto(teamMember)).thenReturn(responseDto);
 
         List<TeamMemberResponseDto> result = teamMemberQueryService.getMemberHistory(300L);
@@ -109,7 +118,10 @@ class GetTeamMembersTest {
 
     @Test
     void getActiveMemberRoles_Success() {
-        when(teamMemberRepository.findByUserIdAndIsActiveTrue(300L)).thenReturn(List.of(teamMember));
+        when(teamMemberRepository.findByUserIdAndIsActiveTrue(
+                org.mockito.ArgumentMatchers.eq(300L),
+                org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(teamMember)));
         when(teamMemberMapper.toResponseDto(teamMember)).thenReturn(responseDto);
 
         List<TeamMemberResponseDto> result = teamMemberQueryService.getActiveMemberRoles(300L);

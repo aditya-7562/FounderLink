@@ -139,13 +139,146 @@ class TeamMemberControllerTest {
     }
 
     @Test
-    void getActiveMemberRoles_Success() throws Exception {
-        when(teamMemberService.getActiveMemberRoles(300L)).thenReturn(List.of(responseDto));
+    void getTeamByStartupId_Paginated_Success() throws Exception {
+        org.springframework.data.domain.Page<TeamMemberResponseDto> page = new org.springframework.data.domain.PageImpl<>(List.of(responseDto));
+        when(teamMemberService.getTeamByStartupId(eq(101L), eq(5L), eq("ROLE_FOUNDER"), any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/teams/startup/101")
+                .header("X-User-Id", 5L)
+                .header("X-User-Role", "ROLE_FOUNDER")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content[0].startupId").value(101L))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
+    }
+
+    @Test
+    void getTeamByStartupId_AsInvestor_Success() throws Exception {
+        when(teamMemberService.getTeamByStartupId(101L, 7L, "ROLE_INVESTOR"))
+                .thenReturn(List.of(responseDto));
+
+        mockMvc.perform(get("/teams/startup/101")
+                .header("X-User-Id", 7L)
+                .header("X-User-Role", "ROLE_INVESTOR"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getTeamByStartupId_AsAdmin_Success() throws Exception {
+        when(teamMemberService.getTeamByStartupId(101L, 99L, "ROLE_ADMIN"))
+                .thenReturn(List.of(responseDto));
+
+        mockMvc.perform(get("/teams/startup/101")
+                .header("X-User-Id", 99L)
+                .header("X-User-Role", "ROLE_ADMIN"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getTeamByStartupId_InvalidRole_Forbidden() throws Exception {
+        mockMvc.perform(get("/teams/startup/101")
+                .header("X-User-Id", 123L)
+                .header("X-User-Role", "ROLE_WRONG"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getMemberHistory_Paginated_Success() throws Exception {
+        org.springframework.data.domain.Page<TeamMemberResponseDto> page = new org.springframework.data.domain.PageImpl<>(List.of(responseDto));
+        when(teamMemberService.getMemberHistory(eq(300L), any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/teams/member/history")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content[0].userId").value(300L));
+    }
+
+    @Test
+    void getActiveMemberRoles_Paginated_Success() throws Exception {
+        org.springframework.data.domain.Page<TeamMemberResponseDto> page = new org.springframework.data.domain.PageImpl<>(List.of(responseDto));
+        when(teamMemberService.getActiveMemberRoles(eq(300L), any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/teams/member/active")
                 .header("X-User-Id", 300L)
-                .header("X-User-Role", "ROLE_COFOUNDER"))
+                .header("X-User-Role", "ROLE_COFOUNDER")
+                .param("page", "0")
+                .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Active roles fetched successfully"));
+                .andExpect(jsonPath("$.data.content[0].userId").value(300L));
+    }
+
+    @Test
+    void resolveSort_Exhaustive() throws Exception {
+        org.springframework.data.domain.Page<TeamMemberResponseDto> page = new org.springframework.data.domain.PageImpl<>(List.of(responseDto));
+        when(teamMemberService.getMemberHistory(any(), any())).thenReturn(page);
+
+        // Case: sort is null
+        mockMvc.perform(get("/teams/member/history")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER")
+                .param("page", "0"))
+                .andExpect(status().isOk());
+
+        // Case: sort=id (tokens.length == 1)
+        mockMvc.perform(get("/teams/member/history")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER")
+                .param("page", "0")
+                .param("sort", "id"))
+                .andExpect(status().isOk());
+                
+        // Case: sort=id,asc
+        mockMvc.perform(get("/teams/member/history")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER")
+                .param("page", "0")
+                .param("sort", "id,asc"))
+                .andExpect(status().isOk());
+
+        // Case: sort=,desc
+        mockMvc.perform(get("/teams/member/history")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER")
+                .param("page", "0")
+                .param("sort", ",desc"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void rbac_MissingRoleBranches() throws Exception {
+        // Test ROLE_ADMIN branch for getMemberHistory
+        when(teamMemberService.getMemberHistory(99L)).thenReturn(List.of());
+        mockMvc.perform(get("/teams/member/history")
+                .header("X-User-Id", 99L)
+                .header("X-User-Role", "ROLE_ADMIN"))
+                .andExpect(status().isOk());
+
+        // Test ROLE_ADMIN branch for getActiveMemberRoles
+        when(teamMemberService.getActiveMemberRoles(99L)).thenReturn(List.of());
+        mockMvc.perform(get("/teams/member/active")
+                .header("X-User-Id", 99L)
+                .header("X-User-Role", "ROLE_ADMIN"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void isPaginated_False_Check() throws Exception {
+        // Trigger non-paginated path in getMemberHistory
+        when(teamMemberService.getMemberHistory(300L)).thenReturn(List.of());
+        mockMvc.perform(get("/teams/member/history")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER"))
+                .andExpect(status().isOk());
+
+        // Trigger non-paginated path in getActiveMemberRoles
+        when(teamMemberService.getActiveMemberRoles(300L)).thenReturn(List.of());
+        mockMvc.perform(get("/teams/member/active")
+                .header("X-User-Id", 300L)
+                .header("X-User-Role", "ROLE_COFOUNDER"))
+                .andExpect(status().isOk());
     }
 }

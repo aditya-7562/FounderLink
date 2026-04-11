@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: team-service-test
+  config:
+    import: ""
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+    openfeign:
+      circuitbreaker:
+        enabled: false
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+  data:
+    redis:
+      repositories:
+        enabled: false
+  cache:
+    type: none
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+server:
+  port: 0
+
+rabbitmq:
+  exchange: test.exchange
+  team:
+    queue: test.team.queue
+    routing-key: team.member
+    invite:
+      routing-key: team.invite
+    accepted:
+      routing-key: team.accepted
+      queue: test.team.accepted.queue
+    rejected:
+      routing-key: team.rejected
+      queue: test.team.rejected.queue
+  startup:
+    deleted:
+      queue: test.startup.deleted.queue
+      routing-key: startup.deleted

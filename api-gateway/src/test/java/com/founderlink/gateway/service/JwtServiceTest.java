@@ -151,6 +151,79 @@ class JwtServiceTest {
         assertThat(exception.getReason()).isEqualTo("Token role is invalid: SUPER_ADMIN");
     }
 
+    @Test
+    void acceptsSecretNotBase64EncodedButLongEnough() {
+        String rawSecret = "ThisIsARandomRawStringSecretThatIsLongEnoughToBypassBase64Check!";
+        JwtService rawJwtService = new JwtService(rawSecret);
+        
+        SecretKey rawKey = Keys.hmacShaKeyFor(rawSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        
+        String token = Jwts.builder()
+                .subject("user-123")
+                .claim("role", "FOUNDER")
+                .issuedAt(Date.from(Instant.now().minusSeconds(60)))
+                .expiration(Date.from(Instant.now().plusSeconds(3600)))
+                .signWith(rawKey)
+                .compact();
+                
+        AuthenticatedUser user = rawJwtService.authenticate(token);
+        assertThat(user.userId()).isEqualTo("user-123");
+    }
+
+    @Test
+    void constructorThrowsExceptionWhenSecretIsTooShort() {
+        IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(
+            IllegalArgumentException.class, 
+            () -> new JwtService("short-secret")
+        );
+        assertThat(exception.getMessage()).contains("at least 256 bits (32 bytes)");
+    }
+    
+    @Test
+    void rejectsTokenWithInvalidSignature() {
+        // Create token with a different key
+        SecretKey wrongKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode("AnotherSecretKeyForJWTTokenGeneration2024Secure"));
+        String token = Jwts.builder()
+                .subject("user-123")
+                .claim("role", "FOUNDER")
+                .expiration(Date.from(Instant.now().plusSeconds(3600)))
+                .signWith(wrongKey)
+                .compact();
+
+        ResponseStatusException exception = org.junit.jupiter.api.Assertions.assertThrows(
+                ResponseStatusException.class,
+                () -> jwtService.authenticate(token)
+        );
+
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exception.getReason()).isEqualTo("Invalid token signature");
+    }
+
+    @Test
+    void rejectsTokenWithEmptyRoleArray() {
+        String token = tokenBuilder()
+                .subject("user-123")
+                .claim("role", new Object[]{})
+                .compact();
+
+        ResponseStatusException exception = org.junit.jupiter.api.Assertions.assertThrows(
+                ResponseStatusException.class,
+                () -> jwtService.authenticate(token)
+        );
+        assertThat(exception.getReason()).isEqualTo("Token role collection is empty");
+    }
+    
+    @Test
+    void extractsRoleFromArraySuccessfully() {
+        String token = tokenBuilder()
+                .subject("user-123")
+                .claim("role", new Object[]{"INVESTOR"})
+                .compact();
+
+        AuthenticatedUser user = jwtService.authenticate(token);
+        assertThat(user.role()).isEqualTo(Role.INVESTOR);
+    }
+
     private JwtBuilder tokenBuilder() {
         Instant now = Instant.now();
         return Jwts.builder()

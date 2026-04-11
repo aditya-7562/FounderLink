@@ -130,6 +130,77 @@ class RefreshTokenServiceTest {
         assertThat(replacementToken.getToken()).isNotEqualTo(currentToken.getToken());
     }
 
+
+    @Test
+    void createTokenShouldEvictOldestTokenWhenMaxSessionsReached() {
+        when(refreshTokenRepository.countByUserIdAndRevokedFalse(99L)).thenReturn(5L);
+        
+        RefreshToken oldestToken = RefreshToken.builder()
+                .id(10L)
+                .userId(99L)
+                .token(hash("oldest-token-hash"))
+                .revoked(false)
+                .build();
+        
+        when(refreshTokenRepository.findOldestActiveToken(99L)).thenReturn(Optional.of(oldestToken));
+        when(refreshTokenRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        refreshTokenService.createToken(99L);
+        
+        verify(refreshTokenRepository, times(2)).save(refreshTokenCaptor.capture());
+        
+        RefreshToken revokedToken = refreshTokenCaptor.getAllValues().get(0);
+        assertThat(revokedToken.isRevoked()).isTrue();
+        assertThat(revokedToken.getId()).isEqualTo(10L);
+    }
+
+    @Test
+    void validateTokenShouldThrowWhenTokenNotFound() {
+        when(refreshTokenRepository.findByToken(any())).thenReturn(Optional.empty());
+        assertThrows(com.founderlink.auth.exception.InvalidRefreshTokenException.class, () -> refreshTokenService.validateToken("non-existent"));
+    }
+
+    @Test
+    void validateTokenShouldThrowWhenTokenIsBlank() {
+        assertThrows(com.founderlink.auth.exception.InvalidRefreshTokenException.class, () -> refreshTokenService.validateToken("   "));
+        assertThrows(com.founderlink.auth.exception.InvalidRefreshTokenException.class, () -> refreshTokenService.validateToken(null));
+    }
+
+    @Test
+    void revokeTokenShouldRevokeSuccessfully() {
+        RefreshToken validToken = RefreshToken.builder()
+                .id(5L)
+                .token(hash("valid-token"))
+                .userId(99L)
+                .revoked(false)
+                .build();
+        when(refreshTokenRepository.findByTokenForUpdate(any())).thenReturn(Optional.of(validToken));
+        
+        refreshTokenService.revokeToken("valid-token");
+        
+        verify(refreshTokenRepository).save(refreshTokenCaptor.capture());
+        assertThat(refreshTokenCaptor.getValue().isRevoked()).isTrue();
+    }
+
+    @Test
+    void revokeTokenShouldThrowWhenAlreadyRevoked() {
+        RefreshToken revokedToken = RefreshToken.builder()
+                .id(5L)
+                .token(hash("valid-token"))
+                .userId(99L)
+                .revoked(true)
+                .build();
+        when(refreshTokenRepository.findByTokenForUpdate(any())).thenReturn(Optional.of(revokedToken));
+        
+        assertThrows(RevokedRefreshTokenException.class, () -> refreshTokenService.revokeToken("valid-token"));
+    }
+
+    @Test
+    void rotateTokenShouldThrowWhenTokenNotFoundForUpdate() {
+        when(refreshTokenRepository.findByTokenForUpdate(any())).thenReturn(Optional.empty());
+        assertThrows(com.founderlink.auth.exception.InvalidRefreshTokenException.class, () -> refreshTokenService.rotateToken("non-existent"));
+    }
+
     private String hash(String token) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

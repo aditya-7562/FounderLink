@@ -145,6 +145,8 @@ class UserServiceIntegrationTest {
         userRepository.saveAndFlush(existingUser(500L, "safe@founderlink.com", Role.FOUNDER));
 
         mockMvc.perform(put("/users/{id}", 500L)
+                        .header("X-User-Id", String.valueOf(500L))
+                        .header("X-User-Role", "ROLE_FOUNDER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -164,6 +166,8 @@ class UserServiceIntegrationTest {
         userRepository.saveAndFlush(existingUser(501L, "role@founderlink.com", Role.INVESTOR));
 
         mockMvc.perform(put("/users/{id}", 501L)
+                        .header("X-User-Id", String.valueOf(501L))
+                        .header("X-User-Role", "ROLE_INVESTOR")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -183,6 +187,8 @@ class UserServiceIntegrationTest {
         userRepository.saveAndFlush(existingUser(502L, "id@founderlink.com", Role.COFOUNDER));
 
         mockMvc.perform(put("/users/{id}", 502L)
+                        .header("X-User-Id", String.valueOf(502L))
+                        .header("X-User-Role", "ROLE_COFOUNDER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -215,6 +221,8 @@ class UserServiceIntegrationTest {
         userRepository.saveAndFlush(existingUser(503L, "mass@founderlink.com", Role.FOUNDER));
 
         mockMvc.perform(put("/users/{id}", 503L)
+                        .header("X-User-Id", String.valueOf(503L))
+                        .header("X-User-Role", "ROLE_FOUNDER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {

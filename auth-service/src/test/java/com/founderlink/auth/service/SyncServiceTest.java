@@ -35,9 +35,6 @@ import static org.mockito.Mockito.when;
         classes = SyncServiceTest.TestApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
         properties = {
-                "spring.cloud.config.enabled=false",
-                "eureka.client.enabled=false",
-                "spring.config.import=",
                 "resilience4j.retry.instances.userServiceSync.max-attempts=3",
                 "resilience4j.retry.instances.userServiceSync.wait-duration=1ms",
                 "resilience4j.retry.instances.userServiceSync.enable-exponential-backoff=true",
@@ -134,6 +131,17 @@ class SyncServiceTest {
         assertThatThrownBy(() -> syncService.syncUser(user))
                 .isInstanceOf(UserServiceUnavailableException.class);
         verify(userClient, never()).createUser(any());
+    }
+
+    @Test
+    void syncUserShouldRethrowClientExceptionImmediatelyWithoutRetry() {
+        when(userClient.createUser(any()))
+                .thenThrow(new com.founderlink.auth.exception.UserServiceClientException("Error", 400, "UserClient#createUser"));
+
+        assertThatThrownBy(() -> syncService.syncUser(user))
+                .isInstanceOf(com.founderlink.auth.exception.UserServiceClientException.class);
+        
+        verify(userClient, times(1)).createUser(any());
     }
 
     @EnableAutoConfiguration(exclude = {

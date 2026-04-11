@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: wallet-service-test
+  cloud:
+    config:
+      enabled: false
+  config:
+    import: optional:configserver:http://config-server:8888
+    import-check.enabled: false
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: none
+
+eureka:
+  client:
+    enabled: false
+
+server:
+  port: 0

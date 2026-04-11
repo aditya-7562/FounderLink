@@ -81,9 +81,8 @@ class GetAllStartupsTest {
 
         // Arrange
         when(startupRepository
-                .findByIsDeletedFalse())
-                .thenReturn(
-                        List.of(startup1, startup2));
+                .findByIsDeletedFalse(org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(startup1, startup2)));
         when(startupMapper.toResponseDto(startup1))
                 .thenReturn(responseDto1);
         when(startupMapper.toResponseDto(startup2))
@@ -109,8 +108,8 @@ class GetAllStartupsTest {
 
         // Arrange
         when(startupRepository
-                .findByIsDeletedFalse())
-                .thenReturn(List.of());
+                .findByIsDeletedFalse(org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
 
         // Act
         List<StartupResponseDto> result =
@@ -129,8 +128,8 @@ class GetAllStartupsTest {
         // findByIsDeletedFalse returns only
         // active startups automatically
         when(startupRepository
-                .findByIsDeletedFalse())
-                .thenReturn(List.of(startup1));
+                .findByIsDeletedFalse(org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(startup1)));
         when(startupMapper.toResponseDto(startup1))
                 .thenReturn(responseDto1);
 
