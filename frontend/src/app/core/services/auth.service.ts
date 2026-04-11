@@ -66,6 +66,11 @@ export class AuthService {
     return this.http.post(`${this.api}/auth/reset-password`, request);
   }
 
+  getHomeRoute(role = this._role()): string {
+    const normalizedRole = role?.replace('ROLE_', '');
+    return normalizedRole === 'ADMIN' ? '/admin/dashboard' : '/dashboard';
+  }
+
   private storeSession(res: AuthResponse): void {
     localStorage.setItem('token',  res.token);
     localStorage.setItem('userId', String(res.userId));

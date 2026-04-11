@@ -21,6 +21,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Slf4j
 @RestController
@@ -96,5 +100,44 @@ public class AdminUserController {
         );
 
         return ResponseEntity.ok(users.map(u -> modelMapper.map(u, UserResponseDto.class)));
+    }
+
+    @Operation(summary = "Get microservices health", description = "Query Prometheus for service health")
+    @GetMapping("/health/microservices")
+    public ResponseEntity<List<Map<String, Object>>> getMicroservicesHealth(
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+            
+        if (!"ROLE_ADMIN".equals(role)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        try {
+            Map response = restTemplate.getForObject("http://prometheus:9090/api/v1/query?query=up", Map.class);
+            if (response != null && response.get("data") != null) {
+                Map data = (Map) response.get("data");
+                List<Map> results = (List<Map>) data.get("result");
+
+                List<Map<String, Object>> healthList = new ArrayList<>();
+                if (results != null) {
+                    for (Map result : results) {
+                        Map metric = (Map) result.get("metric");
+                        List valueTuple = (List) result.get("value");
+                        
+                        String jobName = (String) metric.get("job");
+                        String statusValue = (String) valueTuple.get(1);
+                        
+                        Map<String, Object> healthInfo = new HashMap<>();
+                        healthInfo.put("name", jobName);
+                        healthInfo.put("status", "1".equals(statusValue) ? "UP" : "DOWN");
+                        healthList.add(healthInfo);
+                    }
+                }
+                return ResponseEntity.ok(healthList);
+            }
+            return ResponseEntity.ok(new ArrayList<>());
+        } catch (Exception e) {
+            log.error("Failed to fetch health from prometheus: {}", e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
     }
 }

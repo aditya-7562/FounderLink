@@ -21,6 +21,6 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => () => {
   const role = rawRole.replace('ROLE_', '');
   if (allowedRoles.includes(role)) return true;
 
-  router.navigate(['/dashboard']);
+  router.navigateByUrl(auth.getHomeRoute(rawRole));
   return false;
 };

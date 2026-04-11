@@ -17,6 +17,9 @@ export class DashboardComponent {
   pageTitle   = signal('Dashboard');
 
   private readonly titleMap: Record<string, string> = {
+    '/admin/dashboard':       'Admin Portal',
+    '/admin/users':           'Users Management',
+    '/admin/startups':        'Startups Moderation',
     '/dashboard':             'Dashboard',
     '/dashboard/startups':    'Startups',
     '/dashboard/my-startup':  'My Startup',

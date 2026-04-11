@@ -1,0 +1,133 @@
+<div class="admin-fade-in">
+  <div class="admin-page-header">
+    <div>
+      <h2>Startups Moderation</h2>
+      <p>Review, approve, and manage startup listings.</p>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="admin-table-container">
+    <div class="table-scroll">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Startup Info</th>
+            <th>Industry / Stage</th>
+            <th>Moderation</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            <tr *ngFor="let i of [1,2,3,4,5]" class="skeleton-row">
+              <td>
+                <div class="skeleton-line w-48"></div>
+                <div class="skeleton-line w-32 mt-1"></div>
+              </td>
+              <td>
+                <div class="skeleton-line w-32"></div>
+                <div class="skeleton-badge mt-1" style="height: 16px; width: 48px"></div>
+              </td>
+              <td><div class="skeleton-badge"></div></td>
+              <td><div class="skeleton-badge" style="float: right; width: 32px"></div></td>
+            </tr>
+          } @else {
+            <tr *ngFor="let startup of startups">
+              <td>
+                <div class="cell-title">{{ startup.name }}</div>
+              </td>
+              <td>
+                <div class="cell-sub-light">{{ startup.industry }}</div>
+                <span class="stage-tag">{{ startup.stage }}</span>
+              </td>
+              <td>
+                <span class="admin-badge flex-center"
+                      [ngClass]="{
+                        'badge-yellow': startup.moderationStatus === 'PENDING_REVIEW',
+                        'badge-green': startup.moderationStatus === 'APPROVED' || !startup.moderationStatus,
+                        'badge-red': startup.moderationStatus === 'REJECTED',
+                        'badge-orange': startup.moderationStatus === 'FLAGGED'
+                      }">
+                  {{ getDisplayStatus(startup.moderationStatus) }}
+                </span>
+                <div *ngIf="startup.moderationReason" class="cell-sub truncate" [title]="startup.moderationReason">
+                  {{ startup.moderationReason }}
+                </div>
+              </td>
+              <td>
+                @if (confirmActionId() === startup.id) {
+                  @if (confirmActionType() === 'APPROVE' || confirmActionType() === 'DELETE') {
+                    <div class="flex-center" style="gap: 0.25rem;">
+                      <button (click)="confirmAction(startup.id)" class="admin-btn-sm" 
+                              [style.background-color]="confirmActionType() === 'DELETE' ? '#dc2626' : '#16a34a'">
+                        Confirm
+                      </button>
+                      <button (click)="cancelAction()" class="admin-btn-sm" style="background-color: #525252;">
+                        Cancel
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="flex-center" style="gap: 0.25rem;">
+                      <input type="text" placeholder="Reason (Required)" class="admin-input" 
+                             style="padding: 0.25rem 0.5rem; height: 1.75rem; width: 120px;" 
+                             [value]="confirmReason()" (input)="setConfirmReason($event)">
+                      <button (click)="confirmAction(startup.id)" class="admin-btn-sm" 
+                              [style.background-color]="confirmActionType() === 'REJECT' ? '#dc2626' : '#f97316'">
+                        OK
+                      </button>
+                      <button (click)="cancelAction()" class="admin-btn-sm" style="background-color: #525252;">
+                        X
+                      </button>
+                    </div>
+                  }
+                } @else {
+                  <div class="action-buttons">
+                    <button *ngIf="startup.moderationStatus && startup.moderationStatus !== 'APPROVED'" 
+                            (click)="initiateAction(startup.id, 'APPROVE')" 
+                            class="admin-btn-sm" style="background-color: #16a34a;">
+                       Approve
+                    </button>
+                    
+                    <div class="overflow-menu" [class.open]="openMenuId() === startup.id" clickOutside (clickOutside)="closeMenu()">
+                      <button class="icon-btn text-gray overflow-trigger" style="font-size: 1.25rem; font-weight: bold;" (click)="toggleMenu(startup.id, $event)">
+                        &#8942;
+                      </button>
+                      <div class="overflow-dropdown">
+                        <button *ngIf="startup.moderationStatus !== 'FLAGGED'" (click)="initiateAction(startup.id, 'FLAG')">
+                          Flag
+                        </button>
+                        <button *ngIf="startup.moderationStatus !== 'REJECTED'" (click)="initiateAction(startup.id, 'REJECT')">
+                          Reject
+                        </button>
+                        <hr>
+                        <button class="text-red" (click)="initiateAction(startup.id, 'DELETE')">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </td>
+            </tr>
+            <tr *ngIf="startups.length === 0">
+              <td colspan="4" class="empty-table">
+                <span class="material-icons">inbox</span>
+                <p>No startups available.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Pagination Component -->
+    <div class="admin-pagination" *ngIf="totalPages > 1">
+      <div>Page {{ page + 1 }} of {{ totalPages }}</div>
+      <div class="pagination-controls">
+        <button [disabled]="page === 0" (click)="changePage(page - 1)" class="page-btn">Previous</button>
+        <button [disabled]="page >= totalPages - 1" (click)="changePage(page + 1)" class="page-btn">Next</button>
+      </div>
+    </div>
+  </div>
+</div>

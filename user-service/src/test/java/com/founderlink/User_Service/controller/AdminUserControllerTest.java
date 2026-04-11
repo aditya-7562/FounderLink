@@ -26,7 +26,10 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.Map;
+import java.util.ArrayList;
 
 @WebMvcTest(AdminUserController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -115,5 +118,47 @@ class AdminUserControllerTest {
         mockMvc.perform(get("/users/admin/search")
                         .header("X-User-Role", "ROLE_INVESTOR"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getMicroservicesHealth_AsAdmin_ShouldReturnOk() throws Exception {
+        // Mock Prometheus response
+        Map<String, Object> prometheusResp = new java.util.HashMap<>();
+        Map<String, Object> data = new java.util.HashMap<>();
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        Map<String, Object> service1 = new java.util.HashMap<>();
+        service1.put("metric", Map.of("job", "user-service"));
+        service1.put("value", List.of(123.456, "1"));
+        result.add(service1);
+
+        data.put("result", result);
+        prometheusResp.put("data", data);
+
+        when(restTemplate.getForObject(contains("prometheus"), eq(Map.class)))
+                .thenReturn(prometheusResp);
+
+        mockMvc.perform(get("/users/admin/health/microservices")
+                        .header("X-User-Role", "ROLE_ADMIN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("user-service"))
+                .andExpect(jsonPath("$[0].status").value("UP"));
+    }
+
+    @Test
+    void getMicroservicesHealth_AsNonAdmin_ShouldReturnForbidden() throws Exception {
+        mockMvc.perform(get("/users/admin/health/microservices")
+                        .header("X-User-Role", "ROLE_FOUNDER"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getMicroservicesHealth_PrometheusError_ShouldReturn500() throws Exception {
+        when(restTemplate.getForObject(contains("prometheus"), eq(Map.class)))
+                .thenThrow(new RuntimeException("Prometheus down"));
+
+        mockMvc.perform(get("/users/admin/health/microservices")
+                        .header("X-User-Role", "ROLE_ADMIN"))
+                .andExpect(status().isInternalServerError());
     }
 }

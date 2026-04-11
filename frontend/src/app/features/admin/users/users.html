@@ -1,0 +1,126 @@
+<div class="admin-fade-in">
+  <div class="admin-page-header">
+    <div>
+      <h2>Users Management</h2>
+      <p>View and moderate user accounts across the platform.</p>
+    </div>
+  </div>
+
+  <div class="admin-filters">
+    <input type="text" [(ngModel)]="searchName" placeholder="Search by name..." class="admin-input">
+    <input type="text" [(ngModel)]="searchEmail" placeholder="Search by email..." class="admin-input">
+    
+    <select [(ngModel)]="roleFilter" class="admin-select">
+      <option value="">All Roles</option>
+      <option value="FOUNDER">Founder</option>
+      <option value="INVESTOR">Investor</option>
+      <option value="COFOUNDER">CoFounder</option>
+    </select>
+
+    <select [(ngModel)]="statusFilter" class="admin-select">
+      <option value="">All Statuses</option>
+      <option value="ACTIVE">Active</option>
+      <option value="SUSPENDED">Suspended</option>
+      <option value="BANNED">Banned</option>
+    </select>
+
+    <button (click)="loadUsers()" class="admin-btn-primary ml-auto">
+      Search
+    </button>
+  </div>
+
+  <div class="admin-table-container">
+    <div class="table-scroll">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            <tr *ngFor="let i of [1,2,3,4,5]" class="skeleton-row">
+              <td>
+                <div class="skeleton-line w-48"></div>
+                <div class="skeleton-line w-32 mt-1"></div>
+              </td>
+              <td><div class="skeleton-badge"></div></td>
+              <td><div class="skeleton-badge"></div></td>
+              <td><div class="skeleton-badge" style="float: right; width: 32px"></div></td>
+            </tr>
+          } @else {
+            <tr *ngFor="let user of users">
+              <td>
+                <div class="cell-title">{{ user.name }}</div>
+                <div class="cell-sub">{{ user.email }}</div>
+              </td>
+              <td>
+                <span class="admin-badge" [ngClass]="getRoleColor(user.role)">{{ user.role | titlecase }}</span>
+              </td>
+              <td>
+                <span class="admin-badge"
+                      [ngClass]="{
+                        'badge-green': user.status === 'ACTIVE' || !user.status,
+                        'badge-orange': user.status === 'SUSPENDED',
+                        'badge-red': user.status === 'BANNED'
+                      }">
+                  {{ (user.status || 'ACTIVE') | titlecase }}
+                </span>
+              </td>
+              <td>
+                @if (confirmActionId() === user.userId) {
+                  <div class="flex-center" style="gap: 0.25rem;">
+                    <button (click)="confirmAction(user.userId)" class="admin-btn-sm" 
+                            [style.background-color]="confirmActionType() === 'BANNED' ? '#dc2626' : (confirmActionType() === 'SUSPENDED' ? '#f97316' : '#16a34a')">
+                      Confirm
+                    </button>
+                    <button (click)="cancelAction()" class="admin-btn-sm" style="background-color: #525252;">
+                      Cancel
+                    </button>
+                  </div>
+                } @else {
+                  <div class="action-buttons">
+                    <div class="overflow-menu" [class.open]="openMenuId() === user.userId" clickOutside (clickOutside)="closeMenu()">
+                      <button class="icon-btn text-gray overflow-trigger font-bold" style="font-size: 1.25rem; line-height: 1;" (click)="toggleMenu(user.userId, $event)">
+                        &#8942;
+                      </button>
+                      <div class="overflow-dropdown">
+                        <button *ngIf="user.status !== 'SUSPENDED'" (click)="initiateAction(user.userId, 'SUSPENDED')">
+                          Suspend
+                        </button>
+                        <button *ngIf="user.status === 'SUSPENDED' || user.status === 'BANNED'" (click)="initiateAction(user.userId, 'ACTIVE')">
+                          Activate
+                        </button>
+                        <hr *ngIf="user.status !== 'BANNED'">
+                        <button *ngIf="user.status !== 'BANNED'" class="text-red" (click)="initiateAction(user.userId, 'BANNED')">
+                          Ban
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </td>
+            </tr>
+            <tr *ngIf="users.length === 0">
+              <td colspan="5" class="empty-table">
+                <span class="material-icons">person_off</span>
+                <p>No users found matching the search criteria.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="admin-pagination" *ngIf="totalPages > 1">
+      <div>Page {{ page + 1 }} of {{ totalPages }}</div>
+      <div class="pagination-controls">
+        <button [disabled]="page === 0" (click)="changePage(page - 1)" class="page-btn">Previous</button>
+        <button [disabled]="page >= totalPages - 1" (click)="changePage(page + 1)" class="page-btn">Next</button>
+      </div>
+    </div>
+  </div>
+</div>

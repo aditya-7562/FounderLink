@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 import { unsavedChangesGuard } from './core/guards/unsaved-changes.guard';
 
 export const routes: Routes = [
@@ -30,7 +31,7 @@ export const routes: Routes = [
   // ── Protected (dashboard shell) ────────────────────────────────────────────
   {
     path: 'dashboard',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['FOUNDER', 'INVESTOR', 'COFOUNDER'])],
     loadComponent: () => import('./features/dashboard/dashboard').then(m => m.DashboardComponent),
     children: [
       { path: '', loadComponent: () => import('./features/dashboard/home/home').then(m => m.HomeComponent) },
@@ -63,8 +64,8 @@ export const routes: Routes = [
   // ── Protected (Admin shell) ────────────────────────────────────────────────
   {
     path: 'admin',
-    canActivate: [authGuard], 
-    loadComponent: () => import('./features/admin/admin-layout/admin-layout').then(m => m.AdminLayoutComponent),
+    canActivate: [authGuard, roleGuard(['ADMIN'])],
+    loadComponent: () => import('./features/dashboard/dashboard').then(m => m.DashboardComponent),
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./features/admin/dashboard/dashboard').then(m => m.DashboardComponent) },

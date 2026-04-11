@@ -1,0 +1,77 @@
+<div class="admin-fade-in">
+  <div class="admin-page-header">
+    <h2>Platform Overview</h2>
+    <p>Real-time system statistics and health overview.</p>
+  </div>
+
+  <div class="stats-grid">
+    @if (loading()) {
+      <div class="stat-card" *ngFor="let i of [1,2,3,4]">
+        <div class="stat-card-header">
+           <div class="skeleton-line w-24"></div>
+           <div class="skeleton-badge" style="width: 32px; height: 32px; border-radius: 8px;"></div>
+        </div>
+        <div class="stat-card-body">
+           <div class="skeleton-line" style="width: 4rem; height: 2.25rem;"></div>
+        </div>
+      </div>
+    } @else {
+      <!-- Total Users Card -->
+      <div class="stat-card">
+        <div class="stat-card-glow glow-blue"></div>
+        <div class="stat-card-header">
+          <h3>Total Users</h3>
+        </div>
+        <div class="stat-card-body">
+          <span class="stat-value">{{ stats.users }}</span>
+        </div>
+      </div>
+
+      <!-- Startups Card -->
+      <div class="stat-card">
+        <div class="stat-card-glow glow-purple"></div>
+        <div class="stat-card-header">
+          <h3>Startups</h3>
+        </div>
+        <div class="stat-card-body">
+          <span class="stat-value">{{ stats.startups }}</span>
+        </div>
+      </div>
+
+      <!-- Banned Users Card -->
+      <div class="stat-card">
+        <div class="stat-card-glow glow-red"></div>
+        <div class="stat-card-header">
+          <h3>Banned Users</h3>
+        </div>
+        <div class="stat-card-body">
+          <span class="stat-value">{{ stats.banned }}</span>
+        </div>
+      </div>
+
+      <!-- Cluster Health Card -->
+      <div class="stat-card health-span">
+        <div class="stat-card-glow glow-green"></div>
+        <div class="stat-card-header">
+          <h3>Cluster Pulse</h3>
+          <div class="pulse-summary">
+            <span class="pulse-dot" [class.pulse-active]="healthData().length > 0"></span>
+            <span class="pulse-text">{{ healthData().length }} Services Monitored</span>
+          </div>
+        </div>
+        <div class="health-grid">
+          <div *ngFor="let svc of healthData()" class="health-item">
+            <div class="health-indicator" [class.up]="svc.status === 'UP'" [class.down]="svc.status === 'DOWN'"></div>
+            <span class="health-name">{{ svc.name }}</span>
+            <span class="health-status" [class.text-green]="svc.status === 'UP'" [class.text-red]="svc.status === 'DOWN'">
+              {{ svc.status }}
+            </span>
+          </div>
+          <div *ngIf="healthData().length === 0" class="health-empty">
+            No health data available
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
