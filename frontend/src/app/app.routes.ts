@@ -31,7 +31,7 @@ export const routes: Routes = [
   // ── Protected (dashboard shell) ────────────────────────────────────────────
   {
     path: 'dashboard',
-    canActivate: [authGuard, roleGuard(['FOUNDER', 'INVESTOR', 'COFOUNDER'])],
+    canActivate: [authGuard, roleGuard(['FOUNDER', 'INVESTOR', 'COFOUNDER', 'ADMIN'])],
     loadComponent: () => import('./features/dashboard/dashboard').then(m => m.DashboardComponent),
     children: [
       { path: '', loadComponent: () => import('./features/dashboard/home/home').then(m => m.HomeComponent) },

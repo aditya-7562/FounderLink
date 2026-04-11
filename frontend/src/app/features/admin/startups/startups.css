@@ -1,26 +1,105 @@
-@import '../admin-shared.css';
-
-.cell-sub-light {
-  font-size: 0.875rem;
-  color: #d4d4d4;
-}
 
 .stage-tag {
   display: inline-block;
-  padding: 0.125rem 0.5rem;
-  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  padding: 0.1rem 0.4rem;
   border-radius: 4px;
-  border: 1px solid #404040;
-  background-color: rgba(255, 255, 255, 0.05);
-  font-size: 0.625rem;
-  color: #a3a3a3;
+  margin-top: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  border: 1px solid var(--border-subtle);
+}
+
+.cell-sub-light {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .truncate {
-  max-width: 250px;
+  max-width: 200px;
   white-space: nowrap;
+  letter-spacing: normal;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.admin-pagination {
+  padding: var(--s-4) var(--s-6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.pagination-controls {
+  display: flex;
+  gap: var(--s-2);
+}
+
+.page-btn {
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--border-subtle);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Overflow Menu ─────────────────────────────────────────────── */
+.overflow-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.overflow-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 50;
+  min-width: 140px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  display: none;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  animation: slideIn 0.2s ease;
+}
+
+.overflow-menu.open .overflow-dropdown {
+  display: flex;
+}
+
+.overflow-dropdown button {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  text-align: left;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.overflow-dropdown button:hover {
+  background: var(--bg-secondary);
+}
+
+.overflow-dropdown hr {
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  margin: 0.25rem 0;
 }

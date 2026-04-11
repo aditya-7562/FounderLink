@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { NotificationResponse } from '../../../models';
 
 @Component({
@@ -23,6 +24,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   constructor(
     public authService: AuthService,
+    public themeService: ThemeService,
     private notificationService: NotificationService,
     private router: Router
   ) { }

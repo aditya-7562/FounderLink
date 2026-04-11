@@ -23,5 +23,7 @@ public class StartupResponseDto {
     private BigDecimal fundingGoal;
     private StartupStage stage;
     private Long founderId;          // ← critical for FeignClient
+    private String moderationStatus;
+    private String moderationReason;
     private LocalDateTime createdAt;
 }

@@ -51,6 +51,10 @@ public class StartupMapper {
         responseDto.setStage(startup.getStage());
         responseDto.setFounderId(
                 startup.getFounderId());
+        responseDto.setModerationStatus(
+                startup.getModerationStatus());
+        responseDto.setModerationReason(
+                startup.getModerationReason());
         responseDto.setCreatedAt(
                 startup.getCreatedAt());
         return responseDto;

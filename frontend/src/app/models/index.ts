@@ -121,6 +121,8 @@ export interface StartupResponse {
   fundingGoal: number;
   stage: StartupStage;
   founderId: number;
+  moderationStatus: string | null;
+  moderationReason: string | null;
   createdAt: string;
 }
 
