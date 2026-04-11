@@ -8,60 +8,60 @@
 
   <div class="stats-grid">
     @if (loading()) {
-      <div class="stat-card" *ngFor="let i of [1,2,3,4]">
-        <div class="skeleton-line" style="width: 40%; height: 1rem; margin-bottom: 1rem;"></div>
-        <div class="skeleton-line" style="width: 60%; height: 2.5rem;"></div>
-      </div>
+    <div class="stat-card" *ngFor="let i of [1,2,3,4]">
+      <div class="skeleton-line" style="width: 40%; height: 1rem; margin-bottom: 1rem;"></div>
+      <div class="skeleton-line" style="width: 60%; height: 2.5rem;"></div>
+    </div>
     } @else {
-      <!-- Total Users Card -->
-      <div class="stat-card slide-up">
-        <div class="stat-card-glow glow-primary"></div>
-        <h3>Total Users</h3>
-        <span class="stat-value">{{ stats.users }}</span>
-      </div>
+    <!-- Total Users Card -->
+    <div class="stat-card slide-up">
+      <div class="stat-card-glow glow-primary"></div>
+      <h3>Total Users</h3>
+      <span class="stat-value">{{ stats.users }}</span>
+    </div>
 
-      <!-- Startups Card -->
-      <div class="stat-card slide-up" style="animation-delay: 0.1s">
-        <div class="stat-card-glow glow-purple"></div>
-        <h3>Total Startups</h3>
-        <span class="stat-value">{{ stats.startups }}</span>
-      </div>
+    <!-- Startups Card -->
+    <div class="stat-card slide-up" style="animation-delay: 0.1s">
+      <div class="stat-card-glow glow-purple"></div>
+      <h3>Total Startups</h3>
+      <span class="stat-value">{{ stats.startups }}</span>
+    </div>
 
-      <!-- Banned Users Card -->
-      <div class="stat-card slide-up" style="animation-delay: 0.2s">
-        <div class="stat-card-glow glow-danger"></div>
-        <h3>Banned Entities</h3>
-        <span class="stat-value">{{ stats.banned }}</span>
-      </div>
+    <!-- Banned Users Card -->
+    <div class="stat-card slide-up" style="animation-delay: 0.2s">
+      <div class="stat-card-glow glow-danger"></div>
+      <h3>Banned Users</h3>
+      <span class="stat-value">{{ stats.banned }}</span>
+    </div>
 
-      <!-- Cluster Health Card -->
-      <div class="stat-card health-span slide-up" style="animation-delay: 0.3s">
-        <div class="stat-card-glow glow-success"></div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem">
-          <h3>Cluster Pulse</h3>
-          <div class="pulse-summary">
-            <span class="pulse-dot" [class.pulse-active]="healthData().length > 0"></span>
-            <span class="pulse-text">{{ healthData().length }} Active Services</span>
-          </div>
-        </div>
-        
-        <div class="health-grid">
-          @for (svc of healthData(); track svc.name) {
-            <div class="health-item">
-              <div class="health-indicator" [class.up]="svc.status === 'UP'" [class.down]="svc.status === 'DOWN'"></div>
-              <span class="health-name">{{ svc.name }}</span>
-              <span class="health-status" [class.text-green]="svc.status === 'UP'" [class.text-red]="svc.status === 'DOWN'">
-                {{ svc.status }}
-              </span>
-            </div>
-          }
-          @if (healthData().length === 0) {
-            <div class="health-empty">
-              No health data available
-            </div>
-          }
+    <!-- Cluster Health Card -->
+    <div class="stat-card health-span slide-up" style="animation-delay: 0.3s">
+      <div class="stat-card-glow glow-success"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem">
+        <h3>Cluster Pulse</h3>
+        <div class="pulse-summary">
+          <span class="pulse-dot" [class.pulse-active]="healthData().length > 0"></span>
+          <span class="pulse-text">{{ healthData().length }} Active Services</span>
         </div>
       </div>
+
+      <div class="health-grid">
+        @for (svc of healthData(); track svc.name) {
+        <div class="health-item">
+          <div class="health-indicator" [class.up]="svc.status === 'UP'" [class.down]="svc.status === 'DOWN'"></div>
+          <span class="health-name">{{ svc.name }}</span>
+          <span class="health-status" [class.text-green]="svc.status === 'UP'" [class.text-red]="svc.status === 'DOWN'">
+            {{ svc.status }}
+          </span>
+        </div>
+        }
+        @if (healthData().length === 0) {
+        <div class="health-empty">
+          No health data available
+        </div>
+        }
+      </div>
+    </div>
     }
   </div>
 </div>
