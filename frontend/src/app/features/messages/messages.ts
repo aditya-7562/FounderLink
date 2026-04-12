@@ -97,11 +97,14 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private initializeWebSocket(): void {
     const wsUrl = environment.apiUrl.replace(/\/+$/, '') + '/ws';
+    const token = this.authService.token();
+
     this.stompClient = new Client({
       webSocketFactory: () => new SockJS(wsUrl),
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       reconnectDelay: 5000,
       debug: (str) => {
-        // console.log(str);
+        // console.log('[STOMP]', str);
       }
     });
 
