@@ -36,8 +36,12 @@ export class UserService {
   }
 
   /** Get all users (plain array response) */
-  getAllUsers(query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<UserResponse>>> {
-    return this.http.get<unknown>(`${this.api}/users`, { params: this.withPagination(query, 'id,asc') }).pipe(
+  getAllUsers(query: UserSearchQuery = {}): Observable<ApiEnvelope<PaginatedData<UserResponse>>> {
+    let params = this.withPagination(query, 'id,asc');
+    if (query.keyword?.trim()) {
+      params = params.set('keyword', query.keyword.trim());
+    }
+    return this.http.get<unknown>(`${this.api}/users`, { params }).pipe(
       map(normalizeCollection<UserResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );

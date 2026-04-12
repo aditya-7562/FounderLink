@@ -2,6 +2,8 @@ import { Component, OnInit, signal, OnDestroy, ViewChild, ElementRef, AfterViewC
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { MessagingService } from '../../core/services/messaging.service';
 import { UserService } from '../../core/services/user.service';
@@ -49,6 +51,9 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   newestCursor   = signal<number | null>(null);
 
   allUsers       = signal<UserResponse[]>([]);
+  searchQuery    = signal('');
+  searchSubject  = new Subject<string>();
+
   loading        = signal(true);
   loadingOlder   = signal(false);
   sendingMessage = signal(false);
@@ -72,6 +77,14 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     const targetUserId = this.route.snapshot.queryParamMap.get('user');
     this.loadConversations(targetUserId ? Number(targetUserId) : undefined);
     this.initializeWebSocket();
+
+    this.searchSubject.pipe(
+      debounceTime(350),
+      distinctUntilChanged()
+    ).subscribe(keyword => {
+      this.searchQuery.set(keyword);
+      this.fetchUsers(keyword);
+    });
   }
 
   ngOnDestroy(): void {
@@ -337,14 +350,23 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   loadAllUsers(): void {
     if (this.allUsers().length === 0) {
-      const currentUserId = this.authService.userId();
-      this.userService.getAllUsers({ page: 0, size: 50, sort: 'id,asc' }).subscribe({
-        next: env => {
-          this.allUsers.set((env.data?.content ?? []).filter(u => u.userId !== currentUserId));
-        }
-      });
+      this.fetchUsers();
     }
     this.showUserSelector.update(v => !v);
+  }
+
+  onSearchChange(event: any): void {
+    const value = event.target.value;
+    this.searchSubject.next(value);
+  }
+
+  private fetchUsers(keyword: string = ''): void {
+    const currentUserId = this.authService.userId();
+    this.userService.getAllUsers({ page: 0, size: 50, sort: 'id,asc', keyword }).subscribe({
+      next: env => {
+        this.allUsers.set((env.data?.content ?? []).filter(u => u.userId !== currentUserId));
+      }
+    });
   }
 
   startConversationWith(user: UserResponse): void {

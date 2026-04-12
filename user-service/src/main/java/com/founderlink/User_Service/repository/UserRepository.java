@@ -31,6 +31,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
                                     Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE " +
+           "LOWER(u.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<User> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE " +
            "(:email IS NULL OR u.email LIKE %:email%) AND " +
            "(:name IS NULL OR u.name LIKE %:name%) AND " +
            "(:role IS NULL OR u.role = :role) AND " +

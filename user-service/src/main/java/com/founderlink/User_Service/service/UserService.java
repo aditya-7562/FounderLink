@@ -59,6 +59,10 @@ public class UserService {
         return queryService.searchUsersByRoleAndKeyword(role, keyword, pageable);
     }
 
+    public Page<UserResponseDto> searchAllUsersByKeyword(String keyword, Pageable pageable) {
+        return queryService.searchAllUsersByKeyword(keyword, pageable);
+    }
+
     public long countByRole(Role role) {
         return queryService.countByRole(role);
     }

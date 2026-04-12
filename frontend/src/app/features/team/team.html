@@ -193,14 +193,40 @@
                 <p style="color: var(--text-secondary); line-height: 1.6;">{{ viewedUser()!.bio }}</p>
               </div>
             }
+            @if (viewedUser()!.experience) {
+              <div style="margin-bottom: 1.75rem;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;">Experience</label>
+                <p style="color: var(--text-secondary); line-height: 1.6;">{{ viewedUser()!.experience }}</p>
+              </div>
+            }
+            @if (viewedUser()!.portfolioLinks) {
+              <div style="margin-bottom: 1.75rem;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;">Links</label>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                  @for (link of viewedUser()!.portfolioLinks!.split(','); track link) {
+                    <a [href]="link.trim().startsWith('http') ? link.trim() : 'https://' + link.trim()" target="_blank" style="color: var(--primary-400); text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      {{ link.trim() }}
+                    </a>
+                  }
+                </div>
+              </div>
+            }
             @if (viewedUser()!.skills) {
-              <div>
+              <div style="margin-bottom: 1.75rem;">
                 <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;">Skills & Expertise</label>
                 <div class="uc-skills">
                   @for (skill of viewedUser()!.skills!.split(','); track skill) {
                     <span class="skill-chip" style="background: var(--bg-secondary); margin-right: 0.5rem; margin-bottom: 0.5rem;">{{ skill.trim() }}</span>
                   }
                 </div>
+              </div>
+            }
+            
+            @if (!viewedUser()!.bio && !viewedUser()!.skills && !viewedUser()!.experience && !viewedUser()!.portfolioLinks) {
+              <div style="text-align: center; padding: 2.5rem 0; border: 1px dashed var(--border-subtle); border-radius: 16px; background: rgba(var(--bg-secondary-rgb), 0.5);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3; margin-bottom: 1rem;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; font-weight: 600;">No additional profile details provided.</p>
               </div>
             }
           </div>
@@ -258,39 +284,40 @@
             </div>
           }
         </div>
+      }
         
-        @if (invitations().length > 0) {
-          <div class="section-title" style="margin: 3rem 0 1.5rem 0;">
-            <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Sent Invitations</h4>
-          </div>
-          <div class="member-list">
-            @for (i of invitations(); track i.id) {
-              <div class="member-card" style="border-style: dashed; background: rgba(var(--primary-rgb), 0.02);">
-                <div class="mc-left">
-                  <div class="mc-avatar" style="background: var(--bg-secondary); color: var(--text-muted);">{{ (userNames().get(i.invitedUserId) || 'U')[0] }}</div>
-                  <div class="mc-details">
-                    <div class="mc-name">{{ userNames().get(i.invitedUserId) || 'Invited User' }}</div>
-                    <div class="mc-meta">
-                      <span class="stage-badge badge-info">{{ roleShortLabel(i.role) }}</span>
-                      <span class="mc-date" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Sent {{ i.createdAt | date:'shortDate' }}</span>
-                    </div>
+      @if (invitations().length > 0) {
+        <div class="section-title" style="margin: 3rem 0 1.5rem 0;">
+          <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Sent Invitations</h4>
+        </div>
+        <div class="member-list">
+          @for (i of invitations(); track i.id) {
+            <div class="member-card" style="border-style: dashed; background: rgba(var(--primary-rgb), 0.02);">
+              <div class="mc-left">
+                <div class="mc-avatar" style="background: var(--bg-secondary); color: var(--text-muted);">{{ (userNames().get(i.invitedUserId) || 'U')[0] }}</div>
+                <div class="mc-details">
+                  <div class="mc-name">{{ userNames().get(i.invitedUserId) || 'Invited User' }}</div>
+                  <div class="mc-meta">
+                    <span class="stage-badge badge-info">{{ roleShortLabel(i.role) }}</span>
+                    <span class="mc-date" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Sent {{ i.createdAt | date:'shortDate' }}</span>
                   </div>
-                </div>
-                <div class="mc-right" style="display: flex; gap: 1rem; align-items: center; padding-left: 2rem; border-left: 1px solid var(--border-subtle);">
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                     <span style="width: 8px; height: 8px; border-radius: 50%;" [style.background]="i.status === 'PENDING' ? '#f59e0b' : '#ef4444'"></span>
-                     <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">{{ i.status }}</span>
-                  </div>
-                  @if (i.status === 'PENDING') {
-                    <button class="btn btn-ghost btn-sm" (click)="cancelInvitation(i.id)" [disabled]="cancelling() === i.id" style="border: 1px solid var(--border-subtle); color: #ef4444; font-weight: 700; padding: 0.6rem 1rem;">
-                      {{ cancelling() === i.id ? 'Revoking...' : 'Cancel' }}
-                    </button>
-                  }
                 </div>
               </div>
-            }
-          </div>
-        }
+              <div class="mc-right" style="display: flex; gap: 1rem; align-items: center; padding-left: 2rem; border-left: 1px solid var(--border-subtle);">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                   <span style="width: 8px; height: 8px; border-radius: 50%;" [style.background]="i.status === 'PENDING' ? '#f59e0b' : '#ef4444'"></span>
+                   <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">{{ i.status }}</span>
+                </div>
+                @if (i.status === 'PENDING') {
+                  <button class="btn btn-ghost btn-sm" (click)="cancelInvitation(i.id)" [disabled]="cancelling() === i.id" style="border: 1px solid var(--border-subtle); color: #ef4444; font-weight: 700; padding: 0.6rem 1rem;">
+                    {{ cancelling() === i.id ? 'Revoking...' : 'Cancel' }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
 
         <div style="margin-top: 3rem; padding-bottom: 2rem;">
           <app-pagination-controls
@@ -302,7 +329,6 @@
             (next)="nextTeamPage()"
           />
         </div>
-      }
     }
   }
 }

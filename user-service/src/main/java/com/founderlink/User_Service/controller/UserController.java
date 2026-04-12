@@ -101,12 +101,16 @@ public class UserController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String keyword,
             HttpServletRequest request) {
         if (!isPaginatedRequest(request)) {
-        return ResponseEntity.ok(service.getAllUsers());
+            return ResponseEntity.ok(service.getAllUsers());
         }
 
         Pageable pageable = buildPageable(page, size, sort, "id", Sort.Direction.ASC);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return ResponseEntity.ok(toPaginatedResponse(service.searchAllUsersByKeyword(keyword.trim(), pageable)));
+        }
         return ResponseEntity.ok(toPaginatedResponse(service.getAllUsers(pageable)));
     }
 

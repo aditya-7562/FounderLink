@@ -97,4 +97,12 @@ class UserServiceTest {
         when(queryService.searchUsersByRoleAndKeyword(Role.FOUNDER, "key", p)).thenReturn(page);
         assertThat(userService.searchUsersByRoleAndKeyword(Role.FOUNDER, "key", p)).isEqualTo(page);
     }
+
+    @Test
+    void searchAllUsersByKeyword_Paged() {
+        Page<UserResponseDto> page = mock(Page.class);
+        Pageable p = mock(Pageable.class);
+        when(queryService.searchAllUsersByKeyword("key", p)).thenReturn(page);
+        assertThat(userService.searchAllUsersByKeyword("key", p)).isEqualTo(page);
+    }
 }
