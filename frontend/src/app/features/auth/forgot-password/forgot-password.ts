@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -21,7 +22,11 @@ export class ForgotPasswordComponent {
   requestForm: FormGroup;
   resetForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private authService: AuthService) {
+  constructor(
+    private fb: FormBuilder, 
+    private authService: AuthService,
+    public themeService: ThemeService
+  ) {
     this.requestForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
     });

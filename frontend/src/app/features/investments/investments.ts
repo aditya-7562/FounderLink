@@ -55,9 +55,15 @@ export class InvestmentsComponent implements OnInit {
 
     this.userService.getAllUsers({ page: 0, size: 50, sort: 'id,asc' }).subscribe({
       next: env => {
-        const map = new Map<number, string>();
-        env.data?.content.forEach(u => map.set(u.userId, u.name || `Investor ${u.userId}`));
-        this.userNames.set(map);
+        this.userNames.update(map => {
+          const newMap = new Map(map);
+          env.data?.content.forEach(u => {
+            if (!newMap.has(u.userId)) {
+              newMap.set(u.userId, u.name || u.email);
+            }
+          });
+          return newMap;
+        });
       }
     });
   }
@@ -95,9 +101,29 @@ export class InvestmentsComponent implements OnInit {
         const investmentPage = env.data ?? this.investmentPage();
         this.investmentPage.set(investmentPage);
         this.investments.set(investmentPage.content);
+        this.resolveNames(investmentPage.content.map(i => i.investorId));
         this.loading.set(false);
       },
       error: env => { this.errorMsg.set(env.error ?? 'Failed to load investments.'); this.loading.set(false); }
+    });
+  }
+
+  private resolveNames(userIds: number[]): void {
+    const current = this.userNames();
+    const missing = Array.from(new Set(userIds)).filter(id => !current.has(id));
+
+    missing.forEach(id => {
+      this.userService.getUser(id).subscribe({
+        next: env => {
+          if (env.data) {
+            this.userNames.update(map => {
+              const newMap = new Map(map);
+              newMap.set(id, env.data!.name || env.data!.email);
+              return newMap;
+            });
+          }
+        }
+      });
     });
   }
 
@@ -140,7 +166,7 @@ export class InvestmentsComponent implements OnInit {
 
   statusLabel(status: InvestmentStatus): string {
     const labels: Record<InvestmentStatus, string> = {
-      PENDING: 'Pending Review', APPROVED: 'Approved', REJECTED: 'Rejected',
+      PENDING: 'Pending Approval', APPROVED: 'Approved', REJECTED: 'Rejected',
       COMPLETED: 'Completed', PAYMENT_FAILED: 'Payment Failed', STARTUP_CLOSED: 'Startup Closed'
     };
     return labels[status] ?? status;

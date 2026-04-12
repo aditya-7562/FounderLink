@@ -3,8 +3,8 @@
   <div class="header-main">
     <h2>Team</h2>
     <p class="page-sub">
-      @if (isFounder()) { Orchestrate your startup team and discovery }
-      @if (isCoFounder()) { Your active memberships and contributions }
+      @if (isFounder()) { Manage your startup team }
+      @if (isCoFounder()) { Your startup teams }
     </p>
   </div>
   @if (isFounder() && selectedStartupId() && !showDiscovery()) {
@@ -35,7 +35,7 @@
     <div class="empty-state" style="padding: 6rem 2rem; border: 1px dashed var(--border-subtle); border-radius: 32px; background: var(--bg-secondary); text-align: center;">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3; margin-bottom: 1.5rem;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
       <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">No startups found</h3>
-      <p style="color: var(--text-secondary);">Create a venture first to start building your team.</p>
+      <p style="color: var(--text-secondary);">Create a startup first to start building your team.</p>
     </div>
   } @else {
 
@@ -52,7 +52,7 @@
     @if (showDiscovery()) {
       <div class="discovery-panel">
         <div class="discovery-header">
-          <h3>Talent Marketplace</h3>
+          <h3>User Directory</h3>
           <button class="btn btn-ghost btn-sm" (click)="closeDiscovery()" style="border: 1px solid var(--border-subtle); padding: 0.5rem 1rem;">
             ✕ Dismiss
           </button>
@@ -63,7 +63,7 @@
           <input
             type="text"
             [ngModel]="searchQuery()"
-            (ngModelChange)="searchQuery.set($event)"
+            (ngModelChange)="onSearchChange($event)"
             placeholder="Search for co-founders by name, email, or expertise..."
             class="discovery-search-input"
           />
@@ -241,7 +241,7 @@
                   <div class="mc-name">{{ userNames().get(m.userId) || 'Team Member' }}</div>
                   <div class="mc-meta">
                     <span class="stage-badge badge-info">{{ roleShortLabel(m.role) }}</span>
-                    <span class="mc-date" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Joined {{ m.joinedAt | date:'mediumDate' }}</span>
+                    <span class="mc-date" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Joined {{ m.joinedAt | date:'mediumDate' }}</span>
                   </div>
                 </div>
               </div>
@@ -252,24 +252,58 @@
                 </div>
                 <button class="btn btn-ghost btn-sm" (click)="messageMember(m.userId)" style="border: 1px solid var(--border-subtle); font-weight: 700; padding: 0.6rem 1rem;">Message</button>
                 <button class="btn btn-danger btn-sm" (click)="removeMember(m.id)" [disabled]="removing() === m.id" style="font-weight: 700; padding: 0.6rem 1rem;">
-                  {{ removing() === m.id ? 'Removing...' : 'Offboard' }}
+                  {{ removing() === m.id ? 'Removing...' : 'Remove' }}
                 </button>
               </div>
             </div>
           }
         </div>
+        
+        @if (invitations().length > 0) {
+          <div class="section-title" style="margin: 3rem 0 1.5rem 0;">
+            <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Sent Invitations</h4>
+          </div>
+          <div class="member-list">
+            @for (i of invitations(); track i.id) {
+              <div class="member-card" style="border-style: dashed; background: rgba(var(--primary-rgb), 0.02);">
+                <div class="mc-left">
+                  <div class="mc-avatar" style="background: var(--bg-secondary); color: var(--text-muted);">{{ (userNames().get(i.invitedUserId) || 'U')[0] }}</div>
+                  <div class="mc-details">
+                    <div class="mc-name">{{ userNames().get(i.invitedUserId) || 'Invited User' }}</div>
+                    <div class="mc-meta">
+                      <span class="stage-badge badge-info">{{ roleShortLabel(i.role) }}</span>
+                      <span class="mc-date" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Sent {{ i.createdAt | date:'shortDate' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="mc-right" style="display: flex; gap: 1rem; align-items: center; padding-left: 2rem; border-left: 1px solid var(--border-subtle);">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                     <span style="width: 8px; height: 8px; border-radius: 50%;" [style.background]="i.status === 'PENDING' ? '#f59e0b' : '#ef4444'"></span>
+                     <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">{{ i.status }}</span>
+                  </div>
+                  @if (i.status === 'PENDING') {
+                    <button class="btn btn-ghost btn-sm" (click)="cancelInvitation(i.id)" [disabled]="cancelling() === i.id" style="border: 1px solid var(--border-subtle); color: #ef4444; font-weight: 700; padding: 0.6rem 1rem;">
+                      {{ cancelling() === i.id ? 'Revoking...' : 'Cancel' }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
 
-        <app-pagination-controls
-          [page]="teamPage().page"
-          [totalPages]="teamPage().totalPages"
-          [totalElements]="teamPage().totalElements"
-          label="members"
-          (previous)="previousTeamPage()"
-          (next)="nextTeamPage()"
-        />
+        <div style="margin-top: 3rem; padding-bottom: 2rem;">
+          <app-pagination-controls
+            [page]="teamPage().page"
+            [totalPages]="teamPage().totalPages"
+            [totalElements]="teamPage().totalElements"
+            label="members"
+            (previous)="previousTeamPage()"
+            (next)="nextTeamPage()"
+          />
+        </div>
       }
     }
-
   }
 }
 

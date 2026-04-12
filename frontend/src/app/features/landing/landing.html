@@ -11,7 +11,20 @@
       <span>FounderLink</span>
     </a>
 
-    <div class="nav-actions">
+    <div class="nav-actions" style="display: flex; align-items: center; gap: 0.5rem;">
+      <button class="icon-btn theme-toggle" (click)="themeService.toggleTheme()" 
+              [title]="themeService.theme() === 'dark' ? 'Switch to Light' : 'Switch to Dark'">
+        @if (themeService.theme() === 'dark') {
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="4.22" x2="19.78" y2="5.64"/>
+          </svg>
+        } @else {
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        }
+      </button>
+
       <a class="btn btn-ghost" routerLink="/auth/login" style="font-weight: 800; padding: 0.75rem 1.5rem;">Sign In</a>
       <a class="btn btn-primary btn-sm" routerLink="/auth/register"
         style="padding: 0.75rem 1.75rem; border-radius: 12px; font-weight: 900;">Sign Up</a>
@@ -22,9 +35,9 @@
 <!-- ── High-Fidelity Hero Directive ──────────────────────────── -->
 <section class="hero">
   <div class="hero-content">
-    <div class="hero-badge">The Central Startup Exchange</div>
+    <div class="hero-badge">The Central Startup Network</div>
     <h1 class="hero-title">
-      Accelerate India's <span class="hero-highlight">Venture</span><br>Ecosystem
+      Accelerate India's <span class="hero-highlight">Startup</span><br>Ecosystem
     </h1>
     <p class="hero-sub">
       Join thousands of founders building and funding startups in India.
@@ -67,8 +80,7 @@
   <div class="section-inner">
     <div class="roles-header" style="text-align: center; margin-bottom: 5rem;">
       <h2 class="section-title">How do you want to get started?</h2>
-      <p class="section-sub" style="font-weight: 600; font-size: 1.15rem;">Select your operational role within the
-        FounderLink network.</p>
+      <p class="section-sub" style="font-weight: 600; font-size: 1.15rem;">Select your role.</p>
     </div>
     <div class="roles-grid">
       <div class="role-card">
@@ -207,9 +219,7 @@
       Join the next generation of Indian innovation.</h2>
     <p style="font-weight: 600; font-size: 1.25rem; color: rgba(255,255,255,0.8); margin-bottom: 3.5rem;">It takes less
       than 2 minutes to create your account.</p>
-    <a class="btn btn-outline" routerLink="/auth/register"
-      style="padding: 1.5rem 4rem; border-radius: 24px; font-weight: 950; background: white; color: var(--primary); border: none; box-shadow: 0 15px 40px rgba(0,0,0,0.2);">Create
-      Account</a>
+    <a class="btn btn-white-hero" routerLink="/auth/register">Create Account</a>
   </div>
 </section>
 }

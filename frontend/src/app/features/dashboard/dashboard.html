@@ -1,7 +1,7 @@
 <div class="dashboard-layout">
 
   <!-- Sidebar -->
-  <app-sidebar [collapsed]="!sidebarOpen()" (closeMenu)="sidebarOpen.set(false)" />
+  <app-sidebar [collapsed]="!sidebarOpen()" />
 
   <!-- Main -->
   <div class="dashboard-main" [class.expanded]="!sidebarOpen()">

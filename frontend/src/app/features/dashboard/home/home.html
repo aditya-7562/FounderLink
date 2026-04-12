@@ -1,320 +1,424 @@
 @let rawRole = authService.role() ?? '';
 @let role = rawRole.replace('ROLE_', '');
-@let name = (authService.email() ?? '').split('@')[0] || 'Member';
+@let name = userNames().get(authService.userId() ?? 0) || (authService.email() ?? '').split('@')[0] || 'Member';
 
 <div class="welcome-header">
   <div class="fade-in">
-    <h2>Enterprise Pulse: {{ name | titlecase }}</h2>
-    <p>Strategic overview of your platform engagement and asset integrity.</p>
+    <h2>Dashboard: {{ name | titlecase }}</h2>
+    @if (role === 'FOUNDER') {
+    <p>Overview of your startups, funding, and team.</p>
+    } @else if (role === 'INVESTOR') {
+    <p>Overview of your startup portfolio and investments.</p>
+    } @else if (role === 'COFOUNDER') {
+    <p>Overview of your active teams, roles, and startup invitations.</p>
+    } @else {
+    <p>Overview of your account and platform activity.</p>
+    }
   </div>
 </div>
 
 @if (loading()) {
-  <div class="stats-grid">
-    @for (i of [1,2,3,4]; track i) {
-      <div class="skeleton-card"></div>
-    }
-  </div>
+<div class="stats-grid">
+  @for (i of [1,2,3,4]; track i) {
+  <div class="skeleton-card"></div>
+  }
+</div>
 } @else {
 
-  <!-- ══════════════════════════════════════════════════════════ -->
-  <!-- FOUNDER COMMAND CENTER                                     -->
-  <!-- ══════════════════════════════════════════════════════════ -->
-  @if (role === 'FOUNDER') {
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- FOUNDER COMMAND CENTER                                     -->
+<!-- ══════════════════════════════════════════════════════════ -->
+@if (role === 'FOUNDER') {
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon purple">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ myStartups().length }}</span>
-          <span class="stat-label">Ventures</span>
-        </div>
-      </div>
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon purple">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ myStartups().length }}</span>
+      <span class="stat-label">Startups</span>
+    </div>
+  </div>
 
-      <div class="stat-card">
-        <div class="stat-icon green">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ startupInvestments().length }}</span>
-          <span class="stat-label">Cap Table Hits</span>
-        </div>
-      </div>
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+        <polyline points="17 6 23 6 23 12" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ startupInvestments().length }}</span>
+      <span class="stat-label">Investor Interest</span>
+    </div>
+  </div>
 
-      <div class="stat-card">
-        <div class="stat-icon blue">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ formatCurrency(totalFundingReceived) }}</span>
-          <span class="stat-label">Liquidity Raised</span>
-        </div>
-      </div>
+  <div class="stat-card">
+    <div class="stat-icon blue">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ formatCurrency(totalFundingAmount()) }}</span>
+      <span class="stat-label">Funding Raised</span>
+    </div>
+  </div>
 
-      <div class="stat-card">
-        <div class="stat-icon orange">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ startupInvestments().filter(i => i.status === 'PENDING').length }}</span>
-          <span class="stat-label">Pending Verifications</span>
-        </div>
+  <div class="stat-card">
+    <div class="stat-icon orange">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ totalPendingActions() }}</span>
+      <span class="stat-label">Pending Actions</span>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">Quick Actions</div>
+<div class="actions-grid">
+  <a routerLink="/dashboard/my-startup" class="action-card">
+    <div class="action-icon purple"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+        <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+        <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+      </svg></div>
+    <span class="action-label">Startup Overview</span>
+    <span class="action-desc">Track your progress</span>
+  </a>
+  <a routerLink="/dashboard/team" class="action-card">
+    <div class="action-icon blue"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg></div>
+    <span class="action-label">Team</span>
+    <span class="action-desc">Manage co-founders</span>
+  </a>
+  <a routerLink="/dashboard/investments" class="action-card">
+    <div class="action-icon green"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <line x1="12" y1="1" x2="12" y2="23" />
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </svg></div>
+    <span class="action-label">Investments</span>
+    <span class="action-desc">Manage funding</span>
+  </a>
+  <a routerLink="/dashboard/wallet" class="action-card">
+    <div class="action-icon orange"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <line x1="2" y1="10" x2="22" y2="10" />
+      </svg></div>
+    <span class="action-label">Wallet</span>
+    <span class="action-desc">Manage your funds</span>
+  </a>
+</div>
+
+@if (myStartups().length > 0) {
+<div class="section-title">Startup Feed</div>
+<div class="list-cards">
+  @for (s of myStartups(); track s.id) {
+  <div class="list-card">
+    <div class="lc-left">
+      <div class="lc-avatar"
+        style="background: linear-gradient(135deg, var(--primary), var(--primary-800)); box-shadow: 0 4px 12px var(--primary-glow);">
+        {{ s.name[0] }}</div>
+      <div>
+        <div class="lc-title">{{ s.name }}</div>
+        <div class="lc-sub">{{ s.industry }} Sector</div>
       </div>
     </div>
-
-    <div class="section-title">Operational Directives</div>
-    <div class="actions-grid">
-      <a routerLink="/dashboard/my-startup" class="action-card">
-        <div class="action-icon purple"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
-        <span class="action-label">Venture Core</span>
-        <span class="action-desc">Governance and KPIs</span>
-      </a>
-      <a routerLink="/dashboard/team" class="action-card">
-        <div class="action-icon blue"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <span class="action-label">Capital Team</span>
-        <span class="action-desc">Identity Management</span>
-      </a>
-      <a routerLink="/dashboard/investments" class="action-card">
-        <div class="action-icon green"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-        <span class="action-label">Funding Stream</span>
-        <span class="action-desc">Protocol Moderation</span>
-      </a>
-      <a routerLink="/dashboard/wallet" class="action-card">
-        <div class="action-icon orange"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-        <span class="action-label">Venture Vault</span>
-        <span class="action-desc">Asset Inventory</span>
-      </a>
+    <div class="lc-right">
+      <span class="stage-badge approved" style="font-size: 0.65rem; padding: 0.25rem 0.75rem;">{{ s.stage }}</span>
+      <span class="lc-amount">{{ formatCurrency(s.fundingGoal) }}</span>
     </div>
-
-    @if (myStartups().length > 0) {
-      <div class="section-title">Venture Status Feed</div>
-      <div class="list-cards">
-        @for (s of myStartups(); track s.id) {
-          <div class="list-card">
-            <div class="lc-left">
-              <div class="lc-avatar" style="background: linear-gradient(135deg, var(--primary), var(--primary-800)); box-shadow: 0 4px 12px var(--primary-glow);">{{ s.name[0] }}</div>
-              <div>
-                <div class="lc-title">{{ s.name }}</div>
-                <div class="lc-sub">{{ s.industry }} Sector</div>
-              </div>
-            </div>
-            <div class="lc-right">
-              <span class="stage-badge approved" style="font-size: 0.65rem; padding: 0.25rem 0.75rem;">{{ s.stage }}</span>
-              <span class="lc-amount">{{ formatCurrency(s.fundingGoal) }}</span>
-            </div>
-          </div>
-        }
-      </div>
-    }
-
-    @if (startupInvestments().length > 0) {
-      <div class="section-title">Strategic Contributions</div>
-      <div class="list-cards">
-        @for (inv of startupInvestments().slice(0,5); track inv.id) {
-          <div class="list-card">
-            <div class="lc-left">
-              <div class="lc-avatar" style="background: #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.2);">₹</div>
-              <div>
-                <div class="lc-title">{{ userNames().get(inv.investorId) || 'Strategic Participant' }}</div>
-                <div class="lc-sub">Committed on {{ inv.createdAt | date:'mediumDate' }}</div>
-              </div>
-            </div>
-            <div class="lc-right">
-              <span class="stage-badge" [class]="getStatusClass(inv.status)" style="font-size: 0.65rem; padding: 0.25rem 0.75rem;">{{ inv.status }}</span>
-              <span class="lc-amount">{{ formatCurrency(inv.amount) }}</span>
-            </div>
-          </div>
-        }
-      </div>
-    }
+  </div>
   }
+</div>
+}
 
-  <!-- ══════════════════════════════════════════════════════════ -->
-  <!-- INVESTOR TERMINAL                                          -->
-  <!-- ══════════════════════════════════════════════════════════ -->
-  @if (role === 'INVESTOR') {
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon blue">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ myInvestments().length }}</span>
-          <span class="stat-label">Deployments</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon green">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ formatCurrency(totalInvested) }}</span>
-          <span class="stat-label">Deployed Capital</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon orange">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ pendingInvestments }}</span>
-          <span class="stat-label">In-Transit</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon purple">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ approvedInvestments }}</span>
-          <span class="stat-label">Settled</span>
-        </div>
+@if (startupInvestments().length > 0) {
+<div class="section-title">Recent Investments</div>
+<div class="list-cards">
+  @for (inv of startupInvestments().slice(0,5); track inv.id) {
+  <div class="list-card">
+    <div class="lc-left">
+      <div class="lc-avatar" style="background: #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.2);">₹</div>
+      <div>
+        <div class="lc-title">{{ userNames().get(inv.investorId) || 'Strategic Participant' }}</div>
+        <div class="lc-sub">Committed on {{ inv.createdAt | date:'mediumDate' }}</div>
       </div>
     </div>
-
-    <div class="section-title">Strategic Access</div>
-    <div class="actions-grid">
-      <a routerLink="/dashboard/startups" class="action-card">
-        <div class="action-icon purple"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-        <span class="action-label">Market Intel</span>
-        <span class="action-desc">Scan opportunities</span>
-      </a>
-      <a routerLink="/dashboard/portfolio" class="action-card">
-        <div class="action-icon blue"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-        <span class="action-label">Portfolio Core</span>
-        <span class="action-desc">Asset performance</span>
-      </a>
-      <a routerLink="/dashboard/payments" class="action-card">
-        <div class="action-icon green"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-        <span class="action-label">Clearance</span>
-        <span class="action-desc">Settlement ledger</span>
-      </a>
-      <a routerLink="/dashboard/messages" class="action-card">
-        <div class="action-icon orange"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <span class="action-label">DMs</span>
-        <span class="action-desc">Founder direct-links</span>
-      </a>
+    <div class="lc-right">
+      <span class="stage-badge" [class]="getStatusClass(inv.status)"
+        style="font-size: 0.65rem; padding: 0.25rem 0.75rem;">{{ inv.status }}</span>
+      <span class="lc-amount">{{ formatCurrency(inv.amount) }}</span>
     </div>
-
-    @if (myInvestments().length > 0) {
-      <div class="section-title">Recent Acquisitions</div>
-      <div class="list-cards">
-        @for (inv of myInvestments().slice(0,5); track inv.id) {
-          <div class="list-card">
-            <div class="lc-left">
-              <div class="lc-avatar" style="background: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.2);">₹</div>
-              <div>
-                <div class="lc-title">{{ startupNames().get(inv.startupId) || 'Venture Node ' + inv.startupId }}</div>
-                <div class="lc-sub">Certified on {{ inv.createdAt | date:'mediumDate' }}</div>
-              </div>
-            </div>
-            <div class="lc-right">
-              <span class="stage-badge" [class]="getStatusClass(inv.status)" style="font-size: 0.65rem; padding: 0.25rem 0.75rem;">{{ inv.status }}</span>
-              <span class="lc-amount">{{ formatCurrency(inv.amount) }}</span>
-            </div>
-          </div>
-        }
-      </div>
-    }
+  </div>
   }
+</div>
+}
+}
 
-  <!-- ══════════════════════════════════════════════════════════ -->
-  <!-- COFOUNDER HUB                                              -->
-  <!-- ══════════════════════════════════════════════════════════ -->
-  @if (role === 'COFOUNDER') {
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- INVESTOR TERMINAL                                          -->
+<!-- ══════════════════════════════════════════════════════════ -->
+@if (role === 'INVESTOR') {
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon purple">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ myInvitations().length }}</span>
-          <span class="stat-label">Directives</span>
-        </div>
-      </div>
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+        <polyline points="17 6 23 6 23 12" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ myInvestments().length }}</span>
+      <span class="stat-label">Investments</span>
+    </div>
+  </div>
 
-      <div class="stat-card">
-        <div class="stat-icon orange">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ pendingInvitations.length }}</span>
-          <span class="stat-label">Pending Req</span>
-        </div>
-      </div>
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ formatCurrency(totalInvested) }}</span>
+      <span class="stat-label">Total Invested</span>
+    </div>
+  </div>
 
-      <div class="stat-card">
-        <div class="stat-icon green">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ myInvitations().filter(i => i.status === 'ACCEPTED').length }}</span>
-          <span class="stat-label">Collaborations</span>
-        </div>
-      </div>
+  <div class="stat-card">
+    <div class="stat-icon orange">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ pendingInvestments }}</span>
+      <span class="stat-label">Pending</span>
+    </div>
+  </div>
 
-      <div class="stat-card">
-        <div class="stat-icon blue">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ myInvitations().filter(i => i.status === 'REJECTED').length }}</span>
-          <span class="stat-label">Dismissed</span>
-        </div>
+  <div class="stat-card">
+    <div class="stat-icon purple">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+        <polyline points="22 4 12 14.01 9 11.01" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ approvedInvestments }}</span>
+      <span class="stat-label">Completed</span>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">Quick Actions</div>
+<div class="actions-grid">
+  <a routerLink="/dashboard/startups" class="action-card">
+    <div class="action-icon purple"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg></div>
+    <span class="action-label">Browse Startups</span>
+    <span class="action-desc">Find opportunities</span>
+  </a>
+  <a routerLink="/dashboard/portfolio" class="action-card">
+    <div class="action-icon blue"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <line x1="18" y1="20" x2="18" y2="10" />
+        <line x1="12" y1="20" x2="12" y2="4" />
+        <line x1="6" y1="20" x2="6" y2="14" />
+      </svg></div>
+    <span class="action-label">My Portfolio</span>
+    <span class="action-desc">Track performance</span>
+  </a>
+  <a routerLink="/dashboard/payments" class="action-card">
+    <div class="action-icon green"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+        <line x1="1" y1="10" x2="23" y2="10" />
+      </svg></div>
+    <span class="action-label">Payments</span>
+    <span class="action-desc">Transaction history</span>
+  </a>
+  <a routerLink="/dashboard/messages" class="action-card">
+    <div class="action-icon orange"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg></div>
+    <span class="action-label">Messages</span>
+    <span class="action-desc">Contact founders</span>
+  </a>
+</div>
+
+@if (myInvestments().length > 0) {
+<div class="section-title">Recent Acquisitions</div>
+<div class="list-cards">
+  @for (inv of myInvestments().slice(0,5); track inv.id) {
+  <div class="list-card">
+    <div class="lc-left">
+      <div class="lc-avatar" style="background: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.2);">₹</div>
+      <div>
+        <div class="lc-title">{{ startupNames().get(inv.startupId) || 'Venture Node ' + inv.startupId }}</div>
+        <div class="lc-sub">Certified on {{ inv.createdAt | date:'mediumDate' }}</div>
       </div>
     </div>
-
-    <div class="section-title">Platform Sync</div>
-    <div class="actions-grid">
-      <a routerLink="/dashboard/invitations" class="action-card">
-        <div class="action-icon purple"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
-        <span class="action-label">Inbox</span>
-        <span class="action-desc">Invitations feed</span>
-      </a>
-      <a routerLink="/dashboard/team" class="action-card">
-        <div class="action-icon blue"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <span class="action-label">My Clusters</span>
-        <span class="action-desc">Active ventures</span>
-      </a>
-      <a routerLink="/dashboard/startups" class="action-card">
-        <div class="action-icon green"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-        <span class="action-label">Market</span>
-        <span class="action-desc">Scout nodes</span>
-      </a>
-      <a routerLink="/dashboard/messages" class="action-card">
-        <div class="action-icon orange"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <span class="action-label">Channel</span>
-        <span class="action-desc">Collab DMs</span>
-      </a>
+    <div class="lc-right">
+      <span class="stage-badge" [class]="getStatusClass(inv.status)"
+        style="font-size: 0.65rem; padding: 0.25rem 0.75rem;">{{ inv.status }}</span>
+      <span class="lc-amount">{{ formatCurrency(inv.amount) }}</span>
     </div>
-
-    @if (pendingInvitations.length > 0) {
-      <div class="section-title">Critical Invitations</div>
-      <div class="list-cards">
-        @for (inv of pendingInvitations; track inv.id) {
-          <div class="list-card">
-            <div class="lc-left">
-              <div class="lc-avatar" style="background: #a855f7; box-shadow: 0 4px 12px rgba(168,85,247,0.2);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
-              <div>
-                <div class="lc-title">{{ startupNames().get(inv.startupId) || 'Venture invitation' }}</div>
-                <div class="lc-sub">Proposed Role: {{ inv.role }}</div>
-              </div>
-            </div>
-            <div class="lc-right">
-              <span class="stage-badge pending" style="font-size: 0.65rem; padding: 0.25rem 0.75rem;">PENDING</span>
-              <a routerLink="/dashboard/invitations" class="btn btn-primary btn-sm" style="border-radius: 10px; font-weight: 800; padding: 0.5rem 1.25rem; border: none; box-shadow: 0 4px 12px var(--primary-glow);">Respond</a>
-            </div>
-          </div>
-        }
-      </div>
-    }
+  </div>
   }
+</div>
+}
+}
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- COFOUNDER HUB                                              -->
+<!-- ══════════════════════════════════════════════════════════ -->
+@if (role === 'COFOUNDER') {
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon purple">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ myInvitations().length }}</span>
+      <span class="stat-label">Invitations</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon orange">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ pendingInvitations.length }}</span>
+      <span class="stat-label">Pending</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ myInvitations().filter(i => i.status === 'ACCEPTED').length }}</span>
+      <span class="stat-label">Active Teams</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon blue">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+        <line x1="12" y1="2" x2="12" y2="12" />
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ myInvitations().filter(i => i.status === 'REJECTED').length }}</span>
+      <span class="stat-label">Rejected</span>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">Quick Actions</div>
+<div class="actions-grid">
+  <a routerLink="/dashboard/invitations" class="action-card">
+    <div class="action-icon purple"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg></div>
+    <span class="action-label">Invitations</span>
+    <span class="action-desc">View your invites</span>
+  </a>
+  <a routerLink="/dashboard/team" class="action-card">
+    <div class="action-icon blue"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg></div>
+    <span class="action-label">My Teams</span>
+    <span class="action-desc">Active Startups</span>
+  </a>
+  <a routerLink="/dashboard/startups" class="action-card">
+    <div class="action-icon green"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg></div>
+    <span class="action-label">Browse Startups</span>
+    <span class="action-desc">Find teams to join</span>
+  </a>
+  <a routerLink="/dashboard/messages" class="action-card">
+    <div class="action-icon orange"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg></div>
+    <span class="action-label">Messages</span>
+    <span class="action-desc">Direct chats</span>
+  </a>
+</div>
+
+@if (pendingInvitations.length > 0) {
+<div class="section-title">Pending Invitations</div>
+<div class="list-cards">
+  @for (inv of pendingInvitations; track inv.id) {
+  <div class="list-card">
+    <div class="lc-left">
+      <div class="lc-avatar" style="background: #a855f7; box-shadow: 0 4px 12px rgba(168,85,247,0.2);"><svg width="20"
+          height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
+        </svg></div>
+      <div>
+        <div class="lc-title">{{ startupNames().get(inv.startupId) || 'Startup Invitation' }}</div>
+        <div class="lc-sub">Proposed Role: {{ inv.role }}</div>
+      </div>
+    </div>
+    <div class="lc-right">
+      <span class="stage-badge pending" style="font-size: 0.65rem; padding: 0.25rem 0.75rem;">PENDING</span>
+      <a routerLink="/dashboard/invitations" class="btn btn-primary btn-sm"
+        style="border-radius: 10px; font-weight: 800; padding: 0.5rem 1.25rem; border: none; box-shadow: 0 4px 12px var(--primary-glow);">Respond</a>
+    </div>
+  </div>
+  }
+</div>
+}
+}
 
 }

@@ -1,0 +1,23 @@
+@if (confirmService.state().isOpen) {
+  <div class="modal-backdrop fade-in" (click)="onCancel()">
+    <div class="modal-content slide-up" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ confirmService.state().title }}</h3>
+        <button class="modal-close" (click)="onCancel()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ confirmService.state().message }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="onCancel()">
+          {{ confirmService.state().cancelLabel }}
+        </button>
+        <button class="btn" [ngClass]="confirmService.state().isDestructive ? 'btn-danger' : 'btn-primary'" (click)="onConfirm()">
+          {{ confirmService.state().confirmLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -110,7 +110,7 @@ public class UserController {
         return ResponseEntity.ok(toPaginatedResponse(service.getAllUsers(pageable)));
     }
 
-    @Operation(summary = "Get users by role", description = "Fetches users by their role.")
+    @Operation(summary = "Get users by role", description = "Fetches users by their role. Supports optional keyword search by name or email.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users fetched successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid role provided"),
@@ -122,9 +122,10 @@ public class UserController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String keyword,
             HttpServletRequest request) {
 
-        log.info("GET /users/role/{} - fetching users by role", role);
+        log.info("GET /users/role/{} - fetching users by role, keyword={}", role, keyword);
 
         try {
             String roleName = role.toUpperCase().replace("ROLE_", "");
@@ -134,6 +135,14 @@ public class UserController {
                 log.warn("Attempt to fetch ADMIN users - blocked");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Collections.emptyList());
+            }
+
+            // If keyword is provided, always use paginated keyword search
+            if (keyword != null && !keyword.isBlank()) {
+                Pageable pageable = buildPageable(page, size, sort, "id", Sort.Direction.ASC);
+                Page<UserResponseDto> response = service.searchUsersByRoleAndKeyword(roleEnum, keyword.trim(), pageable);
+                log.info("Keyword search returned {} users for role={}, keyword={}", response.getNumberOfElements(), role, keyword);
+                return ResponseEntity.ok(toPaginatedResponse(response));
             }
 
             if (!isPaginatedRequest(request)) {

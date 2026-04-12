@@ -44,8 +44,11 @@ class AdminUserControllerTest {
     @MockBean
     private ModelMapper modelMapper;
 
-    @MockBean
+    @MockBean(name = "restTemplate")
     private RestTemplate restTemplate;
+
+    @MockBean(name = "plainRestTemplate")
+    private RestTemplate plainRestTemplate;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -135,7 +138,7 @@ class AdminUserControllerTest {
         data.put("result", result);
         prometheusResp.put("data", data);
 
-        when(restTemplate.getForObject(contains("prometheus"), eq(Map.class)))
+        when(plainRestTemplate.getForObject(contains("prometheus"), eq(Map.class)))
                 .thenReturn(prometheusResp);
 
         mockMvc.perform(get("/users/admin/health/microservices")
@@ -153,12 +156,14 @@ class AdminUserControllerTest {
     }
 
     @Test
-    void getMicroservicesHealth_PrometheusError_ShouldReturn500() throws Exception {
-        when(restTemplate.getForObject(contains("prometheus"), eq(Map.class)))
+    void getMicroservicesHealth_PrometheusError_ShouldReturnEmptyList() throws Exception {
+        when(plainRestTemplate.getForObject(contains("prometheus"), eq(Map.class)))
                 .thenThrow(new RuntimeException("Prometheus down"));
 
         mockMvc.perform(get("/users/admin/health/microservices")
                         .header("X-User-Role", "ROLE_ADMIN"))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
     }
 }

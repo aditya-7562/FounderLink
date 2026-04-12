@@ -84,13 +84,13 @@
       }
     </button>
 
-    <!-- User Profile Chip -->
-    <div class="user-chip">
-      <div class="chip-avatar">{{ (authService.email() ?? 'U')[0].toUpperCase() }}</div>
+    <!-- User Profile Shortcut -->
+    <a routerLink="/dashboard/profile" class="user-chip" title="View Profile">
+      <div class="chip-avatar">{{ (userName() || authService.email() || 'U')[0].toUpperCase() }}</div>
       <div class="chip-info">
-        <span class="chip-role">{{ getRoleName() }}</span>
+        <span class="chip-name">{{ userName() || getRoleName() }}</span>
       </div>
-    </div>
+    </a>
 
   </div>
 </header>

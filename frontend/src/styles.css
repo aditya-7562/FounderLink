@@ -27,6 +27,7 @@
   /* ── Semantic Tokens (Light Mode Default) ─────────────────── */
   --bg-primary:    var(--slate-50);
   --bg-secondary:  var(--slate-100);
+  --bg-secondary-rgb: 241, 245, 249;
   --bg-surface:    #ffffff;
   
   --text-primary:   var(--slate-900);
@@ -39,8 +40,9 @@
   --border-focus:   var(--primary-500);
 
   --primary:        var(--primary-500);
+  --primary-rgb:    99, 102, 241;
   --primary-hover:  var(--primary-600);
-  --primary-glow:   rgba(99, 102, 241, 0.15);
+  --primary-glow:   rgba(var(--primary-rgb), 0.15);
 
   --danger:  #ef4444;
   --success: #22c55e;
@@ -76,7 +78,8 @@
 body.dark-theme {
   --bg-primary:    #09090b; /* Unified deep charcoal */
   --bg-secondary:  #18181b;
-  --bg-surface:    #121215;
+  --bg-secondary-rgb: 24, 24, 27;
+  --bg-surface:    #18181b; /* Enhanced contrast for dark mode cards globally */
   
   --text-primary:   #f4f4f5;
   --text-secondary: #a1a1aa;
@@ -153,6 +156,23 @@ input, select, textarea { font-family: inherit; font-size: inherit; outline: non
 .btn-ghost:hover:not(:disabled) {
   background: var(--bg-secondary);
   color: var(--text-primary);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+.btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+.btn-sm {
+  padding: 0.4rem 0.875rem;
+  font-size: 0.8rem;
+  gap: var(--s-1);
 }
 
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }

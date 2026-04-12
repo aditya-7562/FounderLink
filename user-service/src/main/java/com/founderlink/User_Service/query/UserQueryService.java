@@ -68,6 +68,16 @@ public class UserQueryService {
                 .map(user -> modelMapper.map(user, UserResponseDto.class));
     }
 
+    /**
+     * QUERY: Search users by role with keyword filter on name/email.
+     * No caching — keyword searches should always hit DB for fresh results.
+     */
+    public Page<UserResponseDto> searchUsersByRoleAndKeyword(Role role, String keyword, Pageable pageable) {
+        log.info("QUERY - searchUsersByRoleAndKeyword: role={}, keyword={}, pageable={}", role, keyword, pageable);
+        return repository.findByRoleAndKeyword(role, keyword, pageable)
+                .map(user -> modelMapper.map(user, UserResponseDto.class));
+    }
+
     
     /**
      * QUERY: Count users by role.

@@ -89,4 +89,12 @@ class UserServiceTest {
         when(queryService.countByRole(Role.INVESTOR)).thenReturn(10L);
         assertThat(userService.countByRole(Role.INVESTOR)).isEqualTo(10L);
     }
+
+    @Test
+    void searchUsersByRoleAndKeyword_Paged() {
+        Page<UserResponseDto> page = mock(Page.class);
+        Pageable p = mock(Pageable.class);
+        when(queryService.searchUsersByRoleAndKeyword(Role.FOUNDER, "key", p)).thenReturn(page);
+        assertThat(userService.searchUsersByRoleAndKeyword(Role.FOUNDER, "key", p)).isEqualTo(page);
+    }
 }

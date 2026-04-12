@@ -79,7 +79,7 @@ export class UsersComponent implements OnInit {
         this.loadUsers();
         this.cancelAction();
       },
-      error: (err) => alert('Failed to update user status')
+      error: (err) => console.error('Failed to update user status', err)
     });
   }
 

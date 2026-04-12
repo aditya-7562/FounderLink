@@ -176,6 +176,17 @@ class UserControllerTest {
     }
 
     @Test
+    void getUsersByRole_WithKeyword_ShouldReturnPaginated() throws Exception {
+        when(userService.searchUsersByRoleAndKeyword(eq(Role.FOUNDER), eq("test"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(new UserResponseDto())));
+
+        mockMvc.perform(get("/users/role/FOUNDER?keyword=test&page=0&size=10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.content").isArray());
+    }
+
+    @Test
     void getUsersByRole_WithPrefix_ShouldReturnUsers() throws Exception {
         when(userService.getUsersByRole(eq(Role.FOUNDER))).thenReturn(List.of(new UserResponseDto()));
 

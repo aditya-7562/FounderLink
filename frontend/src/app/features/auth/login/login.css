@@ -9,15 +9,15 @@
 .panel-hero h2 {
   font-size: 2.5rem;
   font-weight: 800;
-  color: white;
+  color: var(--text-primary);
   line-height: 1.1;
   letter-spacing: -0.04em;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .panel-hero p {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.1rem;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -35,47 +35,48 @@
 }
 
 .feature-icon {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  background: var(--primary-glow);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary-300);
+  color: var(--primary);
   flex-shrink: 0;
 }
 
 .feature-title {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
 }
 
 .feature-desc {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
 }
 
 .stat-row {
   display: flex;
-  gap: 2.5rem;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .stat { display: flex; flex-direction: column; gap: 0.25rem; }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 800;
-  color: white;
+  color: var(--text-primary);
 }
 
 .stat-label {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-weight: 600;
 }

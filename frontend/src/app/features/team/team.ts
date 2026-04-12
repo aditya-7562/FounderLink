@@ -1,13 +1,17 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { TeamService } from '../../core/services/team.service';
 import { StartupService } from '../../core/services/startup.service';
 import { UserService } from '../../core/services/user.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import {
   InvitationRequest,
+  InvitationResponse,
   PaginatedData,
   StartupResponse,
   TeamMemberResponse,
@@ -22,7 +26,7 @@ import { PaginationControlsComponent } from '../../shared/components/pagination-
   templateUrl: './team.html',
   styleUrl: './team.css'
 })
-export class TeamComponent implements OnInit {
+export class TeamComponent implements OnInit, OnDestroy {
   loading       = signal(true);
   errorMsg      = signal('');
   successMsg    = signal('');
@@ -33,6 +37,9 @@ export class TeamComponent implements OnInit {
   teamMembers       = signal<TeamMemberResponse[]>([]);
   teamPage          = signal<PaginatedData<TeamMemberResponse>>(this.emptyPage<TeamMemberResponse>());
   removing          = signal<number | null>(null);
+  invitations       = signal<InvitationResponse[]>([]);
+  invitationsPage   = signal<PaginatedData<InvitationResponse>>(this.emptyPage<InvitationResponse>());
+  cancelling        = signal<number | null>(null);
 
   showDiscovery    = signal(false);
   allUsers         = signal<UserResponse[]>([]);
@@ -63,6 +70,10 @@ export class TeamComponent implements OnInit {
     CTO: 'CTO', CPO: 'CPO', MARKETING_HEAD: 'Mktg Head', ENGINEERING_LEAD: 'Eng Lead'
   };
 
+  /** Debounced search support */
+  private searchSubject = new Subject<string>();
+  private searchSub?: Subscription;
+
   private hasRole(r: string): boolean {
     const stored = this.authService.role() ?? '';
     return stored === r || stored === `ROLE_${r}`;
@@ -75,6 +86,7 @@ export class TeamComponent implements OnInit {
     private teamService: TeamService,
     private startupService: StartupService,
     private userService: UserService,
+    private confirmService: ConfirmService,
     private router: Router
   ) {}
 
@@ -97,11 +109,35 @@ export class TeamComponent implements OnInit {
 
     this.userService.getAllUsers({ page: 0, size: 50, sort: 'id,asc' }).subscribe({
       next: env => {
-        const map = new Map<number, string>();
-        env.data?.content.forEach(u => map.set(u.userId, u.name || u.email));
-        this.userNames.set(map);
+        this.userNames.update(map => {
+          const newMap = new Map(map);
+          env.data?.content.forEach(u => {
+            if (!newMap.has(u.userId)) {
+              newMap.set(u.userId, u.name || u.email);
+            }
+          });
+          return newMap;
+        });
       }
     });
+
+    // Setup debounced search — triggers server-side search 350ms after user stops typing
+    this.searchSub = this.searchSubject.pipe(
+      debounceTime(350),
+      distinctUntilChanged()
+    ).subscribe(keyword => {
+      this.loadUsersForRole(this.roleFilter(), 0, keyword);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
+  }
+
+  /** Called from template when search input changes */
+  onSearchChange(query: string): void {
+    this.searchQuery.set(query);
+    this.searchSubject.next(query);
   }
 
   loadFounderData(page = 0): void {
@@ -132,12 +168,45 @@ export class TeamComponent implements OnInit {
         const teamPage = env.data ?? this.teamPage();
         this.teamPage.set(teamPage);
         this.teamMembers.set(teamPage.content);
+        this.resolveNames(teamPage.content.map(m => m.userId));
         this.loading.set(false);
       },
       error: env => {
         this.errorMsg.set(env.error ?? 'Failed to load team.');
         this.loading.set(false);
       }
+    });
+
+    if (page === 0) this.loadInvitations(startupId, 0);
+  }
+
+  loadInvitations(startupId: number, page = 0): void {
+    this.teamService.getStartupInvitations(startupId, { page, size: 10 }).subscribe({
+      next: env => {
+        const invPage = env.data ?? this.invitationsPage();
+        this.invitationsPage.set(invPage);
+        this.invitations.set(invPage.content);
+        this.resolveNames(invPage.content.map(i => i.invitedUserId));
+      }
+    });
+  }
+
+  private resolveNames(userIds: number[]): void {
+    const current = this.userNames();
+    const missing = Array.from(new Set(userIds)).filter(id => !current.has(id));
+    
+    missing.forEach(id => {
+      this.userService.getUser(id).subscribe({
+        next: env => {
+          if (env.data) {
+            this.userNames.update(map => {
+              const newMap = new Map(map);
+              newMap.set(id, env.data!.name || env.data!.email);
+              return newMap;
+            });
+          }
+        }
+      });
     });
   }
 
@@ -147,19 +216,38 @@ export class TeamComponent implements OnInit {
     this.loadTeam(id, 0);
   }
 
-  removeMember(memberId: number): void {
-    if (!confirm('Remove this team member?')) return;
+  async removeMember(memberId: number): Promise<void> {
+    const confirmed = await this.confirmService.confirm('Are you sure you want to remove this team member?', { isDestructive: true });
+    if (!confirmed) return;
     this.removing.set(memberId);
     this.teamService.removeMember(memberId).subscribe({
       next: () => {
         this.removing.set(null);
         this.teamMembers.update(list => list.filter(m => m.id !== memberId));
-        this.successMsg.set('Member removed.');
+        this.successMsg.set('Member removed successfully.');
         setTimeout(() => this.successMsg.set(''), 3000);
       },
       error: env => {
         this.removing.set(null);
         this.errorMsg.set(env.error ?? 'Failed to remove member.');
+      }
+    });
+  }
+
+  async cancelInvitation(invitationId: number): Promise<void> {
+    const confirmed = await this.confirmService.confirm('Revoke this invitation?', { isDestructive: true });
+    if (!confirmed) return;
+    this.cancelling.set(invitationId);
+    this.teamService.cancelInvitation(invitationId).subscribe({
+      next: () => {
+        this.cancelling.set(null);
+        this.invitations.update(list => list.filter(i => i.id !== invitationId));
+        this.successMsg.set('Invitation revoked.');
+        setTimeout(() => this.successMsg.set(''), 3000);
+      },
+      error: env => {
+        this.cancelling.set(null);
+        this.errorMsg.set(env.error ?? 'Failed to cancel invitation.');
       }
     });
   }
@@ -191,13 +279,16 @@ export class TeamComponent implements OnInit {
     this.viewedUser.set(null);
   }
 
-  loadUsersForRole(role: string, page = 0): void {
+  loadUsersForRole(role: string, page = 0, keyword?: string): void {
     this.roleFilter.set(role);
     this.usersLoading.set(true);
     this.selectedUser.set(null);
-    const obs$ = role
-      ? this.userService.getUsersByRole(role, { page, size: 10, sort: 'id,asc' })
-      : this.userService.getAllUsers({ page, size: 10, sort: 'id,asc' });
+
+    const searchKeyword = keyword ?? this.searchQuery();
+    const obs$ = this.userService.getUsersByRole(
+      role || 'COFOUNDER',
+      { page, size: 10, sort: 'id,asc', keyword: searchKeyword || undefined }
+    );
 
     obs$.subscribe({
       next: env => {
@@ -213,16 +304,13 @@ export class TeamComponent implements OnInit {
     });
   }
 
+  /** Now uses server-side filtered results directly — no client-side filtering needed for keyword */
   filteredUsers = computed(() => {
-    const q = this.searchQuery().toLowerCase();
     const memberIds = new Set(this.teamMembers().map(m => m.userId));
     const myId = this.authService.userId();
     return this.allUsers().filter(u =>
       u.userId !== myId &&
-      !memberIds.has(u.userId) &&
-      (!q || (u.name ?? '').toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q) ||
-        (u.skills ?? '').toLowerCase().includes(q))
+      !memberIds.has(u.userId)
     );
   });
 

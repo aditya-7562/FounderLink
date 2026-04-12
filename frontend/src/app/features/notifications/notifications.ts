@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { NotificationResponse, PaginatedData } from '../../models';
@@ -26,6 +26,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   errorMsg      = signal('');
   unreadCount   = signal(0);
   filterType    = signal<'all' | 'unread' | 'read'>('all');
+  isClosing     = signal(false);
   selectedNotification = signal<NotificationResponse | null>(null);
 
   private refreshInterval: ReturnType<typeof setInterval> | null = null;
@@ -33,7 +34,8 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   constructor(
     public authService: AuthService, 
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -99,7 +101,16 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   }
 
   closeModal(): void {
-    this.selectedNotification.set(null);
+    if (this.isClosing()) return;
+    this.isClosing.set(true);
+    setTimeout(() => {
+      this.selectedNotification.set(null);
+      this.isClosing.set(false);
+    }, 300);
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   markAllAsRead(): void {

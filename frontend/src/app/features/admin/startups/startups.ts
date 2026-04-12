@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService, ModerationRequest } from '../services/admin';
+import { UiNotifierService } from '../../../core/services/ui-notifier.service';
 import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 
 @Component({
@@ -12,6 +13,7 @@ import { ClickOutsideDirective } from '../../../shared/directives/click-outside.
 })
 export class StartupsComponent implements OnInit {
   private adminService = inject(AdminService);
+  private uiNotifier = inject(UiNotifierService);
 
   startups: any[] = [];
   page = 0;
@@ -78,7 +80,7 @@ export class StartupsComponent implements OnInit {
            this.loadStartups();
            this.cancelAction();
         },
-        error: (err) => alert('Failed to delete startup')
+        error: (err) => console.error('Failed to delete startup', err)
       });
     } else if (type === 'APPROVE') {
       this.adminService.updateStartupModeration(id, { status: 'APPROVED' }).subscribe({
@@ -86,11 +88,11 @@ export class StartupsComponent implements OnInit {
           this.loadStartups();
           this.cancelAction();
         },
-        error: (err) => alert('Failed to approve startup')
+        error: (err) => console.error('Failed to approve startup', err)
       });
     } else if (type === 'FLAG' || type === 'REJECT') {
       if (!reason.trim()) {
-        alert('Reason is required.');
+        this.uiNotifier.warning('Reason is required.');
         return;
       }
       const mappedStatus = type === 'FLAG' ? 'FLAGGED' : 'REJECTED';
@@ -99,7 +101,7 @@ export class StartupsComponent implements OnInit {
           this.loadStartups();
           this.cancelAction();
         },
-        error: (err) => alert('Failed to update startup status')
+        error: (err) => console.error('Failed to update startup status', err)
       });
     }
   }

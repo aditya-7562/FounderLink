@@ -30,7 +30,6 @@
         [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
         class="nav-item"
         [title]="item.label"
-        (click)="onNavClick()"
       >
         <span class="nav-icon">
           @switch (item.icon) {
@@ -78,7 +77,7 @@
 
   <!-- User + Logout -->
   <div class="sidebar-footer">
-    <div class="user-info" [class.collapsed]="collapsed()">
+    <a routerLink="/dashboard/profile" class="user-info" [class.collapsed]="collapsed()" title="View Profile">
       <div class="user-avatar">
         {{ (authService.email() ?? 'U')[0].toUpperCase() }}
       </div>
@@ -86,11 +85,11 @@
         <div class="user-details">
           <span class="user-email">{{ authService.email() }}</span>
         </div>
-        <button class="logout-btn" (click)="authService.logout()" title="Logout">
+        <button class="logout-btn" (click)="$event.stopPropagation(); authService.logout()" title="Logout">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </button>
       }
-    </div>
+    </a>
   </div>
 
 </aside>

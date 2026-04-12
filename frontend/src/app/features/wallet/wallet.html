@@ -3,7 +3,7 @@
   <div class="page-header">
     <div class="header-main">
       <h2>Wallet</h2>
-      <p class="page-sub">Comprehensive financial overview of your venture funding</p>
+      <p class="page-sub">A complete overview of your startup's funding and balance</p>
     </div>
   </div>
 
@@ -54,10 +54,10 @@
         <!-- Reflective Platinum Balance Card -->
         <div class="balance-section">
           <div class="balance-card">
-            <span class="balance-label">Verified Liquidity</span>
+            <span class="balance-label">Available Balance</span>
             <span class="balance-amount">{{ formatCurrency(wallet()!.balance) }}</span>
             <div class="balance-subtitle">
-              <span>Secured for {{ selectedStartup()?.name }}</span>
+              <span>For {{ selectedStartup()?.name }}</span>
             </div>
             
             <!-- Abstract Card Decor -->
@@ -68,19 +68,19 @@
         <!-- Ledger Identity & Metrics -->
         <div class="wallet-info">
           <div class="info-card">
-            <span class="info-label">Vault ID</span>
+            <span class="info-label">Wallet ID</span>
             <span class="info-value font-mono">#FL_WLT_{{ wallet()!.id }}</span>
           </div>
           <div class="info-card">
-            <span class="info-label">Active Entity</span>
+            <span class="info-label">Startup</span>
             <span class="info-value">{{ selectedStartup()?.name }}</span>
           </div>
           <div class="info-card">
-            <span class="info-label">Initialization</span>
+            <span class="info-label">Created On</span>
             <span class="info-value" style="color: var(--text-muted);">{{ formatDate(wallet()!.createdAt) }}</span>
           </div>
           <div class="info-card">
-            <span class="info-label">Last Integrity Check</span>
+            <span class="info-label">Last Updated</span>
             <span class="info-value" style="color: var(--text-muted);">{{ formatDate(wallet()!.updatedAt) }}</span>
           </div>
         </div>
@@ -91,9 +91,9 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
            </div>
            <div>
-              <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">Live Settlement</h4>
-              <p style="color: var(--text-secondary); line-height: 1.5; font-size: 0.95rem;">Your liquidity reflects all finalized investment payments. Balances are updated in real-time as investor transactions settle on the platform.</p>
-           </div>
+              <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">Recent Activity</h4>
+              <p style="color: var(--text-secondary); line-height: 1.5; font-size: 0.95rem;">Your balance is updated automatically as investment payments are settled.</p>
+            </div>
         </div>
 
       } @else {

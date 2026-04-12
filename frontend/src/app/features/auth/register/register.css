@@ -6,13 +6,13 @@
 .panel-hero h2 {
   font-size: 2.25rem;
   font-weight: 800;
-  color: white;
+  color: var(--text-primary);
   letter-spacing: -0.04em;
   line-height: 1.1;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 .panel-hero p {
-  color: rgba(255,255,255,0.6);
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -27,68 +27,72 @@
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  padding: 1rem;
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
-  transition: all 0.3s;
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .role-preview-item.active {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+  background: var(--primary-glow);
+  border-color: var(--primary);
+  box-shadow: 0 4px 15px var(--primary-glow);
 }
 
 .rp-icon {
-  width: 40px;
-  height: 40px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary-300);
+  color: var(--text-muted);
   flex-shrink: 0;
+  transition: all 0.2s;
 }
 
 .role-preview-item.active .rp-icon {
   background: var(--primary);
-  color: white;
+  color: var(--text-on-primary);
+  border-color: var(--primary);
 }
 
 .rp-title {
-  color: white;
+  color: var(--text-primary);
   font-weight: 700;
-  font-size: 0.95rem;
-  margin-bottom: 0.2rem;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
 }
 
 .rp-desc {
-  font-size: 0.8rem;
-  color: rgba(255,255,255,0.45);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
 }
 
 .stat-row {
   display: flex;
-  gap: 2.5rem;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .stat { display: flex; flex-direction: column; gap: 0.25rem; }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 800;
-  color: white;
+  color: var(--text-primary);
 }
 
 .stat-label {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 @keyframes spin {

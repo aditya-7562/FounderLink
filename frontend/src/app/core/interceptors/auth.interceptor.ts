@@ -28,6 +28,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const ignore401Redirect =
     isPublicAuthEndpoint ||
     req.url.includes('/startup') ||
+    req.url.includes('/wallets') ||
     req.url.includes('/users/public/stats');
 
   const authReq = token && !isPublicAuthEndpoint

@@ -3,16 +3,40 @@
   <div class="nav-inner">
     <a class="brand" routerLink="/">
       <div class="brand-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg>
       </div>
       <span>FounderLink</span>
     </a>
-    <div class="nav-actions">
+    <div class="nav-actions" style="display: flex; align-items: center; gap: 0.5rem;">
+      <button class="icon-btn theme-toggle" (click)="themeService.toggleTheme()"
+        [title]="themeService.theme() === 'dark' ? 'Switch to Light' : 'Switch to Dark'">
+        @if (themeService.theme() === 'dark') {
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="4.22" x2="19.78" y2="5.64" />
+        </svg>
+        } @else {
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+        }
+      </button>
+
       @if (authService.isLoggedIn()) {
-        <a class="btn btn-primary btn-sm" routerLink="/dashboard/startups">Return to Startups</a>
+      <a class="btn btn-primary btn-sm" routerLink="/dashboard/startups">Return to Startups</a>
       } @else {
-        <a class="btn-ghost-nav" routerLink="/auth/login">Sign In</a>
-        <a class="btn btn-primary btn-sm" routerLink="/auth/register">Join Free</a>
+      <a class="btn-ghost-nav" routerLink="/auth/login" style="font-weight: 800;">Sign In</a>
+      <a class="btn btn-primary btn-sm" routerLink="/auth/register" style="font-weight: 900; border-radius: 12px;">Sign
+        Up</a>
       }
     </div>
   </div>
@@ -22,7 +46,9 @@
 <div class="back-bar">
   <div class="back-inner">
     <button class="back-btn" (click)="goBack()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
       Back to Discover
     </button>
   </div>
@@ -30,92 +56,100 @@
 
 <!-- Loading -->
 @if (loading()) {
-  <div class="page-loading">
-    <div class="spinner-lg"></div>
-  </div>
+<div class="page-loading">
+  <div class="spinner-lg"></div>
+</div>
 }
 
 <!-- Error -->
 @if (!loading() && error()) {
-  <div class="page-error" style="background: rgba(239, 68, 68, 0.05); border-radius: 12px; margin: 2rem;">
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5" style="margin-bottom:1rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    <h3>{{ error() }}</h3>
-    <button class="btn btn-primary" (click)="goBack()">Go Back</button>
-  </div>
+<div class="page-error" style="background: rgba(239, 68, 68, 0.05); border-radius: 12px; margin: 2rem;">
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5"
+    style="margin-bottom:1rem;">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </svg>
+  <h3>{{ error() }}</h3>
+  <button class="btn btn-primary" (click)="goBack()">Go Back</button>
+</div>
 }
 
 <!-- Content -->
 @if (!loading() && startup()) {
-  @let s = startup()!;
-  <div class="detail-page">
-    <div class="detail-grid">
+@let s = startup()!;
+<div class="detail-page">
+  <div class="detail-grid">
 
-      <!-- LEFT: Main Info -->
-      <div class="detail-main">
-        <div class="dm-header">
-          <div class="dm-logo">{{ s.name.slice(0,2).toUpperCase() }}</div>
-          <div>
-            <h1 class="dm-name">{{ s.name }}</h1>
-            @if (s.industry) { <p class="dm-industry">{{ s.industry }}</p> }
-            <span class="stage-badge" [class]="stageClass(s.stage)">{{ stageLabel(s.stage) }}</span>
-          </div>
+    <!-- LEFT: Main Info -->
+    <div class="detail-main">
+      <div class="dm-header">
+        <div class="dm-logo">{{ s.name.slice(0,2).toUpperCase() }}</div>
+        <div>
+          <h1 class="dm-name">{{ s.name }}</h1>
+          @if (s.industry) { <p class="dm-industry">{{ s.industry }}</p> }
+          <span class="stage-badge" [class]="stageClass(s.stage)">{{ stageLabel(s.stage) }}</span>
         </div>
+      </div>
 
-        @if (s.description) {
-          <div class="dm-section">
-            <h3 class="dm-section-title">Investment Thesis & Description</h3>
-            <p class="dm-desc">{{ s.description }}</p>
+      @if (s.description) {
+      <div class="dm-section">
+        <h3 class="dm-section-title">Investment Thesis & Description</h3>
+        <p class="dm-desc">{{ s.description }}</p>
+      </div>
+      }
+
+      <div class="dm-section">
+        <h3 class="dm-section-title">Key Highlights</h3>
+        <div class="dm-highlights">
+          <div class="dm-highlight-item">✅ Verified Founder Identity</div>
+          <div class="dm-highlight-item">📈 Open for Funding</div>
+          <div class="dm-highlight-item">🚀 Active Deployment</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Sidebar -->
+    <aside class="detail-side">
+
+      <!-- Funding Card -->
+      <div class="side-card">
+        <h3 class="side-card-title">Funding Progress</h3>
+        <div class="funding-raised">{{ formatCurrency(raisedAmount()) }}</div>
+        <div class="funding-goal">Raised of {{ formatCurrency(s.fundingGoal) }} goal</div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="fundingPercentage()"></div>
+        </div>
+        <div class="funding-status">Goal Reached: {{ fundingPercentage() }}%</div>
+      </div>
+
+      <!-- Details Card -->
+      <div class="side-card">
+        <h3 class="side-card-title">Startup Details</h3>
+        <div class="detail-rows">
+          <div class="dr">
+            <span class="dr-label">Current Stage</span>
+            <span class="dr-val"><span class="stage-badge" [class]="stageClass(s.stage)">{{ stageLabel(s.stage)
+                }}</span></span>
           </div>
-        }
-        
-        <div class="dm-section">
-          <h3 class="dm-section-title">Key Highlights</h3>
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.5rem; color:rgba(255,255,255,0.6); font-size:0.9rem;">
-            <div style="padding:1rem; background:rgba(255,255,255,0.02); border-radius:12px;">✅ Verified Founder Identity</div>
-            <div style="padding:1rem; background:rgba(255,255,255,0.02); border-radius:12px;">📈 Open for Funding</div>
-            <div style="padding:1rem; background:rgba(255,255,255,0.02); border-radius:12px;">🚀 Active Deployment</div>
+          @if (s.industry) {
+          <div class="dr">
+            <span class="dr-label">Industry Sector</span>
+            <span class="dr-val">{{ s.industry }}</span>
+          </div>
+          }
+          <div class="dr">
+            <span class="dr-label">Currency</span>
+            <span class="dr-val">INR (₹)</span>
+          </div>
+          <div class="dr">
+            <span class="dr-label">Total Ask</span>
+            <span class="dr-val highlight">{{ formatCurrency(s.fundingGoal) }}</span>
           </div>
         </div>
       </div>
 
-      <!-- RIGHT: Sidebar -->
-      <aside class="detail-side">
-
-        <!-- Funding Card -->
-        <div class="side-card">
-          <h3 class="side-card-title">Funding Progress</h3>
-          <div class="funding-raised">{{ formatCurrency(s.fundingGoal) }}</div>
-          <div class="funding-goal">Target Funding Amount</div>
-          <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
-          <div style="font-size:0.8rem; color:rgba(255,255,255,0.3); margin-top:0.5rem;">Goal Reached: 100% (Simulation)</div>
-        </div>
-
-        <!-- Details Card -->
-        <div class="side-card">
-          <h3 class="side-card-title">Startup Details</h3>
-          <div class="detail-rows">
-            <div class="dr">
-              <span class="dr-label">Current Stage</span>
-              <span class="dr-val"><span class="stage-badge" [class]="stageClass(s.stage)">{{ stageLabel(s.stage) }}</span></span>
-            </div>
-            @if (s.industry) {
-              <div class="dr">
-                <span class="dr-label">Industry Sector</span>
-                <span class="dr-val">{{ s.industry }}</span>
-              </div>
-            }
-            <div class="dr">
-              <span class="dr-label">Currency</span>
-              <span class="dr-val">INR (₹)</span>
-            </div>
-            <div class="dr">
-              <span class="dr-label">Total Ask</span>
-              <span class="dr-val highlight">{{ formatCurrency(s.fundingGoal) }}</span>
-            </div>
-          </div>
-        </div>
-
-      </aside>
-    </div>
+    </aside>
   </div>
+</div>
 }

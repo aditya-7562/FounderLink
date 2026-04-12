@@ -2,6 +2,7 @@ import { Component, input, output, OnInit, OnDestroy, signal } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../core/services/user.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { NotificationResponse } from '../../../models';
@@ -19,19 +20,34 @@ export class NavbarComponent implements OnInit, OnDestroy {
   unreadCount = signal(0);
   showNotifPanel = signal(false);
   notifications = signal<NotificationResponse[]>([]);
+  userName = signal<string>('');
 
   private pollInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     public authService: AuthService,
     public themeService: ThemeService,
+    private userService: UserService,
     private notificationService: NotificationService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
     this.loadUnread();
+    this.loadUserProfile();
     this.pollInterval = setInterval(() => this.loadUnread(), 30000);
+  }
+
+  loadUserProfile(): void {
+    const userId = this.authService.userId();
+    if (!userId) return;
+    this.userService.getUser(userId).subscribe({
+      next: env => {
+        if (env.data?.name) {
+          this.userName.set(env.data.name);
+        }
+      }
+    });
   }
 
   ngOnDestroy(): void {

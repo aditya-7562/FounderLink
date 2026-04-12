@@ -7,6 +7,10 @@ import { ApiEnvelope, PaginatedData, PaginationQuery, UserResponse, UserUpdateRe
 import { normalizeCollection, normalizePlain, normalizeError } from './api-normalizer';
 import { AuthService } from './auth.service';
 
+export interface UserSearchQuery extends PaginationQuery {
+  keyword?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private readonly api = environment.apiUrl;
@@ -39,8 +43,12 @@ export class UserService {
     );
   }
 
-  getUsersByRole(role: string, query: PaginationQuery = {}): Observable<ApiEnvelope<PaginatedData<UserResponse>>> {
-    return this.http.get<unknown>(`${this.api}/users/role/${role}`, { params: this.withPagination(query, 'id,asc') }).pipe(
+  getUsersByRole(role: string, query: UserSearchQuery = {}): Observable<ApiEnvelope<PaginatedData<UserResponse>>> {
+    let params = this.withPagination(query, 'id,asc');
+    if (query.keyword?.trim()) {
+      params = params.set('keyword', query.keyword.trim());
+    }
+    return this.http.get<unknown>(`${this.api}/users/role/${role}`, { params }).pipe(
       map(normalizeCollection<UserResponse>),
       catchError(err => throwError(() => normalizeError(err)))
     );

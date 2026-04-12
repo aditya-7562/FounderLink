@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { StartupService } from '../../core/services/startup.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { StartupResponse, StartupStage } from '../../models';
 
 @Component({
@@ -38,6 +39,7 @@ export class LandingComponent implements OnInit {
     private startupService: StartupService,
     private userService: UserService,
     public  authService: AuthService,
+    public  themeService: ThemeService,
     private router: Router
   ) {}
 

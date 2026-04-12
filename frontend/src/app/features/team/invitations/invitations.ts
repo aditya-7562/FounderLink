@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { TeamService } from '../../../core/services/team.service';
 import { StartupService } from '../../../core/services/startup.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { InvitationResponse, InvitationStatus, PaginatedData } from '../../../models';
 import { PaginationControlsComponent } from '../../../shared/components/pagination-controls/pagination-controls';
 
@@ -31,7 +32,8 @@ export class InvitationsComponent implements OnInit {
   constructor(
     public authService: AuthService,
     private teamService: TeamService,
-    private startupService: StartupService
+    private startupService: StartupService,
+    private confirmService: ConfirmService
   ) {}
 
   ngOnInit(): void { this.loadInvitations(); }
@@ -76,8 +78,9 @@ export class InvitationsComponent implements OnInit {
     });
   }
 
-  reject(invitation: InvitationResponse): void {
-    if (!confirm('Are you sure you want to reject this invitation?')) return;
+  async reject(invitation: InvitationResponse): Promise<void> {
+    const confirmed = await this.confirmService.confirm('Are you sure you want to reject this invitation?', { isDestructive: true });
+    if (!confirmed) return;
     this.acting.set(invitation.id);
     this.errorMsg.set('');
     this.teamService.rejectInvitation(invitation.id).subscribe({

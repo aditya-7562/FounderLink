@@ -115,4 +115,17 @@ class UserQueryServiceTest {
         long result = userQueryService.countByRole(Role.FOUNDER);
         assertThat(result).isEqualTo(5L);
     }
+
+    @Test
+    void searchUsersByRoleAndKeyword_Paged() {
+        User user = new User();
+        UserResponseDto dto = new UserResponseDto();
+        Page<User> page = new PageImpl<>(List.of(user));
+
+        when(userRepository.findByRoleAndKeyword(eq(Role.COFOUNDER), eq("xyz"), any(Pageable.class))).thenReturn(page);
+        when(modelMapper.map(user, UserResponseDto.class)).thenReturn(dto);
+
+        Page<UserResponseDto> result = userQueryService.searchUsersByRoleAndKeyword(Role.COFOUNDER, "xyz", PageRequest.of(0, 10));
+        assertThat(result.getContent()).hasSize(1);
+    }
 }

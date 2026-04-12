@@ -18,7 +18,6 @@ interface NavItem {
 })
 export class SidebarComponent {
   collapsed = input(false);
-  closeMenu = output<void>();
 
   readonly navItems: NavItem[] = [
     { label: 'Admin Dashboard', route: '/admin/dashboard',     icon: 'grid',        roles: ['ADMIN'] },
@@ -46,8 +45,4 @@ export class SidebarComponent {
     const role = rawRole.replace('ROLE_', '');
     return this.navItems.filter(item => item.roles.includes(role));
   });
-
-  onNavClick(): void {
-    this.closeMenu.emit();
-  }
 }

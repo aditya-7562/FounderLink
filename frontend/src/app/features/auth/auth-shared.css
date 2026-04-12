@@ -8,10 +8,7 @@
 
 /* ── Left Panel (Hero) ─────────────────────────────────────────── */
 .auth-panel {
-  flex: 0 0 42%;
-  background: #09090b; /* Deep background for hero contrast */
-  display: flex;
-  align-items: stretch;
+  background: var(--bg-secondary); /* Theme-aware background */
   position: relative;
   overflow: hidden;
   border-right: 1px solid var(--border-subtle);
@@ -21,7 +18,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 60%);
+  background: radial-gradient(circle at 20% 20%, var(--primary-glow) 0%, transparent 60%);
   z-index: 0;
 }
 
@@ -33,7 +30,7 @@
   width: 80%;
   height: 80%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.05) 0%, transparent 70%);
   z-index: 0;
 }
 
@@ -70,7 +67,7 @@
 .brand-name {
   font-size: 1.25rem;
   font-weight: 800;
-  color: white;
+  color: var(--text-primary);
   letter-spacing: -0.02em;
 }
 

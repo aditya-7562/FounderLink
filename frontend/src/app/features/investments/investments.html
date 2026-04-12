@@ -2,7 +2,7 @@
 <div class="page-header">
   <div class="header-main">
     <h2>Investments</h2>
-    <p class="page-sub">Monitor and govern funding contributions across your ventures</p>
+    <p class="page-sub">Track funding and manage investment approvals for your startups</p>
   </div>
 </div>
 
@@ -22,7 +22,7 @@
 @if (myStartups().length === 0 && !loading()) {
   <div class="empty-state" style="padding: 6rem 2rem; border: 1px dashed var(--border-subtle); border-radius: 32px; background: var(--bg-secondary); text-align: center;">
     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity: 0.3; margin-bottom: 1.5rem;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-    <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">Venture required</h3>
+    <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">Startup required</h3>
     <p style="color: var(--text-secondary);">You need at least one active startup profile to receive or manage funding.</p>
   </div>
 } @else {
@@ -42,8 +42,8 @@
       <select [(ngModel)]="filterStatus" class="filter-select" style="padding-right: 2.5rem; appearance: none;">
         <option value="">All Transactions</option>
         <option value="PENDING">Pending Approval</option>
-        <option value="APPROVED">Successfully Approved</option>
-        <option value="REJECTED">Declined/Rejected</option>
+        <option value="APPROVED">Approved</option>
+        <option value="REJECTED">Rejected</option>
       </select>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.4;"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
@@ -53,7 +53,7 @@
   @if (!loading()) {
     <div class="inv-stats">
       <div class="inv-stat">
-        <span class="inv-stat-label">Total Volume</span>
+        <span class="inv-stat-label">Total Invested</span>
         <span class="inv-stat-value amount">{{ formatCurrency(totalAmount) }}</span>
       </div>
       <div class="inv-stat">
@@ -61,11 +61,11 @@
         <span class="inv-stat-value">{{ investmentPage().totalElements }}</span>
       </div>
       <div class="inv-stat">
-        <span class="inv-stat-label">Allocated</span>
+        <span class="inv-stat-label">Distributed</span>
         <span class="inv-stat-value approved">{{ approvedCount }}</span>
       </div>
       <div class="inv-stat">
-        <span class="inv-stat-label">Awaiting Review</span>
+        <span class="inv-stat-label">Pending Approval</span>
         <span class="inv-stat-value pending">{{ pendingCount }}</span>
       </div>
     </div>
@@ -81,7 +81,7 @@
   } @else if (filteredInvestments.length === 0) {
     <div class="empty-state" style="padding: 4rem 2rem; border-radius: 24px; background: var(--bg-secondary); border: 1px dashed var(--border-subtle); text-align: center;">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.2; margin-bottom: 1rem;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">No entries found</h3>
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">No investments found</h3>
       <p style="color: var(--text-muted);">We couldn't find any investments matching your current filters.</p>
     </div>
   } @else {
@@ -90,10 +90,10 @@
         <thead>
           <tr>
             <th>Transaction</th>
-            <th>Investor Profile</th>
-            <th>Contribution</th>
-            <th>Governance Status</th>
-            <th>Finalized Date</th>
+            <th>Investor</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
             <th style="text-align: right;">Actions</th>
           </tr>
         </thead>
@@ -103,8 +103,8 @@
               <td class="td-id" style="font-weight: 700; color: var(--text-muted); font-family: monospace;">#FL_{{ inv.id }}</td>
               <td>
                 <div class="investor-cell">
-                  <div class="investor-avatar">{{ (userNames().get(inv.investorId) || 'B')[0] }}</div>
-                  <span style="font-weight: 700;">{{ userNames().get(inv.investorId) || 'Backer #' + inv.investorId }}</span>
+                  <div class="investor-avatar">{{ (userNames().get(inv.investorId) || 'I')[0] }}</div>
+                  <span style="font-weight: 700;">{{ userNames().get(inv.investorId) || 'Investor' }}</span>
                 </div>
               </td>
               <td class="td-amount">{{ formatCurrency(inv.amount) }}</td>

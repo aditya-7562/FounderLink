@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { StartupService } from '../../../core/services/startup.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { PaginatedData, StartupResponse, StartupRequest, StartupStage } from '../../../models';
 import { PaginationControlsComponent } from '../../../shared/components/pagination-controls/pagination-controls';
 
@@ -41,7 +42,8 @@ export class MyStartupComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public authService: AuthService,
-    private startupService: StartupService
+    private startupService: StartupService,
+    private confirmService: ConfirmService
   ) {
     this.form = this.fb.group({
       name:             ['', [Validators.required, Validators.minLength(2)]],
@@ -112,8 +114,9 @@ export class MyStartupComponent implements OnInit {
     });
   }
 
-  deleteStartup(id: number): void {
-    if (!confirm('Delete this startup? This will also cancel pending investments and team memberships.')) return;
+  async deleteStartup(id: number): Promise<void> {
+    const confirmed = await this.confirmService.confirm('Delete this startup? This will also cancel pending investments and team memberships.', { isDestructive: true });
+    if (!confirmed) return;
     this.deleting.set(id);
     this.startupService.delete(id).subscribe({
       next: () => {
