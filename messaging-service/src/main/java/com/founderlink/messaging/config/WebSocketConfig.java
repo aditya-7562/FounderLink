@@ -36,6 +36,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 // Allow the Angular dev-server origin and any deployed origin
                 .setAllowedOriginPatterns("*")
                 // SockJS fallback for environments where native WebSocket is unavailable
-                .withSockJS();
+                .withSockJS()
+                // Gateway owns CORS — suppress duplicate header emission from SockJS
+                .setSuppressCors(true);
     }
 }
