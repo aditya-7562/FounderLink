@@ -111,7 +111,9 @@ public class MessageController {
         if (isPaginatedRequest(params)) {
             int page = Integer.parseInt(params.getOrDefault("page", "0"));
             int size = Integer.parseInt(params.getOrDefault("size", "20"));
-            Pageable pageable = buildPageable(page, size, params.get("sort"), "id", Sort.Direction.DESC);
+            // Sort handled by JPQL (ORDER BY MAX(m.createdAt) DESC) — unsorted Pageable avoids
+            // Spring Data appending a conflicting ORDER BY that violates ONLY_FULL_GROUP_BY
+            Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50));
             return ResponseEntity.ok(toPaginatedResponse(messageService.getConversationPartners(userId, pageable)));
         }
 
