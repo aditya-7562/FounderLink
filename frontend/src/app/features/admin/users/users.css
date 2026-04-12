@@ -1,43 +1,56 @@
+/* ── Feature: Admin User Management Redesign (Phase 3.4) ──────── */
+
+:host {
+  display: block;
+}
 
 .admin-filters {
   display: flex;
-  gap: var(--s-3);
-  margin-bottom: var(--s-6);
+  gap: 1rem;
+  margin-bottom: 2.5rem;
   flex-wrap: wrap;
   align-items: center;
   background: var(--bg-surface);
-  padding: var(--s-4);
-  border-radius: var(--radius-md);
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-2xl);
   border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
 }
 
 .admin-input, .admin-select {
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 0.625rem 0.875rem;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
   color: var(--text-primary);
-  font-size: 0.875rem;
-  transition: all 0.2s;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 180px;
 }
 
 .admin-input:focus, .admin-select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-glow);
+  box-shadow: 0 0 0 4px var(--primary-glow);
+  background: var(--bg-surface);
   outline: none;
 }
 
 .cell-title {
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .cell-sub {
   font-size: 0.825rem;
+  font-weight: 700;
   color: var(--text-muted);
+  margin-top: 0.15rem;
 }
 
-/* ── Overflow Menu ─────────────────────────────────────────────── */
+/* ── Overflow Menu (Platinum Style) ─────────────────────────── */
 .overflow-menu {
   position: relative;
 }
@@ -46,16 +59,23 @@
   position: absolute;
   top: 100%;
   right: 0;
-  z-index: 50;
-  min-width: 140px;
+  z-index: 100;
+  min-width: 180px;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  border-radius: 16px;
+  box-shadow: var(--shadow-xl);
   display: none;
   flex-direction: column;
-  padding: 0.5rem 0;
-  animation: slideIn 0.2s ease;
+  padding: 0.6rem;
+  margin-top: 0.5rem;
+  backdrop-filter: blur(20px);
+  animation: menuDrop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes menuDrop {
+  from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .overflow-menu.open .overflow-dropdown {
@@ -63,53 +83,90 @@
 }
 
 .overflow-dropdown button {
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 800;
   color: var(--text-primary);
   text-align: left;
-  transition: background 0.2s;
+  border-radius: 10px;
+  transition: all 0.15s;
 }
 
 .overflow-dropdown button:hover {
-  background: var(--bg-secondary);
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
 }
 
 .overflow-dropdown hr {
   border: none;
   border-top: 1px solid var(--border-subtle);
-  margin: 0.25rem 0;
+  margin: 0.4rem 0.6rem;
 }
 
-/* ── Pagination ───────────────────────────────────────────────── */
+/* ── Table & Pagination ──────────────────────────────────────── */
+.table-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  background: rgba(var(--bg-secondary-rgb), 0.5);
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.data-table td {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.data-table tr:hover {
+  background: rgba(var(--primary-rgb), 0.02);
+}
+
 .admin-pagination {
-  padding: var(--s-4) var(--s-6);
+  padding: 1.25rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border-subtle);
-}
-
-.pagination-controls {
-  display: flex;
-  gap: var(--s-2);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: rgba(var(--bg-secondary-rgb), 0.2);
 }
 
 .page-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.25rem;
   background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 800;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
 .page-btn:hover:not(:disabled) {
-  background: var(--border-subtle);
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--bg-surface);
 }
 
 .page-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
 }

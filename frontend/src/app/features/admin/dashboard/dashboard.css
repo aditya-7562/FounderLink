@@ -1,42 +1,127 @@
+/* ── Feature: Admin Dashboard Redesign (Phase 3.4) ────────────── */
+
+:host {
+  display: block;
+}
+
 .admin-fade-in {
-  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: adminSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes adminSlideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+  margin-bottom: 3rem;
+}
+
+.page-header h2 {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+
+.page-sub {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--s-6);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
 }
 
-/* ── Custom Dashboard Components ───────────────────────────────── */
+/* ── Platinum Stat Cards ───────────────────────────────────────── */
+.stat-card {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  padding: 2.5rem;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary-400);
+}
+
+.stat-card-glow {
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  filter: blur(40px);
+  opacity: 0.15;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.glow-primary { background: var(--primary); }
+.glow-purple { background: #a855f7; }
+.glow-danger { background: #ef4444; }
+.glow-success { background: #10b981; }
+
+.stat-card h3 {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 1rem;
+}
+
+.stat-value {
+  display: block;
+  font-size: 3rem;
+  font-weight: 950;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* ── Cluster Nerve Center ──────────────────────────────────────── */
 .health-span {
   grid-column: 1 / -1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 3rem;
 }
 
 .pulse-summary {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
+  gap: 1rem;
 }
 
 .pulse-dot {
-  width: 8px;
-  height: 8px;
-  background-color: var(--text-muted);
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
+  background: var(--text-muted);
   position: relative;
 }
 
 .pulse-active {
-  background-color: var(--success);
-  box-shadow: 0 0 12px var(--success);
+  background: #10b981;
+  box-shadow: 0 0 15px #10b981;
 }
 
 .pulse-active::after {
   content: '';
   position: absolute;
-  inset: -4px;
-  border: 1px solid var(--success);
+  inset: -6px;
+  border: 2px solid #10b981;
   border-radius: 50%;
   animation: pulse-ring 2s cubic-bezier(0.21, 0.61, 0.35, 1) infinite;
 }
@@ -47,69 +132,62 @@
 }
 
 .pulse-text {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
 .health-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--s-3);
-  margin-top: var(--s-4);
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
 }
 
 .health-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem 1.75rem;
   display: flex;
   align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-3) var(--s-4);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  transition: transform 0.2s;
+  gap: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .health-item:hover {
-  transform: translateY(-2px);
   background: var(--bg-surface);
+  border-color: var(--primary-400);
+  transform: translateY(-2px);
 }
 
 .health-indicator {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
 }
 
-.health-indicator.up { background: var(--success); box-shadow: 0 0 8px var(--success); }
-.health-indicator.down { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.health-indicator.up { background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+.health-indicator.down { background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
 
 .health-name {
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--text-primary);
   flex: 1;
 }
 
 .health-status {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 950;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
 }
 
-.health-status.text-green {
-  text-shadow: 0 0 8px var(--success);
-}
+.text-green { color: #10b981; }
+.text-red { color: #ef4444; }
 
-.health-status.text-red {
-  text-shadow: 0 0 8px var(--danger);
-}
-
-.health-empty {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: var(--s-8);
-  color: var(--text-muted);
-  font-size: 0.875rem;
+@media (max-width: 768px) {
+  .stat-value { font-size: 2.25rem; }
+  .health-span { padding: 2rem; }
 }

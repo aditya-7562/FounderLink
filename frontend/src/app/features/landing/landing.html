@@ -1,216 +1,229 @@
-<!-- ══════════════════════════════════════════════════════════════════════ -->
-<!-- NAVBAR                                                                -->
-<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- ── Strategic Infrastructure: Premium Landing Node (Phase 6) ───── -->
+
 <nav class="navbar">
   <div class="nav-inner">
     <a class="brand" routerLink="/">
       <div class="brand-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
         </svg>
       </div>
       <span>FounderLink</span>
     </a>
 
     <div class="nav-actions">
-      <a class="btn btn-ghost-nav" routerLink="/auth/login">Sign In</a>
-      <a class="btn btn-primary btn-sm" routerLink="/auth/register">Get Started</a>
+      <a class="btn btn-ghost" routerLink="/auth/login" style="font-weight: 800; padding: 0.75rem 1.5rem;">Sign In</a>
+      <a class="btn btn-primary btn-sm" routerLink="/auth/register"
+        style="padding: 0.75rem 1.75rem; border-radius: 12px; font-weight: 900;">Sign Up</a>
     </div>
   </div>
 </nav>
 
-<!-- ══════════════════════════════════════════════════════════════════════ -->
-<!-- HERO                                                                   -->
-<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- ── High-Fidelity Hero Directive ──────────────────────────── -->
 <section class="hero">
-  <div class="hero-glow hero-glow-1"></div>
-  <div class="hero-glow hero-glow-2"></div>
   <div class="hero-content">
-    <div class="hero-badge">The Startup Investment Platform</div>
+    <div class="hero-badge">The Central Startup Exchange</div>
     <h1 class="hero-title">
-      Discover India's <span class="hero-highlight">Next Big</span><br>Startups
+      Accelerate India's <span class="hero-highlight">Venture</span><br>Ecosystem
     </h1>
     <p class="hero-sub">
-      Browse, explore, and connect with high-potential startups. <br>
-      Join as a Founder, Investor, or Co-Founder to unlock the full experience.
+      Join thousands of founders building and funding startups in India.
     </p>
     <div class="hero-cta">
-    <div class="hero-cta">
-      <a class="btn btn-primary btn-lg" routerLink="/auth/register">Join FounderLink</a>
-      <a class="btn btn-outline-hero btn-lg" routerLink="/auth/login">Sign In</a>
+      <a class="btn btn-primary btn-lg" routerLink="/auth/register"
+        style="padding: 1.25rem 3rem; border-radius: 20px; font-weight: 950; box-shadow: 0 10px 30px var(--primary-glow);">Get
+        Started</a>
+      <a class="btn btn-ghost" routerLink="/auth/login"
+        style="padding: 1.25rem 3rem; border-radius: 20px; font-weight: 800; border: 1px solid var(--border-subtle);">Sign
+        In</a>
     </div>
-    </div>
+
     <div class="hero-stats">
-      <div class="hstat"><span class="hstat-n">{{ stats().startups }}</span><span class="hstat-l">Startups</span></div>
-      <div class="hstat-div"></div>
-      <div class="hstat"><span class="hstat-n">{{ stats().founders }}+</span><span class="hstat-l">Founders</span></div>
-      <div class="hstat-div"></div>
-      <div class="hstat"><span class="hstat-n">{{ stats().cofounders }}+</span><span class="hstat-l">Co-Founders</span></div>
-      <div class="hstat-div"></div>
-      <div class="hstat"><span class="hstat-n">{{ stats().investors }}+</span><span class="hstat-l">Investors</span></div>
-      <div class="hstat-div"></div>
-      <div class="hstat"><span class="hstat-n">{{ formatCurrency(stats().totalFunding) }}</span><span class="hstat-l">Seeking/Funded</span></div>
+      <div class="hstat">
+        <span class="hstat-n">{{ totalUsers() }}+</span>
+        <span class="hstat-l">Members</span>
+      </div>
+
+      <div class="hstat">
+        <span class="hstat-n">{{ stats().startups }}+</span>
+        <span class="hstat-l">Startups</span>
+      </div>
+
+      <div class="hstat">
+        <span class="hstat-n">{{ stats().investors }}+</span>
+        <span class="hstat-l">Investors</span>
+      </div>
+
+      <div class="hstat">
+        <span class="hstat-n">{{ formatCurrency(stats().totalFunding) }}</span>
+        <span class="hstat-l">Funding Raised</span>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════════════════════════════ -->
-<!-- CHOOSE YOUR ROLE                                                       -->
-<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- ── Strategic Identity Nodes ───────────────────────────────── -->
 <section class="roles-section">
-    <div class="section-inner">
-      <div class="roles-header">
-        <h2 class="section-title">Join the Ecosystem</h2>
-        <p class="section-sub">Choose your path and start your journey with FounderLink</p>
+  <div class="section-inner">
+    <div class="roles-header" style="text-align: center; margin-bottom: 5rem;">
+      <h2 class="section-title">How do you want to get started?</h2>
+      <p class="section-sub" style="font-weight: 600; font-size: 1.15rem;">Select your operational role within the
+        FounderLink network.</p>
+    </div>
+    <div class="roles-grid">
+      <div class="role-card">
+        <div class="role-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+          </svg>
+        </div>
+        <h3 class="role-title">Start a Startup</h3>
+        <p class="role-desc">Share your idea, find co-founders, and raise funding.
+        </p>
+        <a class="btn btn-primary" routerLink="/auth/register"
+          style="margin-top: auto; padding: 1rem; border-radius: 14px; font-weight: 900;">Start Building</a>
       </div>
-      <div class="roles-grid">
-        <div class="role-card">
-          <div class="role-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .34 2.02 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
-          </div>
-          <h3 class="role-title">Founder</h3>
-          <p class="role-desc">Raise capital, build your team, and scale your startup to the next level.</p>
-          <a class="btn btn-outline role-btn" routerLink="/auth/register">Sign Up as Founder</a>
+
+      <div class="role-card">
+        <div class="role-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
         </div>
-        <div class="role-card">
-          <div class="role-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-          </div>
-          <h3 class="role-title">Investor</h3>
-          <p class="role-desc">Discover vetted startups, review business details, and build your portfolio.</p>
-          <a class="btn btn-outline role-btn" routerLink="/auth/register">Sign Up as Investor</a>
+        <h3 class="role-title">Invest in Startups</h3>
+        <p class="role-desc">Discover promising startups and connect with founders.</p>
+        <a class="btn btn-primary" routerLink="/auth/register"
+          style="margin-top: auto; padding: 1rem; border-radius: 14px; font-weight: 900;">Explore Startups</a>
+      </div>
+
+      <div class="role-card">
+        <div class="role-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
         </div>
-        <div class="role-card">
-          <div class="role-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-          </div>
-          <h3 class="role-title">Co-Founder</h3>
-          <p class="role-desc">Find visionary founders and join high-potential startups as a core team member.</p>
-          <a class="btn btn-outline role-btn" routerLink="/auth/register">Sign Up as Co-Founder</a>
-        </div>
+        <h3 class="role-title">Join a Startup</h3>
+        <p class="role-desc">Find startups looking for people like you.
+        </p>
+        <a class="btn btn-primary" routerLink="/auth/register"
+          style="margin-top: auto; padding: 1rem; border-radius: 14px; font-weight: 900;">Find Opportunities</a>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-<!-- ══════════════════════════════════════════════════════════════════════ -->
-<!-- STARTUP GRID                                                           -->
-<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- ── Public Venture Terminal ────────────────────────────────── -->
 <section class="startups-section">
   <div class="section-inner">
-
-    <!-- Section Header -->
-    <div class="section-header">
-      <div>
-        <h2 class="section-title">Explore Startups</h2>
-        <p class="section-sub">Browse {{ filteredStartups.length }} startups — no account required</p>
-      </div>
+    <div class="section-header" style="text-align: center; margin-bottom: 5rem;">
+      <h2 class="section-title">Explore Startups</h2>
+      <p class="section-sub" style="font-weight: 600;">Browse active startups and find the right opportunity or
+        investment.</p>
     </div>
 
-    <!-- Filters Row -->
+    <!-- Unified Venture Filter -->
     <div class="filters-bar">
-      <div class="search-box">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, industry..." class="filter-input" />
+      <div class="filter-group">
+        <div class="filter-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </div>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search startups..." class="filter-input"
+          (input)="loadStartups()" />
       </div>
-      <select class="filter-select" [(ngModel)]="stageFilter" (change)="loadStartups()">
-        @for (s of stages; track s.value) {
+
+      <div class="filter-group" style="flex: 0.5;">
+        <div class="filter-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+            <line x1="4" y1="22" x2="4" y2="15" />
+          </svg>
+        </div>
+        <select class="filter-select" [(ngModel)]="stageFilter" (change)="loadStartups()">
+          @for (s of stages; track s.value) {
           <option [value]="s.value">{{ s.label }}</option>
-        }
-      </select>
-      <input type="text" [(ngModel)]="industryFilter" (keyup.enter)="loadStartups()" placeholder="Industry..." class="filter-input filter-input-sm" />
-      <button class="btn btn-primary btn-sm" (click)="loadStartups()">Search</button>
+          }
+        </select>
+      </div>
+
+      <button class="btn-search" (click)="loadStartups()">Search</button>
     </div>
 
-    <!-- Loading -->
     @if (loading()) {
-      <div class="card-grid">
-        @for (i of [1,2,3,4,5,6]; track i) {
-          <div class="skeleton-card"></div>
-        }
+    <div class="roles-grid">
+      @for (i of [1,2,3]; track i) {
+      <div class="startup-card" style="opacity: 0.5; justify-content: center; align-items: center;">
+        <div class="spinner"></div>
       </div>
+      }
+    </div>
+    } @else {
+    <div class="roles-grid">
+      @for (s of startups(); track s.id) {
+      <article class="startup-card" (click)="openDetail(s)">
+        <div class="sc-header">
+          <span class="sc-name">{{ s.name }}</span>
+          <div class="sc-meta-row">
+            <span class="sc-industry">{{ s.industry }} Sector</span>
+            <span class="sc-stage-badge">{{ s.stage }}</span>
+          </div>
+        </div>
+
+        <p class="sc-description">{{ s.description }}</p>
+
+        <div class="sc-footer">
+          <div class="sc-funding-box">
+            <span class="sc-label">Seeking</span>
+            <span class="sc-value">{{ formatCurrency(s.fundingGoal) }}</span>
+          </div>
+          <div class="sc-action">
+            <span>View Details</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+        </div>
+      </article>
+      }
+    </div>
     }
-
-    <!-- Empty -->
-    @if (!loading() && filteredStartups.length === 0) {
-      <div class="empty-state">
-        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        <h3>No startups found</h3>
-        <p>Try adjusting your filters</p>
-      </div>
-    }
-
-    <!-- Grid -->
-    @if (!loading() && filteredStartups.length > 0) {
-      <div class="card-grid">
-        @for (s of filteredStartups; track s.id) {
-          <article class="startup-card" (click)="openDetail(s)">
-            <!-- Card Header -->
-            <div class="sc-header">
-              <div class="sc-logo">{{ s.name.slice(0,2).toUpperCase() }}</div>
-              <span class="stage-badge" [class]="stageClass(s.stage)">{{ stageLabel(s.stage) }}</span>
-            </div>
-
-            <h3 class="sc-name">{{ s.name }}</h3>
-
-            @if (s.industry) {
-              <div class="sc-industry">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                {{ s.industry }}
-              </div>
-            }
-
-            @if (s.description) {
-              <p class="sc-desc">{{ s.description | slice:0:110 }}{{ s.description.length > 110 ? '…' : '' }}</p>
-            }
-
-            <!-- Funding Goal -->
-            <div class="sc-funding">
-              <div class="sc-funding-row">
-                <span class="sc-funding-label">Seeking</span>
-                <span class="sc-funding-val">{{ formatCurrency(s.fundingGoal) }}</span>
-              </div>
-            </div>
-
-            <div class="sc-footer">
-              <button class="btn btn-outline btn-sm sc-btn">View Details →</button>
-            </div>
-          </article>
-        }
-      </div>
-    }
-
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════════════════════════════ -->
-<!-- CTA BANNER                                                             -->
-<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- ── Strategic Call to Action ───────────────────────────────── -->
 @if (!authService.isLoggedIn()) {
-  <section class="cta-banner">
-    <div class="cta-inner">
-      <h2>Ready to be part of India's startup revolution?</h2>
-      <p>Join as a Founder to list your startup, or as an Investor to fund the next unicorn.</p>
-      <div class="cta-btns">
-        <a class="btn btn-primary btn-lg" routerLink="/auth/register">Create Free Account</a>
-        <a class="btn btn-outline-hero btn-lg" routerLink="/auth/login">Sign In</a>
-      </div>
-    </div>
-  </section>
+<section class="hero" style="background: var(--primary); padding: 10rem 1.5rem;">
+  <div class="hero-content">
+    <h2 style="font-size: 3.5rem; font-weight: 950; color: white; letter-spacing: -0.05em; margin-bottom: 1.5rem;">
+      Join the next generation of Indian innovation.</h2>
+    <p style="font-weight: 600; font-size: 1.25rem; color: rgba(255,255,255,0.8); margin-bottom: 3.5rem;">It takes less
+      than 2 minutes to create your account.</p>
+    <a class="btn btn-outline" routerLink="/auth/register"
+      style="padding: 1.5rem 4rem; border-radius: 24px; font-weight: 950; background: white; color: var(--primary); border: none; box-shadow: 0 15px 40px rgba(0,0,0,0.2);">Create
+      Account</a>
+  </div>
+</section>
 }
 
-<!-- ══════════════════════════════════════════════════════════════════════ -->
-<!-- FOOTER                                                                 -->
-<!-- ══════════════════════════════════════════════════════════════════════ -->
 <footer class="footer">
   <div class="footer-inner">
     <div class="brand">
-      <div class="brand-icon brand-icon-sm">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+      <div class="brand-icon" style="width: 32px; height: 32px; border-radius: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
         </svg>
       </div>
-      <span>FounderLink</span>
+      <span style="font-size: 1rem;">FounderLink</span>
     </div>
-    <p class="footer-copy">© 2026 FounderLink. Connecting founders, investors &amp; co-founders.</p>
+    <p class="footer-copy">© 2026 FounderLink. All rights reserved.</p>
   </div>
 </footer>

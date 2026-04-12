@@ -1,35 +1,36 @@
 <div class="wallet-container">
   <!-- Header -->
   <div class="page-header">
-    <div>
+    <div class="header-main">
       <h2>Wallet</h2>
-      <p class="page-sub">Your startup's funding balance</p>
+      <p class="page-sub">Comprehensive financial overview of your venture funding</p>
     </div>
   </div>
 
   @if (errorMsg()) {
-    <div class="alert alert-error">{{ errorMsg() }}</div>
+    <div class="alert alert-danger" style="margin-bottom: 2rem; padding: 1.25rem; border-radius: 16px; background: rgba(239,68,68,0.1); color: #ef4444; display: flex; align-items: center; gap: 0.75rem; border: 1px solid rgba(239,68,68,0.2);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ errorMsg() }}
+    </div>
   }
 
-  <!-- Loading -->
+  <!-- GLOBAL LOADING -->
   @if (loading()) {
     <div class="loading-state">
       <div class="spinner"></div>
-      <p>Loading startups...</p>
+      <p style="color: var(--text-secondary); font-weight: 700; font-size: 1.1rem; letter-spacing: -0.01em;">Synchronizing ledger...</p>
     </div>
   } @else {
 
     @if (startups().length === 0) {
       <div class="empty-state">
-        <div class="empty-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        </div>
-        <h3>No Startups Yet</h3>
-        <p>Create a startup first to see its wallet balance.</p>
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity: 0.3; margin-bottom: 2rem;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <h3 style="font-size: 1.75rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.75rem; letter-spacing: -0.02em;">Digital Vault Not Created</h3>
+        <p style="color: var(--text-secondary); max-width: 400px; margin: 0 auto;">Establishing a wallet requires an active startup profile. Launch your venture to begin.</p>
       </div>
     } @else {
 
-      <!-- Startup Tabs -->
+      <!-- Platinum Startup Selector -->
       <div class="startup-selector">
         @for (startup of startups(); track startup.id) {
           <button
@@ -42,65 +43,78 @@
         }
       </div>
 
-      <app-pagination-controls
-        [page]="startupPage().page"
-        [totalPages]="startupPage().totalPages"
-        [totalElements]="startupPage().totalElements"
-        label="startups"
-        (previous)="previousPage()"
-        (next)="nextPage()"
-      />
-
-      <!-- Wallet Loading -->
+      <!-- WALMET DYNAMIC CONTENT -->
       @if (walletLoading()) {
-        <div class="loading-state">
+        <div class="loading-state" style="background: transparent; border: none; padding: 4rem 0;">
           <div class="spinner"></div>
-          <p>Fetching wallet...</p>
+          <p style="color: var(--text-muted); font-weight: 700;">Querying blockchain balance...</p>
         </div>
       } @else if (wallet()) {
-        <!-- Balance Card -->
+        
+        <!-- Reflective Platinum Balance Card -->
         <div class="balance-section">
           <div class="balance-card">
-            <span class="balance-label">Current Balance</span>
+            <span class="balance-label">Verified Liquidity</span>
             <span class="balance-amount">{{ formatCurrency(wallet()!.balance) }}</span>
-            <span class="balance-subtitle">for {{ selectedStartup()?.name }}</span>
+            <div class="balance-subtitle">
+              <span>Secured for {{ selectedStartup()?.name }}</span>
+            </div>
+            
+            <!-- Abstract Card Decor -->
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="0.5" style="position: absolute; right: -20px; top: -20px; opacity: 0.1;"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           </div>
         </div>
 
-        <!-- Info Row -->
+        <!-- Ledger Identity & Metrics -->
         <div class="wallet-info">
           <div class="info-card">
-            <span class="info-label">Wallet ID</span>
-            <span class="info-value font-mono">#{{ wallet()!.id }}</span>
+            <span class="info-label">Vault ID</span>
+            <span class="info-value font-mono">#FL_WLT_{{ wallet()!.id }}</span>
           </div>
           <div class="info-card">
-            <span class="info-label">Startup</span>
+            <span class="info-label">Active Entity</span>
             <span class="info-value">{{ selectedStartup()?.name }}</span>
           </div>
           <div class="info-card">
-            <span class="info-label">Created On</span>
-            <span class="info-value">{{ formatDate(wallet()!.createdAt) }}</span>
+            <span class="info-label">Initialization</span>
+            <span class="info-value" style="color: var(--text-muted);">{{ formatDate(wallet()!.createdAt) }}</span>
           </div>
           <div class="info-card">
-            <span class="info-label">Last Updated</span>
-            <span class="info-value">{{ formatDate(wallet()!.updatedAt) }}</span>
+            <span class="info-label">Last Integrity Check</span>
+            <span class="info-value" style="color: var(--text-muted);">{{ formatDate(wallet()!.updatedAt) }}</span>
           </div>
         </div>
 
-        <div class="alert alert-info" style="margin-top:1.5rem">
-          💡 Your wallet balance grows automatically when investors complete payments for approved investments.
+        <!-- Helpful Context Overlay -->
+        <div style="margin-top: 3rem; padding: 1.5rem 2rem; border-radius: 20px; background: rgba(var(--primary-rgb), 0.05); border: 1px solid rgba(var(--primary-rgb), 0.1); display: flex; align-items: flex-start; gap: 1.25rem;">
+           <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px var(--primary-glow);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+           </div>
+           <div>
+              <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">Live Settlement</h4>
+              <p style="color: var(--text-secondary); line-height: 1.5; font-size: 0.95rem;">Your liquidity reflects all finalized investment payments. Balances are updated in real-time as investor transactions settle on the platform.</p>
+           </div>
         </div>
 
       } @else {
-        <!-- No wallet yet -->
+        <!-- No Vault Detected -->
         <div class="empty-state">
-          <div class="empty-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-          </div>
-          <h3>No Wallet Yet</h3>
-          <p>A wallet is created automatically once your first investment payment is confirmed.</p>
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.2; margin-bottom: 1.5rem;"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.01em;">Awaiting Initial Deposit</h3>
+          <p style="color: var(--text-secondary); max-width: 360px; margin: 0 auto;">Your digital vault will be automatically initiated once your first investor contribution completes the settlement process.</p>
         </div>
       }
+
+      <div style="margin-top: 2rem;">
+        <app-pagination-controls
+          [page]="startupPage().page"
+          [totalPages]="startupPage().totalPages"
+          [totalElements]="startupPage().totalElements"
+          label="startups"
+          (previous)="previousPage()"
+          (next)="nextPage()"
+        />
+      </div>
 
     }
   }

@@ -21,6 +21,7 @@ export class LandingComponent implements OnInit {
     founders: 0, investors: 0, cofounders: 0,
     startups: 0, totalFunding: 0
   });
+  totalUsers = computed(() => this.stats().founders + this.stats().investors + this.stats().cofounders);
   searchQuery = '';
   stageFilter = '';
   industryFilter = '';

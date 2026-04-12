@@ -1,121 +1,121 @@
 <div class="profile-container">
-  <!-- Loading state -->
   @if (loading()) {
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading profile...</p>
+    <div class="loading-state" style="padding: 10rem 2rem; text-align: center;">
+      <div class="spinner" style="width: 48px; height: 48px; border-width: 4px; border-top-color: var(--primary);"></div>
+      <p style="font-weight: 900; color: var(--text-primary); margin-top: 1.5rem; letter-spacing: -0.02em;">Decrypting Identity Protocols...</p>
     </div>
   } @else {
     <div class="profile-layout">
-      <!-- Profile Card -->
+      <!-- High-Fidelity Identity Card -->
       <div class="profile-card">
         <div class="profile-header">
           <div class="profile-avatar">
             {{ user()?.name?.charAt(0)?.toUpperCase() || authService.email()?.charAt(0)?.toUpperCase() || 'U' }}
           </div>
           <div class="profile-info">
-            <h1>{{ user()?.name || 'No name set' }}</h1>
+            <h1>{{ user()?.name || 'Identity Not Set' }}</h1>
             <p class="profile-email">{{ user()?.email }}</p>
             <div class="profile-role">
-              <span class="role-icon">{{ getRoleDisplay().icon }}</span>
               <span class="role-badge" [style.backgroundColor]="getRoleDisplay().color">
                 {{ getRoleDisplay().label }}
               </span>
             </div>
           </div>
           <button class="btn-edit" (click)="toggleEdit()">
-            @if (editing()) { 
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Cancel 
-            } @else { 
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit Profile 
+            @if (editing()) {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Discard
+            } @else {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Modify
             }
           </button>
         </div>
 
-        <!-- Alerts -->
+        <!-- System Alerts -->
         @if (errorMsg()) {
-          <div class="alert alert-error">{{ errorMsg() }}</div>
+          <div class="alert alert-danger" style="margin-bottom: 2.5rem; border-radius: 16px; font-weight: 800; padding: 1.25rem;">{{ errorMsg() }}</div>
         }
         @if (successMsg()) {
-          <div class="alert alert-success">{{ successMsg() }}</div>
+          <div class="alert alert-success" style="margin-bottom: 2.5rem; border-radius: 16px; font-weight: 800; padding: 1.25rem;">{{ successMsg() }}</div>
         }
 
-        <!-- Edit Form -->
+        <!-- Interactive Modification Node -->
         @if (editing()) {
           <div class="profile-form">
             <div class="form-group">
-              <label>Full Name</label>
-              <input type="text" [(ngModel)]="name" placeholder="Your full name" class="form-control" />
+              <label>Full Identity</label>
+              <input type="text" [(ngModel)]="name" placeholder="Full name on record" class="form-control" />
             </div>
             <div class="form-group">
-              <label>Email (read-only)</label>
+              <label>Operational Email (read-only)</label>
               <input type="email" [value]="user()?.email" disabled class="form-control" />
             </div>
             <div class="form-group">
-              <label>Skills</label>
-              <input type="text" [(ngModel)]="skills" placeholder="e.g. JavaScript, React" class="form-control" />
+              <label>Specialized Skills</label>
+              <input type="text" [(ngModel)]="skills" placeholder="e.g. Architect, Quantitative Dev" class="form-control" />
             </div>
             <div class="form-group">
-              <label>Experience</label>
-              <textarea [(ngModel)]="experience" placeholder="Describe your experience" class="form-control" rows="3"></textarea>
+              <label>Professional Path</label>
+              <textarea [(ngModel)]="experience" placeholder="Describe your career trajectory..." class="form-control" rows="4"></textarea>
             </div>
             <div class="form-group">
-              <label>Bio</label>
-              <textarea [(ngModel)]="bio" placeholder="Tell us about yourself" class="form-control" rows="3"></textarea>
+              <label>Strategic Bio</label>
+              <textarea [(ngModel)]="bio" placeholder="Mission statement and background..." class="form-control" rows="4"></textarea>
             </div>
             <div class="form-group">
               <label>Portfolio Links</label>
-              <input type="text" [(ngModel)]="portfolioLinks" placeholder="https://github.com/you" class="form-control" />
+              <input type="text" [(ngModel)]="portfolioLinks" placeholder="https://github.com/..." class="form-control" />
             </div>
             <div class="form-actions">
-              <button class="btn btn-primary" (click)="saveProfile()" [disabled]="saving()">
-                {{ saving() ? 'Saving...' : 'Save Changes' }}
+              <button class="btn btn-primary" style="flex: 2; padding: 1.25rem; font-weight: 950; border-radius: 18px;" (click)="saveProfile()" [disabled]="saving()">
+                {{ saving() ? 'Synchronizing...' : 'Settle Changes' }}
               </button>
-              <button class="btn btn-ghost" (click)="toggleEdit()" [disabled]="saving()">Cancel</button>
+              <button class="btn btn-ghost" style="flex: 1; padding: 1.25rem; font-weight: 800; border-radius: 18px;" (click)="toggleEdit()" [disabled]="saving()">Cancel</button>
             </div>
           </div>
         }
 
-        <!-- View Mode -->
+        <!-- Static Identity Ledger -->
         @if (!editing()) {
           <div class="profile-details">
             <div class="detail-row">
-              <span class="detail-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> Email</span>
+              <span class="detail-label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Channel</span>
               <span class="detail-value">{{ user()?.email }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg> Skills</span>
-              <span class="detail-value">{{ user()?.skills || '— Not provided' }}</span>
+              <span class="detail-label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Stack</span>
+              <span class="detail-value">{{ user()?.skills || 'Deployment pending' }}</span>
             </div>
             @if (user()?.experience) {
-              <div class="detail-row">
-                <span class="detail-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg> Experience</span>
+              <div class="detail-row" style="grid-column: span 1;">
+                <span class="detail-label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Experience</span>
                 <span class="detail-value">{{ user()?.experience }}</span>
               </div>
             }
             @if (user()?.bio) {
-              <div class="detail-row">
-                <span class="detail-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> Bio</span>
+              <div class="detail-row" style="grid-column: span 1;">
+                <span class="detail-label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Mission</span>
                 <span class="detail-value">{{ user()?.bio }}</span>
               </div>
             }
             @if (user()?.portfolioLinks) {
               <div class="detail-row">
-                <span class="detail-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Portfolio</span>
-                <span class="detail-value"><a [href]="user()?.portfolioLinks" target="_blank" style="color:var(--text-primary); text-decoration:underline;">{{ user()?.portfolioLinks }}</a></span>
+                <span class="detail-label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Network</span>
+                <span class="detail-value"><a [href]="user()?.portfolioLinks" target="_blank" style="color:var(--primary); font-weight: 900; text-decoration: none; border-bottom: 2px solid var(--primary-glow);">{{ user()?.portfolioLinks }}</a></span>
               </div>
             }
             <div class="detail-row">
-              <span class="detail-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> User ID</span>
+              <span class="detail-label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Protocol ID</span>
               <span class="detail-value font-mono">#{{ user()?.userId }}</span>
             </div>
           </div>
         }
       </div>
 
-      <!-- Logout -->
+      <!-- Governance Actions -->
       <div class="logout-section">
-        <button class="btn btn-ghost btn-danger" (click)="logout()">Sign Out</button>
+        <button class="btn btn-ghost btn-danger" (click)="logout()">Terminate Session</button>
       </div>
     </div>
   }

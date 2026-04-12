@@ -121,6 +121,13 @@ export class InvitationsComponent implements OnInit {
     return labels[role] ?? role.replace(/_/g, ' ');
   }
 
+  roleShortLabel(role: string): string {
+    const labels: Record<string, string> = {
+      CTO: 'CTO', CPO: 'CPO', MARKETING_HEAD: 'MH', ENGINEERING_LEAD: 'EL', CO_FOUNDER: 'CF'
+    };
+    return labels[role] ?? role.split('_').map(w => w[0]).join('').toUpperCase();
+  }
+
   nextPage(): void {
     this.loadInvitations(this.invitationPage().page + 1);
   }

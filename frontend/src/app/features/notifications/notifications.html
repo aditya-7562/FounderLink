@@ -1,122 +1,127 @@
 <div class="notifications-container">
-  <!-- Header -->
-  <div class="notifications-header">
-    <div class="header-top">
-      <h2>Notifications</h2>
-      @if (unreadCount() > 0) {
-        <span class="unread-badge-header">{{ unreadCount() }} Unread</span>
-      }
+  @if (loading()) {
+    <div class="loading" style="padding: 10rem 2rem; text-align: center;">
+      <div class="spinner" style="width: 48px; height: 48px; border-width: 4px; border-top-color: var(--primary);"></div>
+      <p style="font-weight: 950; color: var(--text-primary); margin-top: 1.5rem; letter-spacing: -0.02em;">Synchronizing Global Alerts...</p>
     </div>
-    
-    <div class="header-controls">
-      <div class="filter-tabs">
-        <button class="filter-tab" [class.active]="filterType() === 'all'" (click)="setFilter('all')">
-          All
-        </button>
-        <button class="filter-tab" [class.active]="filterType() === 'unread'" (click)="setFilter('unread')">
-          Unread
-        </button>
-        <button class="filter-tab" [class.active]="filterType() === 'read'" (click)="setFilter('read')">
-          Read
-        </button>
-      </div>
+  } @else {
+    <div class="notifications-layout">
+      <!-- Nerve Center Header -->
+      <header class="notifications-header">
+        <div class="header-top">
+          <h2>Intelligence Hub</h2>
+          @if (unreadCount() > 0) {
+            <span class="unread-badge-header">{{ unreadCount() }} NEW DIRECTIVES</span>
+          }
+        </div>
 
-      <div class="header-actions">
-        @if (unreadCount() > 0) {
-          <button class="btn-action" (click)="markAllAsRead()">Mark all as read</button>
-        }
-      </div>
-    </div>
-  </div>
+        <div class="header-controls">
+          <nav class="filter-tabs">
+            <button class="filter-tab" [class.active]="filterType() === 'all'" (click)="setFilter('all')">
+              ALL
+            </button>
+            <button class="filter-tab" [class.active]="filterType() === 'unread'" (click)="setFilter('unread')">
+              UNREAD <span class="tab-count">({{ unreadCount() }})</span>
+            </button>
+          </nav>
 
-  @if (errorMsg()) {
-    <div class="alert alert-error" style="margin: 1.5rem 2.5rem 0">{{ errorMsg() }}</div>
-  }
+          <div class="header-actions">
+            @if (unreadCount() > 0) {
+              <button
+                class="btn btn-ghost"
+                style="padding: 0.75rem 1.5rem; font-weight: 800; border-radius: 99px; border: 1px solid var(--border-subtle); background: rgba(var(--primary-rgb), 0.05); color: var(--primary);"
+                (click)="markAllAsRead()"
+              >
+                Acknowledge All
+              </button>
+            }
+          </div>
+        </div>
+      </header>
 
-  <!-- Data View -->
-  <div class="notifications-layout">
-    @if (loading()) {
-      <div class="loading">
-        <div class="spinner"></div>
-        <p>Loading your activity...</p>
-      </div>
-    } @else if (getFiltered().length === 0) {
-      <div class="empty-state">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 1.5rem; opacity: 0.5;">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-        <h3>No notifications found</h3>
-      </div>
-    } @else {
-      <div class="notifications-list">
-        @for (n of getFiltered(); track n.id) {
-          <div class="notification-item" [class.unread]="!n.read" (click)="onNotificationClick(n)" style="display:flex; align-items:flex-start; gap:1.25rem; padding:1.5rem;">
-            <div class="notification-icon" style="flex-shrink:0;">
-              @switch (getIcon(n.type)) {
-                @case ('investment') { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg> }
-                @case ('team') { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> }
-                @case ('payment') { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/></svg> }
-                @case ('message') { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> }
-                @case ('startup') { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> }
-                @case ('user') { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg> }
-                @case ('lock') { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> }
-                @default { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> }
-              }
+      <!-- Alert Ledger -->
+      <main class="notifications-list" #scrollContainer>
+        @if (getFiltered().length === 0) {
+          <div class="empty-state">
+            <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; border: 1px solid var(--border-subtle);">
+               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </div>
-            
-            <div class="notification-content" style="flex:1; display:flex; flex-direction:column; gap:0.5rem; min-width:0;">
-              <div class="notification-header" style="display:flex; justify-content:space-between; align-items:center;">
-                <span class="notification-title" style="margin:0; font-size:1rem; font-weight:700; color:white;">{{ n.type.replace('_', ' ') }}</span>
-                <span class="notification-time" style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">{{ formatDate(n.createdAt) }}</span>
+            <h3>Protocol Clear</h3>
+            <p style="font-weight: 600; color: var(--text-muted);">No urgent directives found in the current transmission.</p>
+          </div>
+        } @else {
+          @for (n of getFiltered(); track n.id) {
+            <div
+              class="notification-item"
+              [class.unread]="!n.read"
+              (click)="onNotificationClick(n)"
+            >
+              <div class="notification-icon">
+                @switch (getIcon(n.type)) {
+                  @case ('investment') { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg> }
+                  @case ('team') { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> }
+                  @case ('payment') { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/></svg> }
+                  @case ('message') { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> }
+                  @case ('startup') { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> }
+                  @case ('user') { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg> }
+                  @case ('lock') { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> }
+                  @default { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> }
+                }
               </div>
-              <p class="notification-message" style="margin:0; padding:0; display:block; visibility:visible; opacity:1;">{{ n.message }}</p>
+              <div class="notification-content">
+                <div class="notification-header">
+                  <h4 class="notification-title">{{ n.type.replace('_', ' ') }}</h4>
+                  <span class="notification-time">{{ formatDate(n.createdAt) }}</span>
+                </div>
+                <p class="notification-message">{{ n.message }}</p>
+              </div>
             </div>
+          }
+
+          <div style="margin-top: 3rem; padding-bottom: 2rem;">
+            <app-pagination-controls
+              [page]="notificationPage().page"
+              [totalPages]="notificationPage().totalPages"
+              [totalElements]="notificationPage().totalElements"
+              label="directives"
+              (previous)="previousPage()"
+              (next)="nextPage()"
+            />
           </div>
         }
-      </div>
+      </main>
+    </div>
+  }
 
-      <app-pagination-controls
-        [page]="notificationPage().page"
-        [totalPages]="notificationPage().totalPages"
-        [totalElements]="notificationPage().totalElements"
-        label="notifications"
-        (previous)="previousPage()"
-        (next)="nextPage()"
-      />
-    }
-  </div>
-
-  <!-- Full Message Modal -->
+  <!-- Intelligence Disclosure Modal -->
   @if (selectedNotification()) {
     <div class="modal-backdrop" (click)="closeModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
+        <header class="modal-header">
           <h3>
-            <div class="notification-icon" style="background:rgba(139, 92, 246, 0.15); width:36px; height:36px; border-radius:8px; margin-right:4px;">
-              @switch (getIcon(selectedNotification()!.type)) {
-                @case ('investment') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg> }
-                @case ('team') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> }
-                @case ('payment') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/></svg> }
-                @case ('message') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> }
-                @case ('startup') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> }
-                @case ('user') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg> }
-                @case ('lock') { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> }
-                @default { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> }
-              }
-            </div>
-            Notification Details
+             <div class="notification-icon" style="background: var(--primary); color: white; width: 44px; height: 44px; border-radius: 14px; box-shadow: 0 4px 12px var(--primary-glow); border: none;">
+               @switch (getIcon(selectedNotification()!.type)) {
+                 @case ('investment') { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg> }
+                 @case ('team') { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> }
+                 @default { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> }
+               }
+             </div>
+             Directive Disclosure
           </h3>
-          <button class="btn-ghost" (click)="closeModal()" style="font-size:1.4rem">✕</button>
-        </div>
-        <div class="modal-body" style="padding:2rem;">
-          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.25rem; text-transform:uppercase; letter-spacing:0.1em; font-weight:700;">
-            {{ selectedNotification()!.type.replace('_', ' ') }} • {{ formatDate(selectedNotification()!.createdAt) }}
+          <button class="btn-ghost" (click)="closeModal()" style="font-size: 1.5rem;">✕</button>
+        </header>
+        <div class="modal-body">
+          <div style="margin-bottom: 2rem; font-size: 0.85rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 0.15em;">
+            PROTOCOL: {{ selectedNotification()!.type.replace('_', ' ') }}
           </div>
-          <p style="white-space: pre-wrap; margin: 0; font-size:1.05rem; line-height:1.7; color:var(--text-primary);">{{ selectedNotification()!.message }}</p>
+          <p>{{ selectedNotification()!.message }}</p>
+          <div style="margin-top: 3rem; font-size: 0.8rem; font-weight: 850; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+             TRANSMISSION RECOGNIZED: {{ formatDate(selectedNotification()!.createdAt) }}
+          </div>
         </div>
-        <div class="modal-footer" style="padding:1.5rem 2rem;">
-          <button class="btn-action" style="padding:0.75rem 2.5rem; background:var(--primary); color:white; border:none;" (click)="closeModal()">Close</button>
-        </div>
+        <footer class="modal-footer" style="padding: 2rem 3rem; border-top: 1px solid var(--border-subtle);">
+          <button class="btn btn-primary" (click)="closeModal()" style="padding: 1rem 3rem; font-weight: 950; border-radius: 16px; box-shadow: 0 4px 15px var(--primary-glow);">Acknowledge Directive</button>
+        </footer>
       </div>
     </div>
   }

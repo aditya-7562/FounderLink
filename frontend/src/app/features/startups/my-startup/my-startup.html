@@ -1,43 +1,43 @@
 <!-- Header -->
 <div class="page-header">
-  <div>
+  <div class="header-main">
     <h2>My Startup</h2>
-    <p class="page-sub">Manage your startup profile</p>
+    <p class="page-sub">Manage your venture profile and presence</p>
   </div>
   @if (!showForm()) {
     <button class="btn btn-primary" (click)="openCreate()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Create Startup
     </button>
   }
 </div>
 
 @if (successMsg()) {
-  <div class="alert alert-success">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <div class="alert alert-success" style="margin-bottom: 2rem; padding: 1rem 1.25rem; border-radius: var(--radius-lg); background: rgba(34,197,94,0.1); color: #22c55e; display: flex; align-items: center; gap: 0.75rem;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
     {{ successMsg() }}
   </div>
 }
 
 @if (errorMsg() && !showForm()) {
-  <div class="alert alert-error">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <div class="alert alert-danger" style="margin-bottom: 2rem; padding: 1rem 1.25rem; border-radius: var(--radius-lg); background: rgba(239,68,68,0.1); color: #ef4444; display: flex; align-items: center; gap: 0.75rem;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     {{ errorMsg() }}
   </div>
 }
 
-<!-- ── Create / Edit Form ── -->
+<!-- Premium Create / Edit Form -->
 @if (showForm()) {
   <div class="form-card">
     <div class="form-card-header">
-      <h3>{{ editingId() ? 'Edit Startup' : 'Create New Startup' }}</h3>
-      <button class="icon-close" (click)="cancelForm()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <h3>{{ editingId() ? 'Update Profile' : 'New Venture' }}</h3>
+      <button class="icon-close" (click)="cancelForm()" title="Cancel">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
 
     @if (errorMsg()) {
-      <div class="alert alert-error" style="margin-bottom:1rem">{{ errorMsg() }}</div>
+      <div class="alert alert-danger" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.875rem; background: rgba(239,68,68,0.1); color: #ef4444;">{{ errorMsg() }}</div>
     }
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
@@ -46,100 +46,103 @@
         <div class="form-group">
           <label>Startup Name *</label>
           <input type="text" formControlName="name" class="form-control"
-            [class.error]="f['name'].invalid && f['name'].touched" placeholder="e.g. TechVenture"/>
+            [class.error]="f['name'].invalid && f['name'].touched" placeholder="e.g. Acme AI"/>
           @if (f['name'].invalid && f['name'].touched) {
-            <span class="error-msg">Name is required (min 2 chars)</span>
+            <span class="error-msg text-xs" style="color: var(--danger); margin-top: 4px; display: block;">Name is required (min 2 chars)</span>
           }
         </div>
 
         <div class="form-group">
           <label>Industry *</label>
           <input type="text" formControlName="industry" class="form-control"
-            [class.error]="f['industry'].invalid && f['industry'].touched" placeholder="e.g. FinTech, HealthTech"/>
+            [class.error]="f['industry'].invalid && f['industry'].touched" placeholder="e.g. SaaS, DeepTech"/>
           @if (f['industry'].invalid && f['industry'].touched) {
-            <span class="error-msg">Industry is required</span>
+            <span class="error-msg text-xs" style="color: var(--danger); margin-top: 4px; display: block;">Industry is required</span>
           }
         </div>
 
         <div class="form-group">
           <label>Funding Goal (₹) *</label>
-          <input type="number" formControlName="fundingGoal" class="form-control"
-            [class.error]="f['fundingGoal'].invalid && f['fundingGoal'].touched" placeholder="Min ₹1,000"/>
+          <div class="input-wrap" style="position: relative;">
+             <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 700;">₹</span>
+             <input type="number" formControlName="fundingGoal" class="form-control" style="padding-left: 2.25rem;"
+              [class.error]="f['fundingGoal'].invalid && f['fundingGoal'].touched" placeholder="0.00"/>
+          </div>
           @if (f['fundingGoal'].invalid && f['fundingGoal'].touched) {
-            <span class="error-msg">Minimum funding goal is ₹1,000</span>
+            <span class="error-msg text-xs" style="color: var(--danger); margin-top: 4px; display: block;">Min. goal is ₹1,000</span>
           }
         </div>
 
         <div class="form-group">
-          <label>Stage *</label>
-          <select formControlName="stage" class="form-control" [class.error]="f['stage'].invalid && f['stage'].touched">
-            <option value="">Select stage</option>
+          <label>Venture Stage *</label>
+          <select formControlName="stage" class="form-control" style="appearance: none; cursor: pointer;" [class.error]="f['stage'].invalid && f['stage'].touched">
+            <option value="">Select stage...</option>
             @for (s of stages; track s) {
               <option [value]="s">{{ s }}</option>
             }
           </select>
           @if (f['stage'].invalid && f['stage'].touched) {
-            <span class="error-msg">Stage is required</span>
+            <span class="error-msg text-xs" style="color: var(--danger); margin-top: 4px; display: block;">Stage is required</span>
           }
         </div>
 
         <div class="form-group span-2">
-          <label>Description *</label>
+          <label>Elevator Pitch *</label>
           <textarea formControlName="description" class="form-control" rows="3"
             [class.error]="f['description'].invalid && f['description'].touched"
-            placeholder="Brief description of your startup"></textarea>
+            placeholder="Sum up your mission in 2-3 sentences"></textarea>
           @if (f['description'].invalid && f['description'].touched) {
-            <span class="error-msg">Description is required</span>
+            <span class="error-msg text-xs" style="color: var(--danger); margin-top: 4px; display: block;">Description is required</span>
           }
         </div>
 
         <div class="form-group span-2">
-          <label>Problem Statement *</label>
+          <label>The Problem *</label>
           <textarea formControlName="problemStatement" class="form-control" rows="3"
             [class.error]="f['problemStatement'].invalid && f['problemStatement'].touched"
-            placeholder="What problem are you solving?"></textarea>
+            placeholder="Define the core friction you are addressing"></textarea>
           @if (f['problemStatement'].invalid && f['problemStatement'].touched) {
-            <span class="error-msg">Problem statement is required</span>
+            <span class="error-msg text-xs" style="color: var(--danger); margin-top: 4px; display: block;">This field is required</span>
           }
         </div>
 
         <div class="form-group span-2">
-          <label>Solution *</label>
-          <textarea formControlName="solution" class="form-control" rows="3"
+          <label>The Solution *</label>
+          <textarea formControlName="solution" class="form-control" rows="4"
             [class.error]="f['solution'].invalid && f['solution'].touched"
-            placeholder="How does your startup solve this problem?"></textarea>
+            placeholder="Detail your unique approach and technology"></textarea>
           @if (f['solution'].invalid && f['solution'].touched) {
-            <span class="error-msg">Solution is required</span>
+            <span class="error-msg text-xs" style="color: var(--danger); margin-top: 4px; display: block;">This field is required</span>
           }
         </div>
 
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn btn-outline" (click)="cancelForm()">Cancel</button>
+        <button type="button" class="btn btn-ghost" (click)="cancelForm()">Discard</button>
         <button type="submit" class="btn btn-primary" [disabled]="saving()">
-          @if (saving()) { <span class="spinner"></span> }
-          {{ editingId() ? 'Save Changes' : 'Create Startup' }}
+          @if (saving()) { <span class="spinner" style="width:16px; height:16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; display: inline-block;"></span> }
+          {{ editingId() ? 'Save Changes' : 'Launch Startup' }}
         </button>
       </div>
     </form>
   </div>
 }
 
-<!-- ── Startup List ── -->
+<!-- Startup Management List -->
 @if (loading()) {
   <div class="startup-list">
-    @for (i of [1,2]; track i) { <div class="skeleton-card"></div> }
+    @for (i of [1,2]; track i) { <div class="skeleton-card" style="height: 140px; background: var(--bg-surface); border-radius: 20px; border: 1px solid var(--border-subtle); opacity: 0.5;"></div> }
   </div>
 }
 
 @if (!loading() && !showForm()) {
   @if (startups().length === 0) {
-    <div class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      <h3>No startups yet</h3>
-      <p>Create your first startup to get started</p>
-      <button class="btn btn-primary" (click)="openCreate()">Create Startup</button>
+    <div class="empty-state" style="padding: 6rem 2rem; border: 1px dashed var(--border-subtle); border-radius: 32px; background: var(--bg-secondary); text-align: center;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3; margin-bottom: 1.5rem;"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">No startups yet</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 2rem;">Create your first venture profile to start connecting with investors.</p>
+      <button class="btn btn-primary" (click)="openCreate()" style="padding: 0.875rem 2rem;">Create Your Startup</button>
     </div>
   } @else {
     <div class="startup-list">
@@ -150,26 +153,29 @@
             <div class="si-info">
               <div class="si-name">{{ s.name }}</div>
               <div class="si-meta">
-                <span class="badge" [class]="stageClass(s.stage)">{{ s.stage }}</span>
-                <span class="si-industry">{{ s.industry }}</span>
-                <span class="si-date">{{ s.createdAt | date:'mediumDate' }}</span>
+                <span class="stage-badge" [class]="stageClass(s.stage)">{{ s.stage }}</span>
+                <span class="si-industry">
+                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 2px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
+                   {{ s.industry }}
+                </span>
+                <span class="si-date">• {{ s.createdAt | date:'mediumDate' }}</span>
               </div>
               <p class="si-desc">{{ s.description }}</p>
             </div>
           </div>
           <div class="si-right">
             <div class="si-funding">
-              <span class="funding-label">Goal</span>
+              <span class="funding-label">Funding Goal</span>
               <span class="funding-value">{{ formatCurrency(s.fundingGoal) }}</span>
             </div>
             <div class="si-actions">
-              <button class="btn btn-outline btn-sm" (click)="openEdit(s)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <button class="btn btn-ghost btn-sm" (click)="openEdit(s)" style="border: 1px solid var(--border-subtle); padding: 0.6rem 1rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 Edit
               </button>
-              <button class="btn btn-danger btn-sm" (click)="deleteStartup(s.id)" [disabled]="deleting() === s.id">
-                @if (deleting() === s.id) { <span class="spinner"></span> } @else {
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              <button class="btn btn-danger btn-sm" (click)="deleteStartup(s.id)" [disabled]="deleting() === s.id" style="padding: 0.6rem 1rem;">
+                @if (deleting() === s.id) { <span class="spinner" style="width:14px; height:14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block;"></span> } @else {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                 }
                 Delete
               </button>

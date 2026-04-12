@@ -1,67 +1,70 @@
 <div class="admin-fade-in">
   <header class="page-header">
-    <div>
-      <h2>Platform Overview</h2>
-      <p class="page-sub">Real-time system statistics and health overview.</p>
+    <div class="header-main">
+      <h2>Platform Insights</h2>
+      <p class="page-sub">Real-time surveillance of global startup metrics and system integrity.</p>
     </div>
   </header>
 
   <div class="stats-grid">
     @if (loading()) {
-    <div class="stat-card" *ngFor="let i of [1,2,3,4]">
-      <div class="skeleton-line" style="width: 40%; height: 1rem; margin-bottom: 1rem;"></div>
-      <div class="skeleton-line" style="width: 60%; height: 2.5rem;"></div>
-    </div>
+      @for (i of [1,2,3]; track i) {
+        <div class="stat-card" style="opacity: 0.5;">
+          <div class="skeleton-card" style="height: 120px; background: var(--bg-secondary); border-radius: 20px;"></div>
+        </div>
+      }
     } @else {
-    <!-- Total Users Card -->
-    <div class="stat-card slide-up">
-      <div class="stat-card-glow glow-primary"></div>
-      <h3>Total Users</h3>
-      <span class="stat-value">{{ stats.users }}</span>
-    </div>
-
-    <!-- Startups Card -->
-    <div class="stat-card slide-up" style="animation-delay: 0.1s">
-      <div class="stat-card-glow glow-purple"></div>
-      <h3>Total Startups</h3>
-      <span class="stat-value">{{ stats.startups }}</span>
-    </div>
-
-    <!-- Banned Users Card -->
-    <div class="stat-card slide-up" style="animation-delay: 0.2s">
-      <div class="stat-card-glow glow-danger"></div>
-      <h3>Banned Users</h3>
-      <span class="stat-value">{{ stats.banned }}</span>
-    </div>
-
-    <!-- Cluster Health Card -->
-    <div class="stat-card health-span slide-up" style="animation-delay: 0.3s">
-      <div class="stat-card-glow glow-success"></div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem">
-        <h3>Cluster Pulse</h3>
-        <div class="pulse-summary">
-          <span class="pulse-dot" [class.pulse-active]="healthData().length > 0"></span>
-          <span class="pulse-text">{{ healthData().length }} Active Services</span>
-        </div>
+      <!-- Strategic Metrics -->
+      <div class="stat-card">
+        <div class="stat-card-glow glow-primary"></div>
+        <h3>Ecosystem Users</h3>
+        <span class="stat-value">{{ stats.users }}</span>
       </div>
 
-      <div class="health-grid">
-        @for (svc of healthData(); track svc.name) {
-        <div class="health-item">
-          <div class="health-indicator" [class.up]="svc.status === 'UP'" [class.down]="svc.status === 'DOWN'"></div>
-          <span class="health-name">{{ svc.name }}</span>
-          <span class="health-status" [class.text-green]="svc.status === 'UP'" [class.text-red]="svc.status === 'DOWN'">
-            {{ svc.status }}
-          </span>
-        </div>
-        }
-        @if (healthData().length === 0) {
-        <div class="health-empty">
-          No health data available
-        </div>
-        }
+      <div class="stat-card">
+        <div class="stat-card-glow glow-purple"></div>
+        <h3>Active Ventures</h3>
+        <span class="stat-value">{{ stats.startups }}</span>
       </div>
-    </div>
+
+      <div class="stat-card">
+        <div class="stat-card-glow glow-danger"></div>
+        <h3>Compliance Flags</h3>
+        <span class="stat-value">{{ stats.banned }}</span>
+      </div>
+
+      <!-- High-Fidelity Infrastructure Nerve Center -->
+      <div class="stat-card health-span">
+        <div class="stat-card-glow glow-success"></div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem">
+          <div>
+            <h3 style="margin-bottom: 0.25rem;">Infrastructure Integrity</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: none; letter-spacing: 0;">Cluster-wide service health and latency monitoring</p>
+          </div>
+          <div class="pulse-summary">
+            <span class="pulse-dot" [class.pulse-active]="healthData().length > 0"></span>
+            <span class="pulse-text">{{ healthData().length }} Services Online</span>
+          </div>
+        </div>
+
+        <div class="health-grid">
+          @for (svc of healthData(); track svc.name) {
+            <div class="health-item">
+              <div class="health-indicator" [class.up]="svc.status === 'UP'" [class.down]="svc.status === 'DOWN'"></div>
+              <span class="health-name">{{ svc.name }}</span>
+              <span class="health-status" [class.text-green]="svc.status === 'UP'" [class.text-red]="svc.status === 'DOWN'">
+                {{ svc.status }}
+              </span>
+            </div>
+          }
+          @if (healthData().length === 0) {
+            <div class="health-empty" style="padding: 4rem 2rem; background: var(--bg-secondary); border-radius: 20px; border: 1px dashed var(--border-subtle);">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.2; margin-bottom: 1rem;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              <p>No telemetry data received from cluster.</p>
+            </div>
+          }
+        </div>
+      </div>
     }
   </div>
 </div>

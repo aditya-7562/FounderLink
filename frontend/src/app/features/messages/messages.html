@@ -1,42 +1,48 @@
 <div class="messages-container">
-  <!-- Loading state -->
   @if (loading()) {
     <div class="loading-state">
       <div class="spinner"></div>
-      <p>Loading conversations...</p>
+      <p style="font-weight: 800; color: var(--text-primary); margin-top: 1.5rem; letter-spacing: -0.01em;">Synchronizing Secure Channels...</p>
     </div>
   } @else {
     <div class="messages-layout">
 
-      <!-- Sidebar: Conversation list -->
-      <div class="conversations-sidebar">
+      <!-- Strategic Communication Sidebar -->
+      <aside class="conversations-sidebar">
         <div class="sidebar-header">
-          <h2>Messages</h2>
-          <button class="btn btn-ghost btn-sm" (click)="loadAllUsers()" title="Start new conversation">+ New</button>
+          <h2>Directives</h2>
+          <button class="btn btn-ghost btn-sm" (click)="loadAllUsers()" title="Initialize Channel" style="border: 1px solid var(--border-subtle); font-weight: 800; border-radius: 12px;">+ New</button>
         </div>
 
-        <!-- User selector -->
+        <!-- Identity Selector -->
         @if (showUserSelector()) {
           <div class="user-selector">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
+               <span style="font-weight: 900; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em;">Ecosystem Directory</span>
+               <button (click)="showUserSelector.set(false)" style="background: none; border: none; color: var(--text-muted); cursor: pointer;">✕</button>
+            </div>
             @if (allUsers().length === 0) {
-              <p class="empty-small">Loading users...</p>
+              <div style="padding: 3rem 1.5rem; text-align: center; color: var(--text-muted); font-weight: 700;">Querying platform nodes...</div>
             }
             @for (u of allUsers(); track u.userId) {
               <div class="user-option" (click)="startConversationWith(u)">
-                <span class="user-avatar">{{ (u.name || u.email).charAt(0).toUpperCase() }}</span>
+                <div class="user-avatar">{{ (u.name || u.email).charAt(0).toUpperCase() }}</div>
                 <div class="user-info">
                   <p class="user-name">{{ u.name || u.email }}</p>
-                  <p class="user-role">{{ u.role }}</p>
+                  <p class="user-role" style="font-size: 0.65rem;">PROTOCOL: {{ u.role }}</p>
                 </div>
               </div>
             }
           </div>
         }
 
-        <!-- Partners list -->
+        <!-- Active Engagement List -->
         <div class="conversations-list">
           @if (partners().length === 0) {
-            <p class="empty-small">No conversations yet. Start a new one!</p>
+            <div style="padding: 4rem 2rem; text-align: center; opacity: 0.3;">
+               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+               <p style="font-weight: 800; font-size: 0.9rem;">No Active Links</p>
+            </div>
           } @else {
             @for (p of partners(); track p.userId) {
               <div
@@ -54,37 +60,47 @@
           }
         </div>
 
-        <app-pagination-controls
-          [page]="partnerPage().page"
-          [totalPages]="partnerPage().totalPages"
-          [totalElements]="partnerPage().totalElements"
-          label="conversations"
-          (previous)="previousPartnerPage()"
-          (next)="nextPartnerPage()"
-        />
-      </div>
+        <div style="padding: 1rem;">
+          <app-pagination-controls
+            [page]="partnerPage().page"
+            [totalPages]="partnerPage().totalPages"
+            [totalElements]="partnerPage().totalElements"
+            label="links"
+            (previous)="previousPartnerPage()"
+            (next)="nextPartnerPage()"
+          />
+        </div>
+      </aside>
 
-      <!-- Main: Chat window -->
+      <!-- Liquid Chat Canvas -->
       @if (selectedPartner()) {
-        <div class="chat-window">
-          <!-- Chat header -->
+        <main class="chat-window">
+          <!-- Intelligence Header -->
           <div class="chat-header">
-            <div class="conv-avatar">{{ selectedPartner()!.name.charAt(0).toUpperCase() }}</div>
-            <h3>{{ selectedPartner()!.name }}</h3>
+            <div class="user-avatar" style="width: 48px; height: 48px; box-shadow: 0 4px 15px var(--primary-glow);">{{ selectedPartner()!.name.charAt(0).toUpperCase() }}</div>
+            <div>
+               <h3 style="font-size: 1.25rem; font-weight: 950; color: var(--text-primary); letter-spacing: -0.02em; margin: 0;">{{ selectedPartner()!.name }}</h3>
+               <span style="font-size: 0.75rem; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 0.4rem; margin-top: 0.15rem;">
+                  <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                  Encrypted Channel
+               </span>
+            </div>
           </div>
 
-          <!-- Messages area -->
+          <!-- Semantic Stream -->
           <div class="messages-area" #messagesContainer>
             @if (oldestCursor()) {
-              <div class="load-older-container" style="text-align: center; margin-bottom: 10px;">
-                <button class="btn btn-ghost btn-sm" (click)="loadOlderMessages()" [disabled]="loadingOlder()">
-                  {{ loadingOlder() ? 'Loading...' : 'Load Older Messages' }}
+              <div style="text-align: center; margin-bottom: 2rem;">
+                <button class="btn btn-ghost btn-sm" (click)="loadOlderMessages()" [disabled]="loadingOlder()" style="border-radius: 99px; padding: 0.5rem 1.5rem; font-weight: 800; font-size: 0.75rem; border: 1px solid var(--border-subtle);">
+                   {{ loadingOlder() ? 'Retracing history...' : 'Load History' }}
                 </button>
               </div>
             }
 
             @if (messages().length === 0) {
-              <p class="empty-messages">No messages yet. Start the conversation!</p>
+              <div style="margin: auto; text-align: center; opacity: 0.2;">
+                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
             } @else {
               @for (msg of messages(); track msg.id) {
                 <div class="message" [class.sent]="isCurrentUser(msg.senderId)" [class.received]="!isCurrentUser(msg.senderId)">
@@ -97,33 +113,40 @@
             }
           </div>
 
-          <!-- Input area -->
+          <!-- Composition Node -->
           <div class="message-input-area">
             @if (errorMsg()) {
-              <div class="alert alert-error">{{ errorMsg() }}</div>
+              <div class="alert alert-danger" style="margin-bottom: 1.5rem; border-radius: 12px; padding: 0.75rem 1.25rem;">{{ errorMsg() }}</div>
             }
-            <div class="input-group">
+            <div class="input-group" style="display: flex; gap: 1.25rem;">
               <input
                 type="text"
                 [(ngModel)]="messageContent"
-                placeholder="Type a message..."
+                placeholder="Compose directive..."
                 (keyup.enter)="sendMessage()"
                 class="message-input"
               />
               <button
                 (click)="sendMessage()"
                 [disabled]="sendingMessage() || !messageContent.trim()"
-                class="btn btn-primary btn-send"
+                class="btn-send"
               >
-                {{ sendingMessage() ? 'Sending...' : 'Send' }}
+                @if (sendingMessage()) {
+                   <div class="spinner" style="width: 20px; height: 20px; border-width: 3px; border-top-color: white;"></div>
+                } @else {
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left: 3px;"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                }
               </button>
             </div>
           </div>
-        </div>
+        </main>
       } @else {
-        <div class="no-selection">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <p>Select a conversation to start messaging</p>
+        <div class="no-selection" style="background: rgba(var(--bg-secondary-rgb), 0.1);">
+          <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--bg-surface); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-xl); margin-bottom: 2.5rem; border: 1px solid var(--border-subtle);">
+             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 style="font-size: 1.5rem; font-weight: 950; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Intelligence Terminal</h3>
+          <p style="color: var(--text-secondary); font-weight: 600; font-size: 1.05rem;">Select an intelligence node to begin secure transmission.</p>
         </div>
       }
 

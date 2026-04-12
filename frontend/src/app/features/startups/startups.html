@@ -1,21 +1,21 @@
 <!-- Header -->
 <header class="page-header">
-  <div>
+  <div class="header-main">
     <h2>Startups</h2>
     <p class="page-sub">Explore and back the next generation of founders</p>
   </div>
   @if (isFounder) {
-    <a routerLink="/dashboard/my-startup" class="btn btn-primary" style="padding: 0.75rem 1.75rem; border-radius: 12px; font-weight: 700;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <a routerLink="/dashboard/my-startup" class="btn btn-primary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       New Venture
     </a>
   }
 </header>
 
-<!-- Improved Functional Filters -->
+<!-- Platinum Filters Bar -->
 <section class="filters-bar">
   <div class="search-wrap">
-    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input type="text" placeholder="Search startups..." class="search-input" (input)="applyFilters()" />
   </div>
 
@@ -33,29 +33,31 @@
     </select>
   </div>
 
-  <div class="filter-group" style="position:relative">
-    <input type="number" [(ngModel)]="minFunding" placeholder="Min (₹)" class="filter-input" (input)="applyFilters()" />
+  <div class="filter-group">
+    <input type="number" [(ngModel)]="minFunding" placeholder="Min. Funding ₹" class="filter-input" (input)="applyFilters()" />
   </div>
   
-  @if (hasFilters) {
-    <button class="btn btn-ghost btn-sm" (click)="clearFilters()" style="color: rgba(255,255,255,0.4); font-weight: 600;">
-      Reset Filters
-    </button>
-  }
+  <div class="filter-actions">
+    @if (hasFilters) {
+      <button class="btn btn-ghost btn-sm" (click)="clearFilters()">
+        Reset
+      </button>
+    }
+  </div>
 
-  <span class="results-count">{{ startupPage().totalElements }} found</span>
+  <span class="results-count">Showing {{ startups().length }} of {{ startupPage().totalElements }}</span>
 </section>
 
 <!-- Main Feed -->
 @if (loading()) {
   <div class="startup-grid">
-    @for (i of [1,2,3,4,5,6]; track i) { <div class="skeleton-card"></div> }
+    @for (i of [1,2,3,4,5,6]; track i) { <div class="skeleton-card" style="height: 380px; background: var(--bg-surface); border-radius: 24px; border: 1px solid var(--border-subtle); opacity: 0.5;"></div> }
   </div>
 } @else if (startups().length === 0) {
-  <div class="empty-state" style="padding: 8rem 2rem; border: 1px dashed rgba(255,255,255,0.05); border-radius: 32px; background: rgba(255,255,255,0.01);">
+  <div class="empty-state" style="padding: 8rem 2rem; border: 1px dashed var(--border-subtle); border-radius: 32px; background: var(--bg-secondary); text-align: center;">
     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:0.3; margin-bottom:1.5rem;"><path d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
-    <h3 style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.5rem;">No matches found</h3>
-    <p style="color: rgba(255,255,255,0.4);">Try broadening your search criteria or reset filters.</p>
+    <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">No results found</h3>
+    <p style="color: var(--text-secondary);">Try adjusting your search criteria or resetting filters.</p>
   </div>
 } @else {
   <div class="startup-grid">
@@ -63,7 +65,9 @@
       <div class="startup-card" [routerLink]="['/startup', s.id]">
         
         <div class="sc-header">
-          <div class="sc-avatar">{{ s.name[0].toUpperCase() }}</div>
+          <div class="sc-logo-wrap">
+            <div class="sc-avatar">{{ s.name[0].toUpperCase() }}</div>
+          </div>
           <span class="stage-badge" [class]="stageClass(s.stage)">{{ stageLabel(s.stage) }}</span>
         </div>
 
@@ -78,21 +82,21 @@
 
         <div class="sc-footer" (click)="$event.stopPropagation()">
           <div class="sc-funding">
-            <span class="funding-label">Funding Target</span>
-            <span class="funding-value">{{ formatCurrency(s.fundingGoal) }}</span>
+            <div class="funding-label">Target Funding</div>
+            <div class="funding-value">{{ formatCurrency(s.fundingGoal) }}</div>
           </div>
           
           <div class="sc-actions">
             @if (isInvestor) {
-              <button class="btn btn-ghost" (click)="messageFounder(s.founderId)" title="Message Founder" style="color: rgba(255,255,255,0.5); padding: 0.6rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; transition: all 0.2s;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <button class="btn btn-ghost btn-icon-only" (click)="messageFounder(s.founderId)" title="Message Founder" style="padding: 0.75rem; border-radius: 12px; border: 1px solid var(--border-subtle); color: var(--text-secondary);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               </button>
               
-              <button class="btn btn-primary" (click)="openInvestModal(s)" style="padding: 0.6rem 1.5rem; border-radius: 12px; font-weight: 700; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">
+              <button class="btn btn-primary" (click)="openInvestModal(s)" style="padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800;">
                 Invest
               </button>
             } @else {
-               <a [routerLink]="['/startup', s.id]" class="btn btn-ghost btn-sm" style="color: rgba(255,255,255,0.4);">Details →</a>
+               <a [routerLink]="['/startup', s.id]" class="btn btn-ghost btn-sm" style="font-weight: 700;">View Details →</a>
             }
           </div>
         </div>
@@ -111,31 +115,36 @@
   />
 }
 
-<!-- Invest Modal (RESTORED) -->
+<!-- Premium Invest Modal -->
 @if (investModal()) {
   <div class="modal-overlay" (click)="closeInvestModal()">
     <div class="modal-card" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Invest in {{ investModal()!.name }}</h3>
-        <button class="btn-icon" (click)="closeInvestModal()">✕</button>
-      </div>
-      <p class="modal-sub">Supporting innovation in {{ investModal()!.industry }}</p>
-      
-      @if (investError()) { <div class="alert alert-error" style="margin-bottom:1.5rem">{{ investError() }}</div> }
-      @if (investSuccess()) { <div class="alert alert-success" style="margin-bottom:1.5rem">{{ investSuccess() }}</div> }
-      
-      <div class="form-group">
-        <label>Investment Amount (₹)</label>
-        <div style="position:relative">
-          <span style="position:absolute; left:1rem; top:52%; transform:translateY(-50%); color:rgba(255,255,255,0.3); font-weight:700;">₹</span>
-          <input type="number" [(ngModel)]="investAmount" [min]="1000" placeholder="10,000" class="input" style="padding-left:2.5rem" />
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+        <div>
+          <h3>Invest in {{ investModal()!.name }}</h3>
+          <p class="modal-sub" style="margin-bottom: 0;">Backing innovation in {{ investModal()!.industry }}</p>
         </div>
-        <p style="font-size:0.75rem; color:rgba(255,255,255,0.3); margin-top:0.5rem;">Targeting {{ formatCurrency(investModal()!.fundingGoal) }} goal</p>
+        <button class="btn-icon" (click)="closeInvestModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;">✕</button>
+      </div>
+      
+      @if (investError()) { <div class="alert alert-danger" style="margin-bottom:1.5rem; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.875rem; background: rgba(239,68,68,0.1); color: #ef4444;">{{ investError() }}</div> }
+      @if (investSuccess()) { <div class="alert alert-success" style="margin-bottom:1.5rem; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.875rem; background: rgba(34,197,94,0.1); color: #22c55e;">{{ investSuccess() }}</div> }
+      
+      <div class="form-group" style="margin-bottom: 2.5rem;">
+        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">Investment Amount (₹)</label>
+        <div class="input-wrap" style="position: relative;">
+          <span style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 800; pointer-events: none;">₹</span>
+          <input type="number" [(ngModel)]="investAmount" [min]="1000" placeholder="0.00" class="input" style="width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.25rem 1.25rem 1.25rem 2.5rem; color: var(--text-primary); font-size: 1.25rem; font-weight: 800; outline: none;" />
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
+          <span>Min: ₹1,000</span>
+          <span>Target: {{ formatCurrency(investModal()!.fundingGoal) }}</span>
+        </div>
       </div>
 
-      <div class="modal-actions">
-        <button class="btn btn-ghost" (click)="closeInvestModal()" [disabled]="investing()" style="color:rgba(255,255,255,0.4)">Cancel</button>
-        <button class="btn btn-primary" (click)="submitInvestment()" [disabled]="investing() || !investAmount" style="padding:0.75rem 2rem; border-radius:12px">
+      <div class="modal-actions" style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <button class="btn btn-ghost" (click)="closeInvestModal()" [disabled]="investing()" style="font-weight: 700;">Cancel</button>
+        <button class="btn btn-primary" (click)="submitInvestment()" [disabled]="investing() || !investAmount" style="padding: 1rem 2.5rem; border-radius: 14px; font-weight: 800;">
           {{ investing() ? 'Confirming...' : 'Submit Investment' }}
         </button>
       </div>

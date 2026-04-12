@@ -69,7 +69,7 @@
           <label for="email">Email address</label>
           <div class="input-wrap">
             <span class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             </span>
             <input
               id="email"
@@ -82,18 +82,20 @@
             />
           </div>
           @if (email.invalid && email.touched) {
-            <span class="error-msg">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            <span class="error-msg text-xs" style="color: var(--danger); margin-top: 4px; display: block;">
               {{ email.errors?.['required'] ? 'Email is required' : 'Enter a valid email address' }}
             </span>
           }
         </div>
 
         <div class="form-group">
-          <label for="password">Password</label>
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2px;">
+            <label for="password" style="margin-bottom: 0;">Password</label>
+            <a routerLink="/auth/forgot-password" class="forgot-link" style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">Forgot password?</a>
+          </div>
           <div class="input-wrap">
             <span class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </span>
             <input
               id="password"
@@ -113,8 +115,7 @@
             </button>
           </div>
           @if (password.invalid && password.touched) {
-            <span class="error-msg">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            <span class="error-msg text-xs" style="color: var(--danger); margin-top: 4px; display: block;">
               Password is required
             </span>
           }

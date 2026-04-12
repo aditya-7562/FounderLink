@@ -1,315 +1,97 @@
-/* ── Layout ───────────────────────────────────────────────────── */
-.auth-layout {
-  display: flex;
-  min-height: 100vh;
-}
+@import "../auth-shared.css";
 
-/* ── Left Panel ───────────────────────────────────────────────── */
-.auth-panel {
-  flex: 0 0 42%;
-  background: #0a0a0f;
-  display: flex;
-  align-items: stretch;
-  position: relative;
-  overflow: hidden;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-}
+/* ── Specific Overrides for Register ─────────────────────────── */
 
-.auth-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 20% 20%, rgba(99,102,241,.12) 0%, transparent 60%);
-  z-index: 0;
-}
-
-.auth-panel::after {
-  content: '';
-  position: absolute;
-  bottom: -20%;
-  right: -20%;
-  width: 80%;
-  height: 80%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(168,85,247,.1) 0%, transparent 70%);
-  z-index: 0;
-}
-
-.panel-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 2.5rem;
-  width: 100%;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-}
-
-.brand-logo {
-  width: 42px;
-  height: 42px;
-  background: rgba(99,102,241,.1);
-  border: 1px solid rgba(99,102,241,.2);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(8px);
-}
-
-.brand-name {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: white;
-  letter-spacing: -.02em;
-}
-
-.panel-hero {
-  margin: 2.5rem 0 2rem;
-}
-
+.panel-hero { margin: 3rem 0 2rem; }
 .panel-hero h2 {
-  font-size: 1.8rem;
+  font-size: 2.25rem;
   font-weight: 800;
   color: white;
-  line-height: 1.2;
-  letter-spacing: -.03em;
-  margin-bottom: .75rem;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
 }
-
 .panel-hero p {
-  font-size: .9rem;
-  color: rgba(255,255,255,.75);
+  color: rgba(255,255,255,0.6);
   line-height: 1.6;
 }
 
 .role-preview {
   display: flex;
   flex-direction: column;
-  gap: .875rem;
-  margin-bottom: 2rem;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
 }
 
 .role-preview-item {
   display: flex;
-  align-items: center;
-  gap: .875rem;
-  padding: .875rem 1rem;
-  border-radius: 10px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.1);
-  transition: all .25s ease;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.3s;
 }
 
 .role-preview-item.active {
-  background: rgba(255,255,255,.18);
-  border-color: rgba(255,255,255,.3);
-  transform: translateX(4px);
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
 }
 
 .rp-icon {
-  font-size: 1.3rem;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,.15);
-  border-radius: 8px;
+  color: var(--primary-300);
   flex-shrink: 0;
 }
 
-.rp-title {
-  font-size: .875rem;
-  font-weight: 600;
+.role-preview-item.active .rp-icon {
+  background: var(--primary);
   color: white;
+}
+
+.rp-title {
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
 }
 
 .rp-desc {
-  font-size: .775rem;
-  color: rgba(255,255,255,.65);
-  margin-top: .1rem;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.45);
 }
-
-.panel-footer { margin-top: auto; }
 
 .stat-row {
   display: flex;
-  gap: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255,255,255,.15);
+  gap: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.stat { display: flex; flex-direction: column; gap: .15rem; }
+.stat { display: flex; flex-direction: column; gap: 0.25rem; }
 
 .stat-value {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: white;
-  letter-spacing: -.02em;
 }
 
 .stat-label {
-  font-size: .72rem;
-  color: rgba(255,255,255,.6);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: 0.05em;
 }
 
-/* ── Right Panel ──────────────────────────────────────────────── */
-.auth-form-panel {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: #0a0a0f;
-  overflow-y: auto;
-
-  /* Redefine light theme variables to dark for the form panel */
-  --white: #0a0a0f;
-  --bg: #0a0a0f;
-  --text-primary: #ffffff;
-  --text-secondary: #94a3b8;
-  --border: rgba(255,255,255,.1);
-  --border-focus: rgba(99,102,241,.5);
-}
-
-.auth-form-panel .form-group > label {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.auth-form-panel .form-control {
-  background: rgba(255,255,255,.03);
-  color: white;
-}
-.auth-form-panel .form-control::placeholder {
-  color: rgba(255,255,255,.3);
-}
-.auth-form-panel .input-icon,
-.auth-form-panel .input-suffix {
-  color: rgba(255,255,255,.4);
-}
-.auth-form-panel .role-card {
-  background: rgba(255,255,255,.03);
-  border-color: rgba(255,255,255,.1);
-}
-.auth-form-panel .role-card.selected {
-  background: rgba(99,102,241,.1);
-  border-color: rgba(99,102,241,.5);
-}
-
-.auth-form-wrap {
-  width: 100%;
-  max-width: 460px;
-}
-
-.form-header {
-  margin-bottom: 1.75rem;
-}
-
-.form-header h1 {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -.03em;
-  margin-bottom: .35rem;
-}
-
-.form-header p {
-  font-size: .9rem;
-  color: var(--text-secondary);
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-/* ── Role Cards ───────────────────────────────────────────────── */
-.role-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: .75rem;
-  margin-top: .25rem;
-}
-
-.role-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 1rem .75rem;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all .2s ease;
-  background: var(--white);
-}
-
-.role-card:hover {
-  border-color: var(--primary);
-  background: rgba(99,102,241,.05);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99,102,241,.15);
-}
-
-.role-card.selected {
-  border-color: var(--primary);
-  background: rgba(99,102,241,.1);
-  box-shadow: 0 0 0 3px var(--primary-glow);
-}
-
-.role-icon {
-  font-size: 1.5rem;
-  margin-bottom: .4rem;
-}
-
-.role-label {
-  font-weight: 700;
-  font-size: .85rem;
-  color: var(--text-primary);
-}
-
-.role-desc {
-  font-size: .75rem;
-  color: var(--text-secondary);
-  margin-top: .2rem;
-  line-height: 1.3;
-}
-
-.auth-switch {
-  text-align: center;
-  font-size: .875rem;
-  color: var(--text-secondary);
-  margin-top: .5rem;
-}
-
-.auth-switch a { color: var(--primary); font-weight: 600; }
-.auth-switch a:hover { text-decoration: underline; }
-
-/* ── Responsive ───────────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .form-row { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 768px) {
-  .auth-layout { flex-direction: column; }
-  .auth-panel  { flex: none; padding: 1.75rem 1.5rem; }
-  .panel-hero h2 { font-size: 1.4rem; }
-  .role-preview  { display: none; }
-  .stat-row      { gap: 1.5rem; }
-  .auth-form-panel { padding: 2rem 1.25rem; }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

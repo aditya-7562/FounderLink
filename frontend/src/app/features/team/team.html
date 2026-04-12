@@ -1,41 +1,45 @@
 <!-- Header -->
 <div class="page-header">
-  <div>
+  <div class="header-main">
     <h2>Team</h2>
     <p class="page-sub">
-      @if (isFounder()) { Manage your startup team }
-      @if (isCoFounder()) { Your active team memberships }
+      @if (isFounder()) { Orchestrate your startup team and discovery }
+      @if (isCoFounder()) { Your active memberships and contributions }
     </p>
   </div>
   @if (isFounder() && selectedStartupId() && !showDiscovery()) {
     <button class="btn btn-primary" (click)="openDiscovery()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Invite Member
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Find Talent
     </button>
   }
 </div>
 
 @if (successMsg()) {
-  <div class="alert alert-success">✓ {{ successMsg() }}</div>
+  <div class="alert alert-success" style="margin-bottom: 2rem; padding: 1rem 1.25rem; border-radius: 12px; background: rgba(34,197,94,0.1); color: #22c55e; display: flex; align-items: center; gap: 0.75rem;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    {{ successMsg() }}
+  </div>
 }
 @if (errorMsg()) {
-  <div class="alert alert-error">{{ errorMsg() }}</div>
+  <div class="alert alert-danger" style="margin-bottom: 2rem; padding: 1rem 1.25rem; border-radius: 12px; background: rgba(239,68,68,0.1); color: #ef4444; display: flex; align-items: center; gap: 0.75rem;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    {{ errorMsg() }}
+  </div>
 }
 
-<!-- ══════════════════════════════════════════════════════════════ -->
-<!-- FOUNDER VIEW                                                   -->
-<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- FOUNDER VIEW -->
 @if (isFounder()) {
 
   @if (myStartups().length === 0 && !loading()) {
-    <div class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      <h3>No startups found</h3>
-      <p>Create a startup first to manage your team</p>
+    <div class="empty-state" style="padding: 6rem 2rem; border: 1px dashed var(--border-subtle); border-radius: 32px; background: var(--bg-secondary); text-align: center;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3; margin-bottom: 1.5rem;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">No startups found</h3>
+      <p style="color: var(--text-secondary);">Create a venture first to start building your team.</p>
     </div>
   } @else {
 
-    <!-- Startup Tabs -->
+    <!-- Segmented Startup Tabs -->
     <div class="startup-tabs">
       @for (s of myStartups(); track s.id) {
         <button class="startup-tab" [class.active]="selectedStartupId() === s.id" (click)="onStartupChange(s.id)">
@@ -44,45 +48,36 @@
       }
     </div>
 
-    <app-pagination-controls
-      [page]="startupPage().page"
-      [totalPages]="startupPage().totalPages"
-      [totalElements]="startupPage().totalElements"
-      label="startups"
-      (previous)="previousStartupPage()"
-      (next)="nextStartupPage()"
-    />
-
-    <!-- ── USER DISCOVERY PANEL ───────────────────────────────── -->
+    <!-- ── TALENT DISCOVERY PANEL ─────────────────────────────── -->
     @if (showDiscovery()) {
       <div class="discovery-panel">
         <div class="discovery-header">
-          <h3>Find &amp; Invite Members</h3>
-          <button class="btn btn-ghost btn-sm" (click)="closeDiscovery()">✕ Close</button>
+          <h3>Talent Marketplace</h3>
+          <button class="btn btn-ghost btn-sm" (click)="closeDiscovery()" style="border: 1px solid var(--border-subtle); padding: 0.5rem 1rem;">
+            ✕ Dismiss
+          </button>
         </div>
 
-        <!-- Role Filter Tabs (REMOVED) -->
-
-        <!-- Search -->
         <div class="discovery-search">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input
             type="text"
             [ngModel]="searchQuery()"
             (ngModelChange)="searchQuery.set($event)"
-            placeholder="Search by name, email, or skills..."
+            placeholder="Search for co-founders by name, email, or expertise..."
             class="discovery-search-input"
           />
         </div>
 
         <div class="discovery-body">
-          <!-- User Cards -->
           <div class="user-cards-panel">
             @if (usersLoading()) {
-              <div class="loading-state"><div class="spinner"></div><p>Loading profiles...</p></div>
+              <div class="startup-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                @for (i of [1,2,3]; track i) { <div class="skeleton-card" style="height: 220px; background: var(--bg-secondary); border-radius: 20px; opacity:0.5;"></div> }
+              </div>
             } @else if (filteredUsers().length === 0) {
-              <div class="empty-state-sm">
-                <p>No available users found for this filter.</p>
+              <div class="empty-state-sm" style="padding: 4rem 2rem; background: var(--bg-secondary); border-radius: 24px; text-align: center; border: 1px dashed var(--border-subtle);">
+                <p style="color: var(--text-muted); font-weight: 600;">No co-founders found matching your criteria.</p>
               </div>
             } @else {
               <div class="user-cards-grid">
@@ -95,9 +90,8 @@
                     <div class="uc-header">
                       <div class="uc-avatar">{{ userInitials(u) }}</div>
                       <div class="uc-info">
-                        <div class="uc-name">{{ u.name || 'Unnamed User' }}</div>
+                        <div class="uc-name">{{ u.name || 'Anonymous' }}</div>
                         <div class="uc-email">{{ u.email }}</div>
-                        <span class="badge badge-role badge-purple">{{ u.role }}</span>
                       </div>
                     </div>
                     @if (u.bio) {
@@ -105,23 +99,15 @@
                     }
                     @if (u.skills) {
                       <div class="uc-skills">
-                        @for (skill of u.skills.split(',').slice(0, 4); track skill) {
+                        @for (skill of u.skills.split(',').slice(0, 3); track skill) {
                           <span class="skill-chip">{{ skill.trim() }}</span>
                         }
                       </div>
                     }
-                    @if (u.experience) {
-                      <p class="uc-exp">🏢 {{ u.experience }}</p>
-                    }
-                    @if (u.portfolioLinks) {
-                      <a [href]="u.portfolioLinks" target="_blank" class="uc-portfolio" (click)="$event.stopPropagation()">🔗 Portfolio</a>
-                    }
-                    <div class="card-actions">
-                      <button class="btn btn-outline btn-sm uc-btn" (click)="viewProfile(u); $event.stopPropagation()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Profile
-                      </button>
-                      <button class="btn btn-primary btn-sm uc-btn" (click)="selectUserToInvite(u); $event.stopPropagation()">
-                        @if (selectedUser()?.userId === u.userId) { ✓ Selected } @else { + Select }
+                    <div class="card-actions" style="display: flex; gap: 0.75rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+                      <button class="btn btn-ghost btn-sm" style="flex: 1; font-weight: 700;" (click)="viewProfile(u); $event.stopPropagation()">View</button>
+                      <button class="btn btn-primary btn-sm" style="flex: 1; font-weight: 700;" (click)="selectUserToInvite(u); $event.stopPropagation()">
+                        {{ selectedUser()?.userId === u.userId ? 'Selected' : 'Select' }}
                       </button>
                     </div>
                   </div>
@@ -139,37 +125,19 @@
             }
           </div>
 
-          <!-- Invite Form (shown when user is selected) -->
+          <!-- Platinum Invite Form -->
           @if (selectedUser()) {
             <div class="invite-form-panel">
               <div class="invite-form-header">
-                <div class="uc-avatar large">{{ userInitials(selectedUser()!) }}</div>
+                <div class="uc-avatar" style="width: 64px; height: 64px; font-size: 1.5rem;">{{ userInitials(selectedUser()!) }}</div>
                 <div>
-                  <h4>{{ selectedUser()!.name || selectedUser()!.email }}</h4>
-                  <p class="text-muted">{{ selectedUser()!.email }}</p>
+                  <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">{{ selectedUser()!.name || 'Founder' }}</h4>
+                  <p style="color: var(--text-muted); font-size: 0.9rem;">{{ selectedUser()!.email }}</p>
                 </div>
               </div>
 
-              <!-- Full User Details -->
-              <div class="invite-user-details" style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary);">
-                @if (selectedUser()!.bio) {
-                  <p style="margin-bottom: 0.5rem;"><strong>Bio:</strong> {{ selectedUser()!.bio }}</p>
-                }
-                @if (selectedUser()!.experience) {
-                  <p style="margin-bottom: 0.5rem;"><strong>Experience:</strong> {{ selectedUser()!.experience }}</p>
-                }
-                @if (selectedUser()!.skills) {
-                  <p style="margin-bottom: 0.5rem;"><strong>Skills:</strong> {{ selectedUser()!.skills }}</p>
-                }
-                @if (selectedUser()!.portfolioLinks) {
-                  <p style="margin-bottom: 0.5rem;"><strong>Portfolio:</strong> 
-                    <a [href]="selectedUser()!.portfolioLinks" target="_blank" style="color: var(--primary);">Link</a>
-                  </p>
-                }
-              </div>
-
-              <div class="form-group" style="margin-top:1.25rem">
-                <label>Assign Role *</label>
+              <div class="form-group" style="margin-top:2rem">
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">Assign Team Role</label>
                 <div class="role-cards">
                   @for (r of teamRoles; track r) {
                     <button
@@ -179,24 +147,21 @@
                       (click)="selectedRole.set(r)"
                     >
                       <span class="role-card-title">{{ roleShortLabel(r) }}</span>
-                      <span class="role-card-desc">{{ roleLabel(r) }}</span>
+                      <span class="role-card-desc" style="display: block; font-size: 0.7rem; opacity: 0.6; margin-top: 4px;">{{ roleLabel(r) }}</span>
                     </button>
                   }
                 </div>
               </div>
 
-              @if (errorMsg()) {
-                <div class="alert alert-error" style="margin-top:.75rem">{{ errorMsg() }}</div>
-              }
-
-              <div class="invite-actions">
-                <button class="btn btn-ghost" (click)="selectedUser.set(null)">Back</button>
+              <div class="invite-actions" style="display: flex; gap: 1rem; margin-top: 2.5rem; justify-content: flex-end;">
+                <button class="btn btn-ghost" (click)="selectedUser.set(null)" style="font-weight: 700;">Back</button>
                 <button
                   class="btn btn-primary"
                   (click)="sendInvite()"
                   [disabled]="inviting() || !selectedRole()"
+                  style="padding: 0.875rem 2rem; border-radius: 12px; font-weight: 800;"
                 >
-                  {{ inviting() ? 'Sending...' : 'Send Invitation' }}
+                  {{ inviting() ? 'Sending...' : 'Send Invite' }}
                 </button>
               </div>
             </div>
@@ -205,72 +170,66 @@
       </div>
     }
 
-    <!-- View Profile Modal -->
+    <!-- Profile Glance Modal -->
     @if (viewedUser()) {
-      <div class="modal-backdrop" (click)="closeProfile()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3>User Profile</h3>
-            <button class="btn btn-ghost btn-sm" (click)="closeProfile()">✕</button>
-          </div>
-          <div class="modal-body">
-            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-              <div class="uc-avatar large">{{ userInitials(viewedUser()!) }}</div>
+      <div class="modal-overlay" (click)="closeProfile()">
+        <div class="modal-card" style="max-width: 520px;" (click)="$event.stopPropagation()">
+          <div class="modal-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+              <div class="uc-avatar" style="width: 72px; height: 72px; font-size: 1.75rem;">{{ userInitials(viewedUser()!) }}</div>
               <div>
-                <h4 style="color: var(--text-primary); margin: 0; font-size: 1.15rem;">{{ viewedUser()!.name || viewedUser()!.email }}</h4>
-                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">{{ viewedUser()!.email }}</p>
-                <span class="badge badge-purple" style="margin-top: 0.4rem; display: inline-block;">{{ viewedUser()!.role }}</span>
+                <h3 style="font-size: 1.75rem; font-weight: 900; color: var(--text-primary); margin-bottom: 0.25rem;">{{ viewedUser()!.name || 'Founder' }}</h3>
+                <p style="color: var(--text-muted); font-size: 1rem;">{{ viewedUser()!.email }}</p>
+                <span class="stage-badge badge-info" style="margin-top: 0.5rem; display: inline-block;">{{ viewedUser()!.role }}</span>
               </div>
             </div>
-            
+            <button class="btn-icon" (click)="closeProfile()" style="background:none; border:none; font-size: 1.5rem; color: var(--text-muted); cursor:pointer;">✕</button>
+          </div>
+          
+          <div class="modal-body" style="padding-bottom: 2rem;">
             @if (viewedUser()!.bio) {
-              <div style="margin-bottom: 1.25rem;">
-                <strong style="display:block; margin-bottom:.25rem; font-size:.85rem; color:var(--text-primary)">Bio:</strong>
-                {{ viewedUser()!.bio }}
-              </div>
-            }
-            @if (viewedUser()!.experience) {
-              <div style="margin-bottom: 1.25rem;">
-                <strong style="display:block; margin-bottom:.25rem; font-size:.85rem; color:var(--text-primary)">Experience:</strong>
-                {{ viewedUser()!.experience }}
+              <div style="margin-bottom: 1.75rem;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;">About</label>
+                <p style="color: var(--text-secondary); line-height: 1.6;">{{ viewedUser()!.bio }}</p>
               </div>
             }
             @if (viewedUser()!.skills) {
-              <div style="margin-bottom: 1.25rem;">
-                <strong style="display:block; margin-bottom:.5rem; font-size:.85rem; color:var(--text-primary)">Skills:</strong>
-                <div class="uc-skills" style="margin:0">
+              <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;">Skills & Expertise</label>
+                <div class="uc-skills">
                   @for (skill of viewedUser()!.skills!.split(','); track skill) {
-                    <span class="skill-chip">{{ skill.trim() }}</span>
+                    <span class="skill-chip" style="background: var(--bg-secondary); margin-right: 0.5rem; margin-bottom: 0.5rem;">{{ skill.trim() }}</span>
                   }
                 </div>
               </div>
             }
-            @if (viewedUser()!.portfolioLinks) {
-              <div style="margin-bottom: 1.25rem;">
-                <strong style="display:block; margin-bottom:.25rem; font-size:.85rem; color:var(--text-primary)">Portfolio:</strong>
-                <a [href]="viewedUser()!.portfolioLinks" target="_blank" style="color: var(--primary);">{{ viewedUser()!.portfolioLinks }}</a>
-              </div>
-            }
           </div>
-          <div class="modal-footer">
-            <button class="btn btn-primary" (click)="selectUserToInvite(viewedUser()!); closeProfile()">Select to Invite</button>
+
+          <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 1rem;">
+             <button class="btn btn-ghost" (click)="closeProfile()" style="font-weight: 700;">Close</button>
+             <button class="btn btn-primary" (click)="selectUserToInvite(viewedUser()!); closeProfile()" style="padding: 0.875rem 1.5rem; border-radius: 12px; font-weight: 800;">Invite to Team</button>
           </div>
         </div>
       </div>
     }
 
-    <!-- ── TEAM MEMBERS ───────────────────────────────────────── -->
+    <!-- ── ACTIVE TEAM MEMBERS ────────────────────────────────── -->
     @if (!showDiscovery()) {
+      <div class="section-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Active Partners</h4>
+        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">{{ teamMembers().length }} Members</span>
+      </div>
+
       @if (loading()) {
         <div class="member-list">
-          @for (i of [1,2,3]; track i) { <div class="skeleton-row"></div> }
+          @for (i of [1,2]; track i) { <div class="skeleton-row" style="height: 100px; background: var(--bg-surface); border-radius: 20px; border: 1px solid var(--border-subtle); opacity: 0.5; margin-bottom: 1rem;"></div> }
         </div>
       } @else if (teamMembers().length === 0) {
-        <div class="empty-state">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <h3>No team members yet</h3>
-          <p>Browse and invite co-founders to build your team</p>
-          <button class="btn btn-primary" (click)="openDiscovery()">Find Members</button>
+        <div class="empty-state" style="padding: 6rem 2rem; border: 1px dashed var(--border-subtle); border-radius: 32px; background: var(--bg-secondary); text-align: center;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3; margin-bottom: 1.5rem;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">No active members</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 2rem;">Building a startup is a team sport. Invite your first partner.</p>
+          <button class="btn btn-primary" (click)="openDiscovery()" style="padding: 0.875rem 2rem;">Find Talent</button>
         </div>
       } @else {
         <div class="member-list">
@@ -279,19 +238,21 @@
               <div class="mc-left">
                 <div class="mc-avatar">{{ (userNames().get(m.userId) || 'M')[0] }}</div>
                 <div class="mc-details">
-                  <div class="mc-name">{{ userNames().get(m.userId) || 'Member #' + m.userId }}</div>
+                  <div class="mc-name">{{ userNames().get(m.userId) || 'Team Member' }}</div>
                   <div class="mc-meta">
-                    <span class="badge" [class]="roleClass(m.role)">{{ roleShortLabel(m.role) }}</span>
-                    <span class="mc-date">Joined {{ m.joinedAt | date:'mediumDate' }}</span>
+                    <span class="stage-badge badge-info">{{ roleShortLabel(m.role) }}</span>
+                    <span class="mc-date" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Joined {{ m.joinedAt | date:'mediumDate' }}</span>
                   </div>
                 </div>
               </div>
-              <div class="mc-right">
-                <span class="status-dot active"></span>
-                <span class="status-label">Active</span>
-                <button class="btn btn-primary btn-sm" (click)="messageMember(m.userId)">Message</button>
-                <button class="btn btn-danger btn-sm" (click)="removeMember(m.id)" [disabled]="removing() === m.id">
-                  @if (removing() === m.id) { <span class="spinner"></span> } @else { Remove }
+              <div class="mc-right" style="display: flex; gap: 1rem; align-items: center; padding-left: 2rem; border-left: 1px solid var(--border-subtle);">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                   <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.5);"></span>
+                   <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Active</span>
+                </div>
+                <button class="btn btn-ghost btn-sm" (click)="messageMember(m.userId)" style="border: 1px solid var(--border-subtle); font-weight: 700; padding: 0.6rem 1rem;">Message</button>
+                <button class="btn btn-danger btn-sm" (click)="removeMember(m.id)" [disabled]="removing() === m.id" style="font-weight: 700; padding: 0.6rem 1rem;">
+                  {{ removing() === m.id ? 'Removing...' : 'Offboard' }}
                 </button>
               </div>
             </div>
@@ -312,45 +273,43 @@
   }
 }
 
-<!-- ══════════════════════════════════════════════════════════════ -->
-<!-- COFOUNDER VIEW                                                 -->
-<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- COFOUNDER VIEW -->
 @if (isCoFounder()) {
   @if (loading()) {
     <div class="member-list">
-      @for (i of [1,2,3]; track i) { <div class="skeleton-row"></div> }
+       @for (i of [1,2]; track i) { <div class="skeleton-row" style="height: 100px; background: var(--bg-surface); border-radius: 20px; border: 1px solid var(--border-subtle); opacity: 0.5; margin-bottom: 1rem;"></div> }
     </div>
   } @else if (myTeams().length === 0) {
-    <div class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      <h3>Not part of any team yet</h3>
-      <p>Accept an invitation to join a startup team</p>
+    <div class="empty-state" style="padding: 6rem 2rem; border: 1px dashed var(--border-subtle); border-radius: 32px; background: var(--bg-secondary); text-align: center;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3; margin-bottom: 1.5rem;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">Join a Team</h3>
+      <p style="color: var(--text-secondary);">You are not currently part of any venture. Check your invitations to get started.</p>
     </div>
   } @else {
     <div class="member-list">
       @for (m of myTeams(); track m.id) {
         <div class="member-card">
           <div class="mc-left">
-            <div class="mc-avatar startup">{{ (startupNames().get(m.startupId) || 'S')[0] }}</div>
+            <div class="mc-avatar" style="background: linear-gradient(135deg, #f97316, #fb923c);">{{ (startupNames().get(m.startupId) || 'S')[0] }}</div>
             <div class="mc-details">
-              <div class="mc-name">{{ startupNames().get(m.startupId) || 'Startup ' + m.startupId }}</div>
+              <div class="mc-name">{{ startupNames().get(m.startupId) || 'Partner Startup' }}</div>
               <div class="mc-meta">
-                <span class="badge" [class]="roleClass(m.role)">{{ roleShortLabel(m.role) }}</span>
-                <span class="mc-date">Joined {{ m.joinedAt | date:'mediumDate' }}</span>
+                <span class="stage-badge badge-info">{{ roleShortLabel(m.role) }}</span>
+                <span class="mc-date" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Joined {{ m.joinedAt | date:'mediumDate' }}</span>
               </div>
             </div>
           </div>
-          <div class="mc-right" style="gap: 1rem;">
-            <div style="display:flex; align-items:center; gap:0.5rem">
-              <span class="status-dot active"></span>
-              <span class="status-label">Active Member</span>
+          <div class="mc-right" style="display: flex; gap: 1.5rem; align-items: center; padding-left: 2rem; border-left: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+               <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.5);"></span>
+               <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Active Member</span>
             </div>
-            <div style="display:flex; gap:0.5rem">
-              <button class="btn btn-ghost btn-sm" (click)="messageFounder(m.startupId)" title="Message Founder" style="color: rgba(255,255,255,0.5); padding: 0.5rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <div style="display: flex; gap: 0.75rem;">
+              <button class="btn btn-ghost btn-sm" (click)="messageFounder(m.startupId)" title="Message Founder" style="border: 1px solid var(--border-subtle); padding: 0.6rem 0.8rem; border-radius: 12px; color: var(--text-muted);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               </button>
-              <button class="btn btn-primary btn-sm" (click)="viewStartup(m.startupId)" style="border-radius: 10px; font-weight: 700;">
-                View Startup
+              <button class="btn btn-primary btn-sm" (click)="viewStartup(m.startupId)" style="padding: 0.6rem 1.25rem; border-radius: 12px; font-weight: 800;">
+                Profile
               </button>
             </div>
           </div>

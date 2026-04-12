@@ -1,65 +1,82 @@
+/* ── Feature: Admin Startup Moderation Redesign (Phase 3.4) ────── */
+
+:host {
+  display: block;
+}
 
 .stage-tag {
   display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  background: var(--bg-secondary);
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
-  margin-top: 4px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.1);
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  margin-top: 6px;
   text-transform: uppercase;
-  border: 1px solid var(--border-subtle);
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(var(--primary-rgb), 0.2);
+}
+
+.cell-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
 .cell-sub-light {
   font-size: 0.85rem;
+  font-weight: 700;
   color: var(--text-secondary);
-  font-weight: 500;
 }
 
 .truncate {
   max-width: 200px;
   white-space: nowrap;
-  letter-spacing: normal;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.admin-pagination {
-  padding: var(--s-4) var(--s-6);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border-subtle);
-}
-
-.pagination-controls {
-  display: flex;
-  gap: var(--s-2);
-}
-
-.page-btn {
-  padding: 0.5rem 1rem;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
+  font-size: 0.75rem;
+  color: var(--text-muted);
   font-weight: 600;
-  transition: all 0.2s;
+  margin-top: 0.4rem;
 }
 
-.page-btn:hover:not(:disabled) {
-  background: var(--border-subtle);
+/* ── Platinum Table Container ────────────────────────────────── */
+.table-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
 }
 
-.page-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-/* ── Overflow Menu ─────────────────────────────────────────────── */
+.data-table th {
+  background: rgba(var(--bg-secondary-rgb), 0.5);
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.data-table td {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.data-table tr:hover {
+  background: rgba(var(--primary-rgb), 0.02);
+}
+
+/* ── Governance Actions & Menu ────────────────────────────────── */
 .overflow-menu {
   position: relative;
   display: inline-block;
@@ -69,16 +86,23 @@
   position: absolute;
   top: 100%;
   right: 0;
-  z-index: 50;
-  min-width: 140px;
+  z-index: 100;
+  min-width: 180px;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  border-radius: 16px;
+  box-shadow: var(--shadow-xl);
   display: none;
   flex-direction: column;
-  padding: 0.5rem 0;
-  animation: slideIn 0.2s ease;
+  padding: 0.6rem;
+  margin-top: 0.5rem;
+  backdrop-filter: blur(20px);
+  animation: menuDrop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes menuDrop {
+  from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .overflow-menu.open .overflow-dropdown {
@@ -86,20 +110,55 @@
 }
 
 .overflow-dropdown button {
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 800;
   color: var(--text-primary);
   text-align: left;
-  transition: background 0.2s;
-  width: 100%;
+  border-radius: 10px;
+  transition: all 0.15s;
 }
 
 .overflow-dropdown button:hover {
-  background: var(--bg-secondary);
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
 }
 
 .overflow-dropdown hr {
   border: none;
   border-top: 1px solid var(--border-subtle);
-  margin: 0.25rem 0;
+  margin: 0.4rem 0.6rem;
+}
+
+/* ── Pagination ────────────────────────────────────────────────── */
+.admin-pagination {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: rgba(var(--bg-secondary-rgb), 0.2);
+}
+
+.page-btn {
+  padding: 0.6rem 1.25rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-weight: 800;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }

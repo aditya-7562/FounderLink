@@ -1,33 +1,33 @@
 <!-- Header -->
 <div class="page-header">
-  <div>
+  <div class="header-main">
     <h2>Investments</h2>
-    <p class="page-sub">Review and manage investments in your startups</p>
+    <p class="page-sub">Monitor and govern funding contributions across your ventures</p>
   </div>
 </div>
 
 @if (successMsg()) {
-  <div class="alert alert-success">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <div class="alert alert-success" style="margin-bottom: 2rem; padding: 1rem 1.25rem; border-radius: 12px; background: rgba(34,197,94,0.1); color: #22c55e; display: flex; align-items: center; gap: 0.75rem;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
     {{ successMsg() }}
   </div>
 }
 @if (errorMsg()) {
-  <div class="alert alert-error">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <div class="alert alert-danger" style="margin-bottom: 2rem; padding: 1rem 1.25rem; border-radius: 12px; background: rgba(239,68,68,0.1); color: #ef4444; display: flex; align-items: center; gap: 0.75rem;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     {{ errorMsg() }}
   </div>
 }
 
 @if (myStartups().length === 0 && !loading()) {
-  <div class="empty-state">
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-    <h3>No startups found</h3>
-    <p>Create a startup first to receive investments</p>
+  <div class="empty-state" style="padding: 6rem 2rem; border: 1px dashed var(--border-subtle); border-radius: 32px; background: var(--bg-secondary); text-align: center;">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity: 0.3; margin-bottom: 1.5rem;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+    <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">Venture required</h3>
+    <p style="color: var(--text-secondary);">You need at least one active startup profile to receive or manage funding.</p>
   </div>
 } @else {
 
-  <!-- Startup Selector + Filter -->
+  <!-- Platinum Control Bar -->
   <div class="toolbar">
     <div class="startup-tabs">
       @for (s of myStartups(); track s.id) {
@@ -37,102 +37,98 @@
         </button>
       }
     </div>
-    <select [(ngModel)]="filterStatus" class="filter-select">
-      <option value="">All Status</option>
-      <option value="PENDING">Pending</option>
-      <option value="APPROVED">Approved</option>
-      <option value="REJECTED">Rejected</option>
-    </select>
+    
+    <div class="filter-wrap" style="position: relative;">
+      <select [(ngModel)]="filterStatus" class="filter-select" style="padding-right: 2.5rem; appearance: none;">
+        <option value="">All Transactions</option>
+        <option value="PENDING">Pending Approval</option>
+        <option value="APPROVED">Successfully Approved</option>
+        <option value="REJECTED">Declined/Rejected</option>
+      </select>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.4;"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
   </div>
 
-  <app-pagination-controls
-    [page]="startupPage().page"
-    [totalPages]="startupPage().totalPages"
-    [totalElements]="startupPage().totalElements"
-    label="startups"
-    (previous)="previousStartupPage()"
-    (next)="nextStartupPage()"
-  />
-
-  <!-- Stats -->
+  <!-- Platinum Stats Grid -->
   @if (!loading()) {
     <div class="inv-stats">
       <div class="inv-stat">
-        <span class="inv-stat-value">{{ investmentPage().totalElements }}</span>
-        <span class="inv-stat-label">Total</span>
-      </div>
-      <div class="inv-stat">
-        <span class="inv-stat-value pending">{{ pendingCount }}</span>
-        <span class="inv-stat-label">Pending</span>
-      </div>
-      <div class="inv-stat">
-        <span class="inv-stat-value approved">{{ approvedCount }}</span>
-        <span class="inv-stat-label">Approved</span>
-      </div>
-      <div class="inv-stat">
+        <span class="inv-stat-label">Total Volume</span>
         <span class="inv-stat-value amount">{{ formatCurrency(totalAmount) }}</span>
-        <span class="inv-stat-label">Total Amount</span>
+      </div>
+      <div class="inv-stat">
+        <span class="inv-stat-label">Transactions</span>
+        <span class="inv-stat-value">{{ investmentPage().totalElements }}</span>
+      </div>
+      <div class="inv-stat">
+        <span class="inv-stat-label">Allocated</span>
+        <span class="inv-stat-value approved">{{ approvedCount }}</span>
+      </div>
+      <div class="inv-stat">
+        <span class="inv-stat-label">Awaiting Review</span>
+        <span class="inv-stat-value pending">{{ pendingCount }}</span>
       </div>
     </div>
   }
 
-  <!-- Table -->
+  <!-- Funding Ledger -->
   @if (loading()) {
-    <div class="skeleton-table">
-      @for (i of [1,2,3,4]; track i) { <div class="skeleton-row"></div> }
+    <div class="inv-table-wrap">
+      <div class="skeleton-table">
+        @for (i of [1,2,3]; track i) { <div class="skeleton-row" style="height: 60px; background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle); opacity:0.5;"></div> }
+      </div>
     </div>
   } @else if (filteredInvestments.length === 0) {
-    <div class="empty-state">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-      <h3>No investments found</h3>
-      <p>No investments match the selected filter</p>
+    <div class="empty-state" style="padding: 4rem 2rem; border-radius: 24px; background: var(--bg-secondary); border: 1px dashed var(--border-subtle); text-align: center;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.2; margin-bottom: 1rem;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">No entries found</h3>
+      <p style="color: var(--text-muted);">We couldn't find any investments matching your current filters.</p>
     </div>
   } @else {
     <div class="inv-table-wrap">
       <table class="inv-table">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Investor ID</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Actions</th>
+            <th>Transaction</th>
+            <th>Investor Profile</th>
+            <th>Contribution</th>
+            <th>Governance Status</th>
+            <th>Finalized Date</th>
+            <th style="text-align: right;">Actions</th>
           </tr>
         </thead>
         <tbody>
           @for (inv of filteredInvestments; track inv.id) {
             <tr>
-              <td class="td-id">{{ inv.id }}</td>
+              <td class="td-id" style="font-weight: 700; color: var(--text-muted); font-family: monospace;">#FL_{{ inv.id }}</td>
               <td>
                 <div class="investor-cell">
-                  <div class="investor-avatar">{{ (userNames().get(inv.investorId) || 'I')[0] }}</div>
-                  <span>{{ userNames().get(inv.investorId) || 'Investor ' + inv.investorId }}</span>
+                  <div class="investor-avatar">{{ (userNames().get(inv.investorId) || 'B')[0] }}</div>
+                  <span style="font-weight: 700;">{{ userNames().get(inv.investorId) || 'Backer #' + inv.investorId }}</span>
                 </div>
               </td>
               <td class="td-amount">{{ formatCurrency(inv.amount) }}</td>
-              <td><span class="badge" [class]="statusClass(inv.status)">{{ inv.status }}</span></td>
-              <td class="td-date">{{ inv.createdAt | date:'mediumDate' }}</td>
+              <td><span class="stage-badge" [class]="statusClass(inv.status)" style="font-size: 0.65rem; padding: 0.25rem 0.75rem;">{{ inv.status }}</span></td>
+              <td class="td-date" style="font-weight: 600;">{{ inv.createdAt | date:'mediumDate' }}</td>
               <td>
-                <div class="action-btns">
-                  <button class="btn btn-outline btn-sm action-msg-btn"
-                    (click)="messageInvestor(inv.investorId)">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    Message
+                <div class="action-btns" style="justify-content: flex-end;">
+                  <button class="btn btn-ghost btn-sm"
+                    (click)="messageInvestor(inv.investorId)" title="Contact Investor" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); padding: 0.5rem 0.75rem; border-radius: 10px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                   </button>
+                  
                   @if (inv.status === 'PENDING') {
-                    <button class="btn btn-sm approve-btn"
+                    <button class="approve-btn"
                       [disabled]="updating() === inv.id"
                       (click)="updateStatus(inv.id, 'APPROVED')">
-                      @if (updating() === inv.id) { <span class="spinner spinner-dark"></span> } @else {
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                      @if (updating() === inv.id) { <span class="spinner" style="width:14px; height:14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block;"></span> } @else {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        Approve
                       }
-                      Approve
                     </button>
-                    <button class="btn btn-sm reject-btn"
+                    <button class="reject-btn"
                       [disabled]="updating() === inv.id"
                       (click)="updateStatus(inv.id, 'REJECTED')">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       Reject
                     </button>
                   }
