@@ -339,7 +339,7 @@ rbac:
       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
     - method: GET
-      path: /messages/conversation/*/*
+      path: /messages/conversation/**
       roles: [FOUNDER, INVESTOR, COFOUNDER, ADMIN]
 
     - method: GET
