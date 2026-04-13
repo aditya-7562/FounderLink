@@ -207,7 +207,7 @@ pipeline {
                             docker run --rm \
                                 -v \$(pwd)/frontend:/app \
                                 -w /app \
-                                trion/ng-cli-karma:20 \
+                                trion/ng-cli-karma:latest \
                                 sh -c "npm ci && npm run test -- --no-watch --no-progress --browsers=ChromeHeadless"
                             """
                         } else {
