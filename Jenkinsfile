@@ -204,7 +204,7 @@ pipeline {
                         if (svc == "frontend") {
                             echo "Testing ${svc} (Angular) inside Docker"
                             docker.image('trion/ng-cli-karma:latest').inside {
-                                sh "export CI=true && cd frontend && npm ci && npm run test -- --watch=false --no-progress --browsers=ChromeHeadless"
+                                sh "export CI=true && cd frontend && npm ci && npm run test -- --watch=false --no-progress"
                             }
                         } else {
                             echo "Testing ${svc}"

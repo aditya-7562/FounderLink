@@ -32,7 +32,13 @@ module.exports = function (config) {
       ]
     },
     reporters: process.env['CI'] ? ['progress'] : ['progress', 'kjhtml'],
-    browsers: ['ChromeHeadless'],
+    browsers: process.env['CI'] ? ['ChromeHeadlessCI'] : ['Chrome'],
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+      }
+    },
     singleRun: !!process.env['CI'],
     restartOnFileChange: !process.env['CI']
   });
