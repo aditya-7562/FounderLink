@@ -205,10 +205,10 @@ pipeline {
                             echo "Testing ${svc} (Angular) inside Docker"
                             sh """
                             docker run --rm \
-                                -v \$(pwd)/frontend:/app \
+                                -v ${WORKSPACE}/frontend:/app \
                                 -w /app \
                                 trion/ng-cli-karma:latest \
-                                sh -c "npm ci && npm run test -- --no-watch --no-progress --browsers=ChromeHeadless"
+                                sh -c 'npm ci && npm run test -- --no-watch --no-progress --browsers=ChromeHeadless'
                             """
                         } else {
                             echo "Testing ${svc}"
