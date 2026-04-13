@@ -149,7 +149,57 @@
         </div>
       </div>
 
+      <!-- Action Buttons -->
+      @if (isInvestor) {
+      <div class="side-actions" style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+        <button class="btn btn-ghost" (click)="messageFounder(s.founderId)" style="flex: 1; display: flex; justify-content: center; align-items: center; font-weight: 700; padding: 0.8rem; border: 1px solid var(--border-subtle); border-radius: 12px; color: var(--text-secondary);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 0.5rem;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Message Founder
+        </button>
+        <button class="btn btn-primary" (click)="openInvestModal(s)" style="flex: 1; font-weight: 800; border-radius: 12px;">
+          Invest
+        </button>
+      </div>
+      }
+
     </aside>
   </div>
 </div>
+}
+
+<!-- Premium Invest Modal -->
+@if (investModal()) {
+  <div class="modal-overlay" (click)="closeInvestModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+        <div>
+          <h3>Invest in {{ investModal()!.name }}</h3>
+          <p class="modal-sub" style="margin-bottom: 0;">Backing innovation in {{ investModal()!.industry }}</p>
+        </div>
+        <button class="btn-icon" (click)="closeInvestModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;">✕</button>
+      </div>
+      
+      @if (investError()) { <div class="alert alert-danger" style="margin-bottom:1.5rem; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.875rem; background: rgba(239,68,68,0.1); color: #ef4444;">{{ investError() }}</div> }
+      @if (investSuccess()) { <div class="alert alert-success" style="margin-bottom:1.5rem; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.875rem; background: rgba(34,197,94,0.1); color: #22c55e;">{{ investSuccess() }}</div> }
+      
+      <div class="form-group" style="margin-bottom: 2.5rem;">
+        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">Investment Amount (₹)</label>
+        <div class="input-wrap" style="position: relative;">
+          <span style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 800; pointer-events: none;">₹</span>
+          <input type="number" [(ngModel)]="investAmount" [min]="1000" placeholder="0.00" class="input" style="width: 100%; box-sizing: border-box; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.25rem 1.25rem 1.25rem 2.5rem; color: var(--text-primary); font-size: 1.25rem; font-weight: 800; outline: none;" />
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
+          <span>Min: ₹1,000</span>
+          <span>Target: {{ formatCurrency(investModal()!.fundingGoal) }}</span>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <button class="btn btn-ghost" (click)="closeInvestModal()" [disabled]="investing()" style="font-weight: 700;">Cancel</button>
+        <button class="btn btn-primary" (click)="submitInvestment()" [disabled]="investing() || !investAmount" style="padding: 1rem 2.5rem; border-radius: 14px; font-weight: 800;">
+          {{ investing() ? 'Confirming...' : 'Submit Investment' }}
+        </button>
+      </div>
+    </div>
+  </div>
 }

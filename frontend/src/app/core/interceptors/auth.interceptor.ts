@@ -9,6 +9,12 @@ import { AuthResponse } from '../../models';
 let isRefreshing = false;
 const refreshSubject = new BehaviorSubject<AuthResponse | null>(null);
 
+/** For testing purposes only */
+export function resetAuthInterceptor(): void {
+  isRefreshing = false;
+  refreshSubject.next(null);
+}
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);

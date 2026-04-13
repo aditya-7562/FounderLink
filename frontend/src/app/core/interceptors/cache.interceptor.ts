@@ -4,6 +4,11 @@ import { of, tap } from 'rxjs';
 const CACHE_TTL = 30 * 1000; // 30 seconds
 const cache = new Map<string, { fetchedAt: number; response: HttpResponse<any> }>();
 
+/** For testing purposes only */
+export function clearCache(): void {
+  cache.clear();
+}
+
 const isCacheable = (url: string): boolean => {
   return url.includes('/users/public/stats') || url.includes('/startup/search');
 };

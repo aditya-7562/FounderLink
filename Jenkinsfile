@@ -125,7 +125,6 @@ pipeline {
                         def restartServices = [] as Set
 
                         fileList.each { file ->
-                            if (file.startsWith("frontend/"))              return
                             if (file.startsWith("auth-service/"))         services.add("auth-service")
                             if (file.startsWith("user-service/"))         services.add("user-service")
                             if (file.startsWith("startup-service/"))      services.add("startup-service")
@@ -136,6 +135,7 @@ pipeline {
                             if (file.startsWith("payment-service/"))      services.add("payment-service")
                             if (file.startsWith("wallet-service/"))       services.add("wallet-service")
                             if (file.startsWith("api-gateway/"))          services.add("api-gateway")
+                            if (file.startsWith("frontend/"))             services.add("frontend")
                             if (file.startsWith("config-server/"))        infraServices.add("config-server")
                             if (file.startsWith("eureka-server/"))        infraServices.add("eureka-server")
                             if (file.startsWith("config-repo/"))          restartServices.add("config-server")
@@ -200,19 +200,26 @@ pipeline {
 
                     if (allServices.isEmpty()) { echo "No services to test"; return }
 
-                    // Run sequentially — parallel Spring Boot context startups OOM-killed the VM.
-                    // Each Spring Boot test context needs ~300-500MB RAM. Running 12 at once = crash.
                     allServices.each { svc ->
-                        echo "Testing ${svc}"
-                        sh """
-                        if [ -f "./${svc}/mvnw" ]; then
-                            cd ${svc} && chmod +x mvnw && ./mvnw test || echo "Tests failed for ${svc}, continuing..."
-                        elif [ -f "./${svc}/pom.xml" ]; then
-                            cd ${svc} && mvn test || echo "Tests failed for ${svc}, continuing..."
-                        else
-                            echo "No test configuration found for ${svc}, skipping tests"
-                        fi
-                        """
+                        if (svc == "frontend") {
+                            echo "Testing ${svc} (Angular)"
+                            sh """
+                            cd frontend
+                            npm ci
+                            npm run test -- --no-watch --no-progress --browsers=ChromeHeadless
+                            """
+                        } else {
+                            echo "Testing ${svc}"
+                            sh """
+                            if [ -f "./${svc}/mvnw" ]; then
+                                cd ${svc} && chmod +x mvnw && ./mvnw test || echo "Tests failed for ${svc}, continuing..."
+                            elif [ -f "./${svc}/pom.xml" ]; then
+                                cd ${svc} && mvn test || echo "Tests failed for ${svc}, continuing..."
+                            else
+                                echo "No test configuration found for ${svc}, skipping tests"
+                            fi
+                            """
+                        }
                     }
                 }
             }
@@ -349,10 +356,11 @@ pipeline {
                 script {
                     readFile(env.SERVICES_FILE).trim().split(",").findAll { it }.each { svc ->
                         echo "Deploying application service: ${svc}"
+                        def composeFile = (svc == "frontend") ? "docker-compose.frontend.yml" : "docker-compose.services.yml"
                         sh """
                         export TAG=${env.COMMIT_TAG}
-                        docker compose -f docker-compose.services.yml pull ${svc} || true
-                        docker compose -f docker-compose.services.yml up -d --no-deps --force-recreate ${svc}
+                        docker compose -f ${composeFile} pull ${svc} || true
+                        docker compose -f ${composeFile} up -d --no-deps --force-recreate ${svc}
                         """
                     }
                 }

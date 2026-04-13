@@ -1,16 +1,18 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { StartupService } from '../../../core/services/startup.service';
 import { WalletService } from '../../../core/services/wallet.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
+import { InvestmentService } from '../../../core/services/investment.service';
 import { StartupResponse, StartupStage, WalletResponse } from '../../../models';
 import { computed } from '@angular/core';
 
 @Component({
   selector: 'app-startup-detail',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './startup-detail.html',
   styleUrl: './startup-detail.css'
 })
@@ -29,11 +31,18 @@ export class StartupDetailComponent implements OnInit {
     return Math.min(Math.round(percent), 100);
   });
 
+  investModal   = signal<StartupResponse | null>(null);
+  investAmount  = 0;
+  investing     = signal(false);
+  investError   = signal('');
+  investSuccess = signal('');
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private startupService: StartupService,
     private walletService: WalletService,
+    private investmentService: InvestmentService,
     public  authService: AuthService,
     public  themeService: ThemeService
   ) {}
@@ -57,12 +66,46 @@ export class StartupDetailComponent implements OnInit {
     });
   }
 
-  invest(): void {
-    if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/auth/login']);
-    } else {
-      this.router.navigate(['/dashboard/startups']);
+  openInvestModal(startup: StartupResponse): void {
+    this.investModal.set(startup);
+    this.investAmount = 0;
+    this.investError.set('');
+    this.investSuccess.set('');
+  }
+
+  closeInvestModal(): void {
+    this.investModal.set(null);
+    this.investAmount = 0;
+    this.investError.set('');
+    this.investSuccess.set('');
+  }
+
+  submitInvestment(): void {
+    const startup = this.investModal();
+    if (!startup) return;
+    if (!this.investAmount || this.investAmount < 1000) {
+      this.investError.set('Minimum investment is ₹1,000.');
+      return;
     }
+
+    this.investing.set(true);
+    this.investError.set('');
+
+    this.investmentService.create({ startupId: startup.id, amount: this.investAmount }).subscribe({
+      next: () => {
+        this.investing.set(false);
+        this.investSuccess.set('Investment submitted successfully! Awaiting founder approval.');
+        setTimeout(() => this.closeInvestModal(), 2500);
+      },
+      error: env => {
+        this.investing.set(false);
+        this.investError.set(env.error ?? 'Failed to submit investment.');
+      }
+    });
+  }
+
+  messageFounder(founderId: number): void {
+    this.router.navigate(['/dashboard/messages'], { queryParams: { user: founderId } });
   }
 
   goBack(): void { 
@@ -72,6 +115,13 @@ export class StartupDetailComponent implements OnInit {
       this.router.navigate(['/']); 
     }
   }
+
+  private roleIs(r: string): boolean {
+    const s = this.authService.role() ?? '';
+    return s === r || s === `ROLE_${r}`;
+  }
+
+  get isInvestor(): boolean { return this.roleIs('INVESTOR'); }
 
   stageLabel(stage: StartupStage): string {
     const map: Record<string, string> = {

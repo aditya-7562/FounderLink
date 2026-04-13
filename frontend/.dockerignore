@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Build output
+dist
+.angular
+
+# IDEs and editors
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Debug logs
+logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+
+# Tests
+playwright-report
+test-results
+e2e
