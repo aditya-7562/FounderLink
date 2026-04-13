@@ -128,21 +128,33 @@
   flex-shrink: 0;
 }
 
-.user-info {
+.user-info-wrapper {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
-  padding: var(--s-2) var(--s-2);
+  gap: var(--s-1);
+  padding: 2px;
   border-radius: var(--radius-sm);
   transition: background 0.2s;
 }
 
-.user-info:hover {
+.user-info-wrapper:hover {
   background: var(--bg-secondary);
 }
 
-.user-info.collapsed {
+.user-info-wrapper.collapsed {
   justify-content: center;
+  padding: var(--s-2) 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-1) var(--s-2);
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
 }
 
 .user-avatar {
@@ -174,15 +186,21 @@
 }
 
 .logout-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
   color: var(--text-muted);
-  padding: 0.25rem;
+  padding: 0.4rem;
   border-radius: 6px;
   display: flex;
   align-items: center;
+  justify-content: center;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .logout-btn:hover {
   color: var(--danger);
   background: rgba(239, 68, 68, 0.1);
+  transform: translateX(2px);
 }
