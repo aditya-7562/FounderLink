@@ -202,11 +202,13 @@ pipeline {
 
                     allServices.each { svc ->
                         if (svc == "frontend") {
-                            echo "Testing ${svc} (Angular)"
+                            echo "Testing ${svc} (Angular) inside Docker"
                             sh """
-                            cd frontend
-                            npm ci
-                            npm run test -- --no-watch --no-progress --browsers=ChromeHeadless
+                            docker run --rm \
+                                -v \$(pwd)/frontend:/app \
+                                -w /app \
+                                trion/ng-cli-karma:20 \
+                                sh -c "npm ci && npm run test -- --no-watch --no-progress --browsers=ChromeHeadless"
                             """
                         } else {
                             echo "Testing ${svc}"
