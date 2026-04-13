@@ -3,7 +3,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 /**
- * Role guard factory.
+ * Role guard factory
  * Pass allowed roles WITHOUT the ROLE_ prefix (e.g. ['FOUNDER', 'INVESTOR']).
  * The stored JWT role has the ROLE_ prefix, so we strip it before comparing.
  */
