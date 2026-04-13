@@ -252,13 +252,30 @@ pipeline {
 
                     allServices.each { svc ->
                         echo "🚀 Building ${svc}"
-                        sh """
-                        docker pull ${DOCKER_REPO}/${svc}:cache || true
-                        docker build \\
-                        --cache-from ${DOCKER_REPO}/${svc}:cache \\
-                        -t ${DOCKER_REPO}/${svc}:${env.COMMIT_TAG} \\
-                        ./${svc}
-                        """
+                        if (svc == "frontend") {
+                            withCredentials([
+                                string(credentialsId: 'FRONTEND_API_URL', variable: 'API_URL'),
+                                string(credentialsId: 'FRONTEND_RAZORPAY_KEY', variable: 'RAZORPAY_KEY')
+                            ]) {
+                                sh """
+                                docker pull ${DOCKER_REPO}/${svc}:cache || true
+                                docker build \
+                                    --cache-from ${DOCKER_REPO}/${svc}:cache \
+                                    --build-arg NG_APP_API_URL=${API_URL} \
+                                    --build-arg NG_APP_RAZORPAY_KEY=${RAZORPAY_KEY} \
+                                    -t ${DOCKER_REPO}/${svc}:${env.COMMIT_TAG} \
+                                    ./${svc}
+                                """
+                            }
+                        } else {
+                            sh """
+                            docker pull ${DOCKER_REPO}/${svc}:cache || true
+                            docker build \
+                            --cache-from ${DOCKER_REPO}/${svc}:cache \
+                            -t ${DOCKER_REPO}/${svc}:${env.COMMIT_TAG} \
+                            ./${svc}
+                            """
+                        }
                     }
                 }
             }

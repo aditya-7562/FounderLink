@@ -9,6 +9,13 @@ RUN npm ci
 
 # Copy source code and build for production
 COPY . .
+
+# Pass build-time environment variables
+ARG NG_APP_API_URL
+ARG NG_APP_RAZORPAY_KEY
+ENV NG_APP_API_URL=$NG_APP_API_URL
+ENV NG_APP_RAZORPAY_KEY=$NG_APP_RAZORPAY_KEY
+
 RUN npm run build -- --configuration=production
 
 # Stage 2: Serve application with Nginx
