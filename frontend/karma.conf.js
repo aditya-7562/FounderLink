@@ -31,8 +31,9 @@ module.exports = function (config) {
         { type: 'text-summary' }
       ]
     },
-    reporters: ['progress', 'kjhtml'],
+    reporters: process.env['CI'] ? ['progress', 'coverage'] : ['progress', 'kjhtml'],
     browsers: ['ChromeHeadless'],
-    restartOnFileChange: true
+    singleRun: !!process.env['CI'],
+    restartOnFileChange: !process.env['CI']
   });
 };
